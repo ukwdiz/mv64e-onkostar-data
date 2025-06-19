@@ -11,16 +11,16 @@ import java.sql.ResultSet;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class Kpa {
+public class KpaCatalogue {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private Kpa(JdbcTemplate jdbcTemplate) {
+    private KpaCatalogue(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public static Kpa create(JdbcTemplate jdbcTemplate) {
-        return new Kpa(jdbcTemplate);
+    public static KpaCatalogue create(JdbcTemplate jdbcTemplate) {
+        return new KpaCatalogue(jdbcTemplate);
     }
 
     /**

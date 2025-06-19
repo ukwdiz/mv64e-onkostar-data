@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -28,7 +29,7 @@ class KpaDiagnosisDataMapperTest {
     @BeforeEach
     void setUp(@Mock JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.dataMapper = new KpaDiagnosisDataMapper(jdbcTemplate);
+        this.dataMapper = KpaDiagnosisDataMapper.create(jdbcTemplate);
     }
 
     @Test
@@ -37,17 +38,10 @@ class KpaDiagnosisDataMapperTest {
     }
 
     @Test
-    void shouldUseKpaProcedureId(@Mock ResultSet resultSet) throws SQLException {
+    void shouldCreateDiagnosis(@Mock ResultSet resultSet) throws SQLException {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
-            switch (columnName) {
-                case "id":
-                    return "1";
-                case "icd10":
-                    return "F79.9";
-                default:
-                    return null;
-            }
+            return testData().get(columnName);
         }).when(resultSet).getString(anyString());
 
         doAnswer(invocationOnMock -> List.of(resultSet))
@@ -58,6 +52,13 @@ class KpaDiagnosisDataMapperTest {
         assertThat(actual).isInstanceOf(MtbDiagnosis.class);
         assertThat(actual.getId()).isEqualTo("1");
         assertThat(actual.getCode().getCode()).isEqualTo("F79.9");
+    }
+
+    private static Map<String, Object> testData() {
+        return Map.of(
+                "id", "1",
+                "icd10", "F79.9"
+        );
     }
 
 }

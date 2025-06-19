@@ -1,13 +1,11 @@
 package dev.pcvolkmer.onco.datamapper;
 
 import dev.pcvolkmer.mv64e.mtb.Coding;
-import dev.pcvolkmer.mv64e.mtb.Mtb;
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.Kpa;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.sql.SQLException;
 
 /**
@@ -20,18 +18,18 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
 
     private final JdbcTemplate jdbcTemplate;
 
-    KpaDiagnosisDataMapper(final JdbcTemplate jdbcTemplate) {
+    private KpaDiagnosisDataMapper(final JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
      * Create instance of the mapper class
      *
-     * @param dataSource The datasource to be used
+     * @param jdbcTemplate The Spring JdbcTemplate to be used
      * @return The initialized mapper
      */
-    public static KpaDiagnosisDataMapper create(final DataSource dataSource) {
-        return new KpaDiagnosisDataMapper(new JdbcTemplate(dataSource));
+    public static KpaDiagnosisDataMapper create(final JdbcTemplate jdbcTemplate) {
+        return new KpaDiagnosisDataMapper(jdbcTemplate);
     }
 
     /**
@@ -42,7 +40,7 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
      */
     @Override
     public MtbDiagnosis getById(int id) {
-        var kpa = Kpa.create(this.jdbcTemplate);
+        var kpa = KpaCatalogue.create(this.jdbcTemplate);
         var data = kpa.getById(id);
 
         var builder =  MtbDiagnosis.builder();

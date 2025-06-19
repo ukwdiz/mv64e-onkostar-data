@@ -8,6 +8,7 @@ version = "0.1.0-SNAPSHOT"
 
 var versions = mapOf(
     "mtb-dto" to "0.1.0-SNAPSHOT",
+    "slf4j" to "2.0.17",
     "junit" to "5.13.1",
     "assertj" to "3.27.3",
     "mockito" to "5.18.0"
@@ -46,6 +47,7 @@ dependencies {
             prefer("4.3.8.RELEASE")
         }
     }
+    implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
 
     testImplementation(platform("org.junit:junit-bom:${versions["junit"]}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
