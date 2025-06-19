@@ -54,11 +54,19 @@ public class MtbDataMapper implements DataMapper<Mtb> {
      */
     @Override
     public Mtb getById(int kpaId) {
+        var patientDataMapper = PatientDataMapper.create(jdbcTemplate);
+        var kpaPatientDataMapper = KpaPatientDataMapper.create(jdbcTemplate);
         var diagnosisDataMapper = KpaDiagnosisDataMapper.create(jdbcTemplate);
+
         var resultBuilder = Mtb.builder();
 
         try {
+            var kpaPatient = kpaPatientDataMapper.getById(kpaId);
+            var patient = patientDataMapper.getById(Integer.parseInt(kpaPatient.getId()));
+            kpaPatient.setAddress(patient.getAddress());
+
             resultBuilder
+                    .patient(kpaPatient)
                     .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)));
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);

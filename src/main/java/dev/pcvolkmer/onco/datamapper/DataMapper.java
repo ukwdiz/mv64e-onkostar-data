@@ -1,5 +1,7 @@
 package dev.pcvolkmer.onco.datamapper;
 
+import java.util.Date;
+
 /**
  * General interface for all data mappers
  *
@@ -15,5 +17,17 @@ public interface DataMapper<T> {
      * @return The data set to be loaded
      */
     T getById(int id);
+
+    /**
+     * Maps java.sql.Date to java.util.Date
+     * @param date
+     * @return
+     */
+    default Date mapDate(java.sql.Date date) {
+        if (date == null) {
+            return null;
+        }
+        return new Date(date.getTime());
+    }
 
 }

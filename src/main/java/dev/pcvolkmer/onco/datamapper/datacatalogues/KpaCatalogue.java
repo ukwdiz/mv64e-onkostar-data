@@ -30,7 +30,7 @@ public class KpaCatalogue {
      */
     public ResultSet getById(int id) {
         var result = this.jdbcTemplate.query(
-                "SELECT * FROM dk_dnpm_kpa id = ?",
+                "SELECT * FROM dk_dnpm_kpa JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) WHERE id = ?",
                 (resultSet, i) -> resultSet,
                 id);
 

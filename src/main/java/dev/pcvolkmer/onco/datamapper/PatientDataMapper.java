@@ -90,11 +90,4 @@ public class PatientDataMapper implements DataMapper<Patient> {
         return gkz.substring(0, 5);
     }
 
-    private Date mapDate(java.sql.Date date) {
-        if (date == null) {
-            return null;
-        }
-        return new Date(date.getTime());
-    }
-
 }
