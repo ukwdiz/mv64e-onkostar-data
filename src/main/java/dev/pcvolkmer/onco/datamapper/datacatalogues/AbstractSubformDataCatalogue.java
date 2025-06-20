@@ -2,8 +2,8 @@ package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Common implementations for all data catalogues used in subforms
@@ -25,14 +25,13 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
      * @param id The procedure id
      * @return The procedure id
      */
-    public List<ResultSet> getAllByMainId(int id) {
-        return this.jdbcTemplate.query(
+    public List<Map<String, Object>> getAllByMainId(int id) {
+        return this.jdbcTemplate.queryForList(
                 String.format(
                         "SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE geloescht = 0 AND hauptprozedur_id = ?",
                         getTableName(),
                         getTableName()
                 ),
-                (resultSet, i) -> resultSet,
                 id);
     }
 

@@ -1,6 +1,6 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
-import java.sql.ResultSet;
+import java.util.Map;
 
 /**
  * Common interface for all data catalogues
@@ -15,6 +15,6 @@ public interface DataCatalogue {
      * @param id The database id (primary key)
      * @return The result set
      */
-    ResultSet getById(int id);
+    Map<String, Object> getById(int id);
 
 }

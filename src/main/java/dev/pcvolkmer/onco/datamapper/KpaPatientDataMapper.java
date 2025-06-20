@@ -2,11 +2,12 @@ package dev.pcvolkmer.onco.datamapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
-import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
+
+import static dev.pcvolkmer.onco.datamapper.TypeMapper.asDate;
+import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
 
 /**
  * Mapper class to load and map patient data from database table 'dk_dnpm_kpa'
@@ -44,24 +45,19 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
         var kpaData = kpaCatalogue.getById(id);
 
         var builder = Patient.builder();
-        try {
-            builder
-                    .id(kpaData.getString("patient_id"))
-                    .gender(getGenderCoding(kpaData))
-                    .birthDate(mapDate(kpaData.getDate("geburtsdatum")))
-                    .dateOfDeath(mapDate(kpaData.getDate("sterbedatum")))
-                    .healthInsurance(getHealthInsurance(kpaData))
-            ;
-
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
+        builder
+                .id(asString(kpaData.get("patient_id")))
+                .gender(getGenderCoding(kpaData))
+                .birthDate(mapDate(asDate(kpaData.get("geburtsdatum"))))
+                .dateOfDeath(mapDate(asDate(kpaData.get("todesdatum"))))
+                .healthInsurance(getHealthInsurance(kpaData))
+        ;
         return builder.build();
     }
 
-    private GenderCoding getGenderCoding(ResultSet data) throws SQLException {
+    private GenderCoding getGenderCoding(Map<String, Object> data) {
         var genderCodingBuilder = GenderCoding.builder();
-        String geschlecht = data.getString("geschlecht");
+        String geschlecht = asString(data.get("geschlecht"));
         switch (geschlecht) {
             case "m":
                 genderCodingBuilder.code(GenderCodingCode.MALE);
@@ -79,9 +75,14 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
         return genderCodingBuilder.build();
     }
 
-    private HealthInsurance getHealthInsurance(ResultSet data) throws SQLException {
+    private HealthInsurance getHealthInsurance(Map<String, Object> data) {
         var healthInsuranceCodingBuilder = HealthInsuranceCoding.builder();
-        String healthInsuranceType = data.getString("artderkrankenkasse");
+        String healthInsuranceType = asString(data.get("artderkrankenkasse"));
+        if (healthInsuranceType == null) {
+            healthInsuranceCodingBuilder.code(HealthInsuranceCodingCode.UNK).build();
+            return HealthInsurance.builder().type(healthInsuranceCodingBuilder.build()).build();
+        }
+
         switch (healthInsuranceType) {
             case "GKV":
                 healthInsuranceCodingBuilder.code(HealthInsuranceCodingCode.GKV).build();

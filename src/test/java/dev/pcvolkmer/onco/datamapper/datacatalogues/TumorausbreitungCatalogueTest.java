@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -30,30 +31,30 @@ class TumorausbreitungCatalogueTest {
     }
 
     @Test
-    void shouldUseCorrectQuery(@Mock ResultSet resultSet) {
+    void shouldUseCorrectQuery(@Mock Map<String, Object> resultSet) {
         doAnswer(invocationOnMock -> List.of(resultSet))
                 .when(jdbcTemplate)
-                .query(anyString(), any(RowMapper.class), anyInt());
+                .queryForList(anyString(), anyInt());
 
         this.catalogue.getById(1);
 
         var captor = ArgumentCaptor.forClass(String.class);
-        verify(this.jdbcTemplate).query(captor.capture(), any(RowMapper.class), anyInt());
+        verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_uf_tumorausbreitung JOIN prozedur ON (prozedur.id = dk_dnpm_uf_tumorausbreitung.id) WHERE geloescht = 0 AND id = ?");
+                .isEqualTo("SELECT * FROM dk_dnpm_uf_tumorausbreitung JOIN prozedur ON (prozedur.id = dk_dnpm_uf_tumorausbreitung.id) WHERE geloescht = 0 AND prozedur.id = ?");
     }
 
     @Test
-    void shouldUseCorrectSubformQuery(@Mock ResultSet resultSet) {
+    void shouldUseCorrectSubformQuery(@Mock Map<String, Object> resultSet) {
         doAnswer(invocationOnMock -> List.of(resultSet))
                 .when(jdbcTemplate)
-                .query(anyString(), any(RowMapper.class), anyInt());
+                .queryForList(anyString(), anyInt());
 
         this.catalogue.getAllByMainId(1);
 
         var captor = ArgumentCaptor.forClass(String.class);
-        verify(this.jdbcTemplate).query(captor.capture(), any(RowMapper.class), anyInt());
+        verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
                 .isEqualTo("SELECT * FROM dk_dnpm_uf_tumorausbreitung JOIN prozedur ON (prozedur.id = dk_dnpm_uf_tumorausbreitung.id) WHERE geloescht = 0 AND hauptprozedur_id = ?");

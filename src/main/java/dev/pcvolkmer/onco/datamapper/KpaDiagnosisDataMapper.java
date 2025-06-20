@@ -3,10 +3,9 @@ package dev.pcvolkmer.onco.datamapper;
 import dev.pcvolkmer.mv64e.mtb.Coding;
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
-import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.SQLException;
+import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
 
 /**
  * Mapper class to load and map diagnosis data from database table 'dk_dnpm_kpa'
@@ -44,17 +43,13 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
         var data = kpa.getById(id);
 
         var builder =  MtbDiagnosis.builder();
-        try {
-            builder
-                    .id(data.getString("id"))
-                    .code(
-                            Coding.builder()
-                                    .code(data.getString("icd10"))
-                                    .build()
-                    );
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
+        builder
+                .id(asString(data.get("id")))
+                .code(
+                        Coding.builder()
+                                .code(asString(data.get("icd10")))
+                                .build()
+                );
         return builder.build();
     }
 

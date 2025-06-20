@@ -3,7 +3,7 @@ package dev.pcvolkmer.onco.datamapper.datacatalogues;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.ResultSet;
+import java.util.Map;
 
 /**
  * Common implementations for all data catalogues
@@ -28,14 +28,13 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
      * @return The procedure id
      */
     @Override
-    public ResultSet getById(int id) {
-        var result = this.jdbcTemplate.query(
+    public Map<String, Object> getById(int id) {
+        var result = this.jdbcTemplate.queryForList(
                 String.format(
                         "SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE geloescht = 0 AND prozedur.id = ?",
                         getTableName(),
                         getTableName()
                 ),
-                (resultSet, i) -> resultSet,
                 id);
 
         if (result.isEmpty()) {

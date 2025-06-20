@@ -3,7 +3,7 @@ package dev.pcvolkmer.onco.datamapper.datacatalogues;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.ResultSet;
+import java.util.Map;
 
 /**
  * Load raw result sets from database table 'patient'
@@ -11,7 +11,7 @@ import java.sql.ResultSet;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class PatientCatalogue {
+public class PatientCatalogue implements DataCatalogue {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -28,10 +28,11 @@ public class PatientCatalogue {
      * @param id The procedure id
      * @return The procedure id
      */
-    public ResultSet getById(int id) {
-        var result = this.jdbcTemplate.query(
+    @Override
+    public Map<String, Object> getById(int id) {
+
+        var result = this.jdbcTemplate.queryForList(
                 "SELECT * FROM patient WHERE id = ?",
-                (resultSet, i) -> resultSet,
                 id);
 
         if (result.isEmpty()) {

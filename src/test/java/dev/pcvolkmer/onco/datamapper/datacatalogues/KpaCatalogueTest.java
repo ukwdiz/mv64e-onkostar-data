@@ -7,13 +7,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
-import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
@@ -30,18 +30,18 @@ class KpaCatalogueTest {
     }
 
     @Test
-    void shouldUseCorrectQuery(@Mock ResultSet resultSet) {
+    void shouldUseCorrectQuery(@Mock Map<String, Object> resultSet) {
         doAnswer(invocationOnMock -> List.of(resultSet))
                 .when(jdbcTemplate)
-                .query(anyString(), any(RowMapper.class), anyInt());
+                .queryForList(anyString(), anyInt());
 
         this.catalogue.getById(1);
 
         var captor = ArgumentCaptor.forClass(String.class);
-        verify(this.jdbcTemplate).query(captor.capture(), any(RowMapper.class), anyInt());
+        verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_kpa JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) WHERE geloescht = 0 AND id = ?");
+                .isEqualTo("SELECT * FROM dk_dnpm_kpa JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) WHERE geloescht = 0 AND prozedur.id = ?");
     }
 
 }

@@ -9,10 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Date;
@@ -20,7 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +41,7 @@ class PatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientAlive(@Mock ResultSet resultSet) throws SQLException {
+    void shouldCreatePatientAlive(@Mock Map<String, Object> resultSet) throws SQLException {
         var testData = Map.of(
                 "id", "1",
                 "geschlecht", "M",
@@ -54,16 +53,11 @@ class PatientDataMapperTest {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData.get(columnName);
-        }).when(resultSet).getString(anyString());
-
-        doAnswer(invocationOnMock -> {
-            var columnName = invocationOnMock.getArgument(0, String.class);
-            return testData.get(columnName);
-        }).when(resultSet).getDate(anyString());
+        }).when(resultSet).get(anyString());
 
         doAnswer(invocationOnMock -> List.of(resultSet))
                 .when(jdbcTemplate)
-                .query(anyString(), any(RowMapper.class), anyInt());
+                .queryForList(anyString(), anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
@@ -75,7 +69,7 @@ class PatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientDead(@Mock ResultSet resultSet) throws SQLException {
+    void shouldCreatePatientDead(@Mock Map<String, Object> resultSet) throws SQLException {
         var testData = Map.of(
                 "id", "1",
                 "geschlecht", "M",
@@ -86,16 +80,11 @@ class PatientDataMapperTest {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData.get(columnName);
-        }).when(resultSet).getString(anyString());
-
-        doAnswer(invocationOnMock -> {
-            var columnName = invocationOnMock.getArgument(0, String.class);
-            return testData.get(columnName);
-        }).when(resultSet).getDate(anyString());
+        }).when(resultSet).get(anyString());
 
         doAnswer(invocationOnMock -> List.of(resultSet))
                 .when(jdbcTemplate)
-                .query(anyString(), any(RowMapper.class), anyInt());
+                .queryForList(anyString(), anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
