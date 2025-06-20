@@ -27,7 +27,11 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
      */
     public List<ResultSet> getAllByMainId(int id) {
         return this.jdbcTemplate.query(
-                String.format("SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE hauptprozedur_id = ?", getTableName(), getTableName()),
+                String.format(
+                        "SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE geloescht = 0 AND hauptprozedur_id = ?",
+                        getTableName(),
+                        getTableName()
+                ),
                 (resultSet, i) -> resultSet,
                 id);
     }

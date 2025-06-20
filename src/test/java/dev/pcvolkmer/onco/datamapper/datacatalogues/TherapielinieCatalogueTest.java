@@ -41,7 +41,7 @@ class TherapielinieCatalogueTest {
         verify(this.jdbcTemplate).query(captor.capture(), any(RowMapper.class), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_therapielinie JOIN prozedur ON (prozedur.id = dk_dnpm_therapielinie.id) WHERE id = ?");
+                .isEqualTo("SELECT * FROM dk_dnpm_therapielinie JOIN prozedur ON (prozedur.id = dk_dnpm_therapielinie.id) WHERE geloescht = 0 AND id = ?");
     }
 
 }

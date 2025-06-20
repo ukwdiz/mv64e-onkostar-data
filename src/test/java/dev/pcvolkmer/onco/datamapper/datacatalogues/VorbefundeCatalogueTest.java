@@ -41,7 +41,7 @@ class VorbefundeCatalogueTest {
         verify(this.jdbcTemplate).query(captor.capture(), any(RowMapper.class), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_uf_vorbefunde JOIN prozedur ON (prozedur.id = dk_dnpm_uf_vorbefunde.id) WHERE id = ?");
+                .isEqualTo("SELECT * FROM dk_dnpm_uf_vorbefunde JOIN prozedur ON (prozedur.id = dk_dnpm_uf_vorbefunde.id) WHERE geloescht = 0 AND id = ?");
     }
 
 }

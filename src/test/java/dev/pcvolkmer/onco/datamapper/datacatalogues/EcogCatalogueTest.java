@@ -41,7 +41,7 @@ class EcogCatalogueTest {
         verify(this.jdbcTemplate).query(captor.capture(), any(RowMapper.class), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_uf_ecog JOIN prozedur ON (prozedur.id = dk_dnpm_uf_ecog.id) WHERE id = ?");
+                .isEqualTo("SELECT * FROM dk_dnpm_uf_ecog JOIN prozedur ON (prozedur.id = dk_dnpm_uf_ecog.id) WHERE geloescht = 0 AND id = ?");
     }
 
 }
