@@ -3,20 +3,21 @@ package dev.pcvolkmer.onco.datamapper.datacatalogues;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.ResultSet;
-
 /**
  * Load raw result sets from database table 'dk_dnpm_kpa'
  *
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaCatalogue {
-
-    private final JdbcTemplate jdbcTemplate;
+public class KpaCatalogue extends AbstractDataCatalogue {
 
     private KpaCatalogue(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        super(jdbcTemplate);
+    }
+
+    @Override
+    protected String getTableName() {
+        return "dk_dnpm_kpa";
     }
 
     public static KpaCatalogue create(JdbcTemplate jdbcTemplate) {
@@ -24,27 +25,8 @@ public class KpaCatalogue {
     }
 
     /**
-     * Get procedure result set by procedure id
-     * @param id The procedure id
-     * @return The procedure id
-     */
-    public ResultSet getById(int id) {
-        var result = this.jdbcTemplate.query(
-                "SELECT * FROM dk_dnpm_kpa JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) WHERE id = ?",
-                (resultSet, i) -> resultSet,
-                id);
-
-        if (result.isEmpty()) {
-            throw new DataAccessException("No record found for id: " + id);
-        } else if (result.size() > 1) {
-            throw new DataAccessException("Multiple records found for id: " + id);
-        }
-
-        return result.get(0);
-    }
-
-    /**
      * Get procedure database id by case id
+     *
      * @param caseId The case id
      * @return The procedure id
      */
@@ -65,6 +47,7 @@ public class KpaCatalogue {
 
     /**
      * Get patient database id by case id
+     *
      * @param caseId The case id
      * @return The patients database id
      */
