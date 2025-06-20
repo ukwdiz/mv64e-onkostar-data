@@ -2,6 +2,7 @@ package dev.pcvolkmer.onco.datamapper;
 
 import dev.pcvolkmer.mv64e.mtb.Mtb;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +55,10 @@ public class MtbDataMapper implements DataMapper<Mtb> {
      */
     @Override
     public Mtb getById(int kpaId) {
-        var patientDataMapper = PatientDataMapper.create(jdbcTemplate);
-        var kpaPatientDataMapper = KpaPatientDataMapper.create(jdbcTemplate);
-        var diagnosisDataMapper = KpaDiagnosisDataMapper.create(jdbcTemplate);
+        var kpaCatalogue = KpaCatalogue.create(jdbcTemplate);
+        var patientDataMapper = new PatientDataMapper(new PatientCatalogue(jdbcTemplate));
+        var kpaPatientDataMapper = new KpaPatientDataMapper(kpaCatalogue);
+        var diagnosisDataMapper = new KpaDiagnosisDataMapper(kpaCatalogue);
 
         var resultBuilder = Mtb.builder();
 

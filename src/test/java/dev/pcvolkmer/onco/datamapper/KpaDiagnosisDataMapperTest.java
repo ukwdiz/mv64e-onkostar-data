@@ -1,12 +1,12 @@
 package dev.pcvolkmer.onco.datamapper;
 
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -20,14 +20,14 @@ import static org.mockito.Mockito.doAnswer;
 @ExtendWith(MockitoExtension.class)
 class KpaDiagnosisDataMapperTest {
 
-    JdbcTemplate jdbcTemplate;
+    KpaCatalogue kpaCatalogue;
 
     KpaDiagnosisDataMapper dataMapper;
 
     @BeforeEach
-    void setUp(@Mock JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.dataMapper = KpaDiagnosisDataMapper.create(jdbcTemplate);
+    void setUp(@Mock KpaCatalogue kpaCatalogue) {
+        this.kpaCatalogue = kpaCatalogue;
+        this.dataMapper = new KpaDiagnosisDataMapper(kpaCatalogue);
     }
 
     @Test
@@ -42,9 +42,9 @@ class KpaDiagnosisDataMapperTest {
             return testData().get(columnName);
         }).when(resultSet).get(anyString());
 
-        doAnswer(invocationOnMock -> List.of(resultSet))
-                .when(jdbcTemplate)
-                .queryForList(anyString(), anyInt());
+        doAnswer(invocationOnMock -> resultSet)
+                .when(kpaCatalogue)
+                .getById(anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(MtbDiagnosis.class);

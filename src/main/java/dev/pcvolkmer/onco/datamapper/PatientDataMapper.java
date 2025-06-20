@@ -6,7 +6,6 @@ import dev.pcvolkmer.mv64e.mtb.GenderCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Patient;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Map;
 
@@ -21,20 +20,10 @@ import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
  */
 public class PatientDataMapper implements DataMapper<Patient> {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final PatientCatalogue patientCatalogue;
 
-    private PatientDataMapper(final JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    /**
-     * Create instance of the mapper class
-     *
-     * @param jdbcTemplate The Spring JdbcTemplate to be used
-     * @return The initialized mapper
-     */
-    public static PatientDataMapper create(final JdbcTemplate jdbcTemplate) {
-        return new PatientDataMapper(jdbcTemplate);
+    public PatientDataMapper(final PatientCatalogue patientCatalogue) {
+        this.patientCatalogue = patientCatalogue;
     }
 
     /**
@@ -45,7 +34,6 @@ public class PatientDataMapper implements DataMapper<Patient> {
      */
     @Override
     public Patient getById(int id) {
-        var patientCatalogue = PatientCatalogue.create(this.jdbcTemplate);
         var patientData = patientCatalogue.getById(id);
 
         var builder = Patient.builder();

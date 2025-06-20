@@ -1,17 +1,16 @@
 package dev.pcvolkmer.onco.datamapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,14 +21,14 @@ import static org.mockito.Mockito.doAnswer;
 @ExtendWith(MockitoExtension.class)
 class KpaPatientDataMapperTest {
 
-    JdbcTemplate jdbcTemplate;
+    KpaCatalogue kpaCatalogue;
 
     KpaPatientDataMapper dataMapper;
 
     @BeforeEach
-    void setUp(@Mock JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.dataMapper = KpaPatientDataMapper.create(jdbcTemplate);
+    void setUp(@Mock KpaCatalogue kpaCatalogue) {
+        this.kpaCatalogue = kpaCatalogue;
+        this.dataMapper = new KpaPatientDataMapper(kpaCatalogue);
     }
 
     @Test
@@ -52,9 +51,9 @@ class KpaPatientDataMapperTest {
             return testData.get(columnName);
         }).when(resultSet).get(anyString());
 
-        doAnswer(invocationOnMock -> List.of(resultSet))
-                .when(jdbcTemplate)
-                .queryForList(anyString(), anyInt());
+        doAnswer(invocationOnMock -> resultSet)
+                .when(kpaCatalogue)
+                .getById(anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
@@ -81,9 +80,9 @@ class KpaPatientDataMapperTest {
             return testData.get(columnName);
         }).when(resultSet).get(anyString());
 
-        doAnswer(invocationOnMock -> List.of(resultSet))
-                .when(jdbcTemplate)
-                .queryForList(anyString(), anyInt());
+        doAnswer(invocationOnMock -> resultSet)
+                .when(kpaCatalogue)
+                .getById(anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);

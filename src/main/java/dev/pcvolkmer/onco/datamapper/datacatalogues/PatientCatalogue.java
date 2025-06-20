@@ -15,7 +15,7 @@ public class PatientCatalogue implements DataCatalogue {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private PatientCatalogue(JdbcTemplate jdbcTemplate) {
+    public PatientCatalogue(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

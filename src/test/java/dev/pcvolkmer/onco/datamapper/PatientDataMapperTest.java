@@ -3,15 +3,14 @@ package dev.pcvolkmer.onco.datamapper;
 import dev.pcvolkmer.mv64e.mtb.Address;
 import dev.pcvolkmer.mv64e.mtb.GenderCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Patient;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -25,14 +24,14 @@ import static org.mockito.Mockito.doAnswer;
 @ExtendWith(MockitoExtension.class)
 class PatientDataMapperTest {
 
-    JdbcTemplate jdbcTemplate;
+    PatientCatalogue patientCatalogue;
 
     PatientDataMapper dataMapper;
 
     @BeforeEach
-    void setUp(@Mock JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.dataMapper = PatientDataMapper.create(jdbcTemplate);
+    void setUp(@Mock PatientCatalogue patientCatalogue) {
+        this.patientCatalogue = patientCatalogue;
+        this.dataMapper = new PatientDataMapper(patientCatalogue);
     }
 
     @Test
@@ -55,9 +54,9 @@ class PatientDataMapperTest {
             return testData.get(columnName);
         }).when(resultSet).get(anyString());
 
-        doAnswer(invocationOnMock -> List.of(resultSet))
-                .when(jdbcTemplate)
-                .queryForList(anyString(), anyInt());
+        doAnswer(invocationOnMock -> resultSet)
+                .when(patientCatalogue)
+                .getById(anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
@@ -82,9 +81,9 @@ class PatientDataMapperTest {
             return testData.get(columnName);
         }).when(resultSet).get(anyString());
 
-        doAnswer(invocationOnMock -> List.of(resultSet))
-                .when(jdbcTemplate)
-                .queryForList(anyString(), anyInt());
+        doAnswer(invocationOnMock -> resultSet)
+                .when(patientCatalogue)
+                .getById(anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);

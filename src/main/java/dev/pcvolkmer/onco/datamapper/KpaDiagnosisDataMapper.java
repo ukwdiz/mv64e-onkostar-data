@@ -3,7 +3,6 @@ package dev.pcvolkmer.onco.datamapper;
 import dev.pcvolkmer.mv64e.mtb.Coding;
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
 
@@ -15,20 +14,10 @@ import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
  */
 public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final KpaCatalogue kpaCatalogue;
 
-    private KpaDiagnosisDataMapper(final JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    /**
-     * Create instance of the mapper class
-     *
-     * @param jdbcTemplate The Spring JdbcTemplate to be used
-     * @return The initialized mapper
-     */
-    public static KpaDiagnosisDataMapper create(final JdbcTemplate jdbcTemplate) {
-        return new KpaDiagnosisDataMapper(jdbcTemplate);
+    public KpaDiagnosisDataMapper(final KpaCatalogue kpaCatalogue) {
+        this.kpaCatalogue = kpaCatalogue;
     }
 
     /**
@@ -39,8 +28,7 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
      */
     @Override
     public MtbDiagnosis getById(int id) {
-        var kpa = KpaCatalogue.create(this.jdbcTemplate);
-        var data = kpa.getById(id);
+        var data = kpaCatalogue.getById(id);
 
         var builder =  MtbDiagnosis.builder();
         builder
