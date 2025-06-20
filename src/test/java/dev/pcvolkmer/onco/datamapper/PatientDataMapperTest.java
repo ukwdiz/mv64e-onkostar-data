@@ -41,7 +41,7 @@ class PatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientAlive(@Mock Map<String, Object> resultSet) throws SQLException {
+    void shouldCreatePatientAlive(@Mock Map<String, Object> resultSet) {
         var testData = Map.of(
                 "id", "1",
                 "geschlecht", "M",
@@ -69,7 +69,7 @@ class PatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientDead(@Mock Map<String, Object> resultSet) throws SQLException {
+    void shouldCreatePatientDead(@Mock Map<String, Object> resultSet) {
         var testData = Map.of(
                 "id", "1",
                 "geschlecht", "M",
