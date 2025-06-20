@@ -30,7 +30,7 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
     @Override
     public ResultSet getById(int id) {
         var result = this.jdbcTemplate.query(
-                String.format("SELECT * FROM %s JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) WHERE id = ?", getTableName()),
+                String.format("SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE id = ?", getTableName(), getTableName()),
                 (resultSet, i) -> resultSet,
                 id);
 
