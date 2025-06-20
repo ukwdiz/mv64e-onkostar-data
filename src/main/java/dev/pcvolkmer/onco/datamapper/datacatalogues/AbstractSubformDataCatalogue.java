@@ -1,6 +1,5 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
-import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.ResultSet;
@@ -27,16 +26,10 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
      * @return The procedure id
      */
     public List<ResultSet> getAllByMainId(int id) {
-        var result = this.jdbcTemplate.query(
+        return this.jdbcTemplate.query(
                 String.format("SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE hauptprozedur_id = ?", getTableName(), getTableName()),
                 (resultSet, i) -> resultSet,
                 id);
-
-        if (result.isEmpty()) {
-            throw new DataAccessException("No record found for parent id: " + id);
-        }
-
-        return result;
     }
 
 }
