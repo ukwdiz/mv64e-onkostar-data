@@ -33,7 +33,7 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
                 id);
 
         if (result.isEmpty()) {
-            throw new DataAccessException("No record found for id: " + id);
+            throw new DataAccessException("No record found for parent id: " + id);
         }
 
         return result;
