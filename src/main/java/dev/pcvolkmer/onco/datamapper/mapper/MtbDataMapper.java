@@ -1,7 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Mtb;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.CatalogueFactory;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.DataCatalogueFactory;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
@@ -22,10 +22,10 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final CatalogueFactory catalogueFactory;
+    private final DataCatalogueFactory catalogueFactory;
 
     MtbDataMapper(final JdbcTemplate jdbcTemplate) {
-        this.catalogueFactory = CatalogueFactory.instance(jdbcTemplate);
+        this.catalogueFactory = DataCatalogueFactory.initialize(jdbcTemplate);
     }
 
     /**

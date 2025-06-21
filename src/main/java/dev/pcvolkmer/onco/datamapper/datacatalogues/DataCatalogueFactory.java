@@ -1,5 +1,6 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
+import dev.pcvolkmer.onco.datamapper.exceptions.DataCatalogueCreationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.HashMap;
@@ -11,24 +12,38 @@ import java.util.Map;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class CatalogueFactory {
+public class DataCatalogueFactory {
 
     private final JdbcTemplate jdbcTemplate;
     private final Map<Class<? extends DataCatalogue>, DataCatalogue> catalogues = new HashMap<>();
 
-    private CatalogueFactory(JdbcTemplate jdbcTemplate) {
+    private DataCatalogueFactory(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private static CatalogueFactory obj;
+    private static DataCatalogueFactory obj;
 
-    public static synchronized CatalogueFactory instance(final JdbcTemplate jdbcTemplate) {
+    public static synchronized DataCatalogueFactory initialize(final JdbcTemplate jdbcTemplate) {
         if (null == obj) {
-            obj = new CatalogueFactory(jdbcTemplate);
+            obj = new DataCatalogueFactory(jdbcTemplate);
         }
         return obj;
     }
 
+    public static synchronized DataCatalogueFactory instance() {
+        if (null == obj) {
+            throw new IllegalStateException("CatalogueFactory not initialized");
+        }
+        return obj;
+    }
+
+    /**
+     * Get Catalogue of required type
+     *
+     * @param clazz The catalogues class
+     * @param <T>   The catalogue type
+     * @return The catalogue if it exists
+     */
     @SuppressWarnings("unchecked")
     public synchronized <T extends DataCatalogue> T catalogue(Class<T> clazz) {
         return (T) catalogues.computeIfAbsent(clazz, c -> {
@@ -53,8 +68,18 @@ public class CatalogueFactory {
             } else if (c == VorbefundeCatalogue.class) {
                 return VorbefundeCatalogue.create(jdbcTemplate);
             }
-            throw new RuntimeException("Unknown DataCatalogue class: " + clazz);
+            throw new DataCatalogueCreationException(clazz);
         });
+    }
+
+    /**
+     * Checks if a catalogue of this type is available
+     *
+     * @param clazz The catalogues class
+     * @return true if it is available
+     */
+    public synchronized boolean hasCatalogue(Class<? extends DataCatalogue> clazz) {
+        return catalogues.containsKey(clazz);
     }
 
 }
