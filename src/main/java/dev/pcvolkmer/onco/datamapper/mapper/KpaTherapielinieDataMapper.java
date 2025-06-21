@@ -1,11 +1,11 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.mv64e.mtb.MtbSystemicTherapy;
+import dev.pcvolkmer.mv64e.mtb.PeriodDate;
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaTherapielinieDataMapper implements SubformDataMapper<MtbSystemicTherapy> {
+public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMapper<MtbSystemicTherapy> {
 
     private final TherapielinieCatalogue catalogue;
 
@@ -72,114 +72,5 @@ public class KpaTherapielinieDataMapper implements SubformDataMapper<MtbSystemic
         return builder.build();
     }
 
-    private MtbTherapyIntentCoding getMtbTherapyIntentCoding(String value) {
-        if (value == null || !Arrays.stream(MtbTherapyIntentCodingCode.values()).map(MtbTherapyIntentCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
-            return null;
-        }
-
-        var resultBuilder = MtbTherapyIntentCoding.builder();
-
-        switch (value) {
-            case "X":
-                resultBuilder.code(MtbTherapyIntentCodingCode.X);
-                break;
-            case "K":
-                resultBuilder.code(MtbTherapyIntentCodingCode.K);
-                break;
-            case "P":
-                resultBuilder.code(MtbTherapyIntentCodingCode.P);
-                break;
-            case "S":
-                resultBuilder.code(MtbTherapyIntentCodingCode.S);
-                break;
-        }
-
-        return resultBuilder.build();
-    }
-
-    private TherapyStatusCoding getTherapyStatusCoding(String value) {
-        if (value == null || !Arrays.stream(TherapyStatusCodingCode.values()).map(TherapyStatusCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
-            return null;
-        }
-
-        var resultBuilder = TherapyStatusCoding.builder();
-
-        switch (value) {
-            case "not-done":
-                resultBuilder.code(TherapyStatusCodingCode.NOT_DONE);
-                break;
-            case "on-going":
-                resultBuilder.code(TherapyStatusCodingCode.ON_GOING);
-                break;
-            case "stopped":
-                resultBuilder.code(TherapyStatusCodingCode.STOPPED);
-                break;
-            case "completed":
-                resultBuilder.code(TherapyStatusCodingCode.COMPLETED);
-                break;
-        }
-
-        return resultBuilder.build();
-    }
-
-    private MtbTherapyStatusReasonCoding getMtbTherapyStatusReasonCoding(String value) {
-        if (value == null || !Arrays.stream(MtbTherapyStatusReasonCodingCode.values()).map(MtbTherapyStatusReasonCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
-            return null;
-        }
-
-        var resultBuilder = MtbTherapyStatusReasonCoding.builder();
-        try {
-            resultBuilder.code(MtbTherapyStatusReasonCodingCode.forValue(value));
-        } catch (IOException e) {
-            return null;
-        }
-
-        return resultBuilder.build();
-    }
-
-    private MtbSystemicTherapyRecommendationFulfillmentStatusCoding getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(String value) {
-        if (value == null || !Arrays.stream(MtbSystemicTherapyRecommendationFulfillmentStatusCodingCode.values()).map(MtbSystemicTherapyRecommendationFulfillmentStatusCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
-            return null;
-        }
-
-        var resultBuilder = MtbSystemicTherapyRecommendationFulfillmentStatusCoding.builder();
-        try {
-            resultBuilder.code(MtbSystemicTherapyRecommendationFulfillmentStatusCodingCode.forValue(value));
-        } catch (IOException e) {
-            return null;
-        }
-
-        return resultBuilder.build();
-    }
-
-    private MtbSystemicTherapyCategoryCoding getMtbSystemicTherapyCategoryCoding(String value) {
-        if (value == null || !Arrays.stream(MtbSystemicTherapyCategoryCodingCode.values()).map(MtbSystemicTherapyCategoryCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
-            return null;
-        }
-
-        var resultBuilder = MtbSystemicTherapyCategoryCoding.builder();
-        try {
-            resultBuilder.code(MtbSystemicTherapyCategoryCodingCode.forValue(value));
-        } catch (IOException e) {
-            return null;
-        }
-
-        return resultBuilder.build();
-    }
-
-    private MtbSystemicTherapyDosageDensityCoding getMtbSystemicTherapyDosageDensityCoding(String value) {
-        if (value == null || !Arrays.stream(MtbSystemicTherapyDosageDensityCodingCode.values()).map(MtbSystemicTherapyDosageDensityCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
-            return null;
-        }
-
-        var resultBuilder = MtbSystemicTherapyDosageDensityCoding.builder();
-        try {
-            resultBuilder.code(MtbSystemicTherapyDosageDensityCodingCode.forValue(value));
-        } catch (IOException e) {
-            return null;
-        }
-
-        return resultBuilder.build();
-    }
 
 }
