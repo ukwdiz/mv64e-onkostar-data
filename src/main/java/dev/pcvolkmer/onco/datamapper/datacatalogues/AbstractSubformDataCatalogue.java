@@ -21,12 +21,12 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
     protected abstract String getTableName();
 
     /**
-     * Get procedure result sets by main procedure id
+     * Get procedure result sets by parent procedure id
      *
-     * @param id The procedure id
-     * @return The procedure id
+     * @param id The parents procedure id
+     * @return The sub procedures
      */
-    public List<ResultSet> getAllByMainId(int id) {
+    public List<ResultSet> getAllByParentId(int id) {
         return this.jdbcTemplate.queryForList(
                         String.format(
                                 "SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE geloescht = 0 AND hauptprozedur_id = ?",

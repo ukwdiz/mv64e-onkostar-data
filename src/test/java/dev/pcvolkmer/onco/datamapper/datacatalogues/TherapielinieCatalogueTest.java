@@ -50,7 +50,7 @@ class TherapielinieCatalogueTest {
                 .when(jdbcTemplate)
                 .queryForList(anyString(), anyInt());
 
-        this.catalogue.getAllByMainId(1);
+        this.catalogue.getAllByParentId(1);
 
         var captor = ArgumentCaptor.forClass(String.class);
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());

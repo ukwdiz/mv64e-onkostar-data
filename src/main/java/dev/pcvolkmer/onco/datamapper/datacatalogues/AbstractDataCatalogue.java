@@ -4,6 +4,9 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Common implementations for all data catalogues
  *
@@ -45,4 +48,21 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
         return ResultSet.from(result.get(0));
     }
 
+    /**
+     * Returns related diseases
+     * @param procedureId The procedure id
+     * @return the diseases
+     */
+    public List<ResultSet> getDiseases(int procedureId) {
+        return this.jdbcTemplate.queryForList(
+                        String.format(
+                                "SELECT * FROM erkrankung_prozedur JOIN erkrankung ON (erkrankung.id = erkrankung_prozedur.erkrankung.id) WHERE erkrankung_prozedur.prozedur_id = ?",
+                                getTableName(),
+                                getTableName()
+                        ),
+                        procedureId)
+                .stream()
+                .map(ResultSet::from)
+                .collect(Collectors.toList());
+    }
 }

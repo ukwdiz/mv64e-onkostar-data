@@ -27,6 +27,13 @@ class ResultSetTest {
     }
 
     @Test
+    void shouldReturnLongValues() {
+        var data = getTestData();
+
+        assertThat(data.getLong("int")).isEqualTo(42L);
+    }
+
+    @Test
     void shouldReturnDateValues() {
         var data = getTestData();
 

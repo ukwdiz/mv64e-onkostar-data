@@ -4,6 +4,7 @@ import dev.pcvolkmer.mv64e.mtb.Mtb;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.DataCatalogueFactory;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
         var patientDataMapper = new PatientDataMapper(catalogueFactory.catalogue(PatientCatalogue.class));
         var kpaPatientDataMapper = new KpaPatientDataMapper(kpaCatalogue);
         var diagnosisDataMapper = new KpaDiagnosisDataMapper(kpaCatalogue);
+        var prozedurMapper = new KpaProzedurDataMapper(catalogueFactory.catalogue(ProzedurCatalogue.class));
 
         var resultBuilder = Mtb.builder();
 
@@ -70,7 +72,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
             resultBuilder
                     .patient(kpaPatient)
-                    .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)));
+                    .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)))
+                    .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
+            ;
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);
         }
