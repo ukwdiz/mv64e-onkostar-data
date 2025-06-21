@@ -4,8 +4,6 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Map;
-
 /**
  * Common implementations for all data catalogues
  *

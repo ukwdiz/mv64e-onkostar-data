@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Mtb;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.CatalogueFactory;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
@@ -21,10 +22,10 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final JdbcTemplate jdbcTemplate;
+    private final CatalogueFactory catalogueFactory;
 
     MtbDataMapper(final JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.catalogueFactory = CatalogueFactory.instance(jdbcTemplate);
     }
 
     /**
@@ -55,8 +56,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
      */
     @Override
     public Mtb getById(int kpaId) {
-        var kpaCatalogue = KpaCatalogue.create(jdbcTemplate);
-        var patientDataMapper = new PatientDataMapper(new PatientCatalogue(jdbcTemplate));
+        var kpaCatalogue = catalogueFactory.catalogue(KpaCatalogue.class);
+        var patientDataMapper = new PatientDataMapper(catalogueFactory.catalogue(PatientCatalogue.class));
         var kpaPatientDataMapper = new KpaPatientDataMapper(kpaCatalogue);
         var diagnosisDataMapper = new KpaDiagnosisDataMapper(kpaCatalogue);
 
@@ -84,9 +85,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
      * @return The loaded Mtb file
      */
     public Mtb getByCaseId(String caseId) {
-        var kpa = KpaCatalogue.create(this.jdbcTemplate);
         return this.getById(
-                kpa.getProcedureIdByCaseId(caseId)
+                this.catalogueFactory.catalogue(KpaCatalogue.class).getProcedureIdByCaseId(caseId)
         );
     }
 }

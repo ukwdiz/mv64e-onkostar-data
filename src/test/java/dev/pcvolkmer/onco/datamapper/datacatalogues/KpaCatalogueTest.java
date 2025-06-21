@@ -1,5 +1,6 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
+import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,13 +8,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
@@ -42,6 +44,15 @@ class KpaCatalogueTest {
 
         assertThat(captor.getValue())
                 .isEqualTo("SELECT * FROM dk_dnpm_kpa JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) WHERE geloescht = 0 AND prozedur.id = ?");
+    }
+
+    @Test
+    void shouldThrowExceptionIfNoKpaProcedureFound() {
+        doAnswer(invocationOnMock -> List.of())
+                .when(jdbcTemplate).query(anyString(), any(RowMapper.class), anyString());
+
+        var ex = assertThrows(DataAccessException.class, () -> catalogue.getProcedureIdByCaseId("16000123"));
+        assertThat(ex).hasMessage("No record found for case: 16000123");
     }
 
 }
