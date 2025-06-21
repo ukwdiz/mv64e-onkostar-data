@@ -1,4 +1,4 @@
-package dev.pcvolkmer.onco.datamapper;
+package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.junit.jupiter.api.BeforeEach;

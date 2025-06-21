@@ -1,4 +1,4 @@
-package dev.pcvolkmer.onco.datamapper;
+package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Coding;
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
