@@ -56,7 +56,7 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
     public List<ResultSet> getDiseases(int procedureId) {
         return this.jdbcTemplate.queryForList(
                         String.format(
-                                "SELECT * FROM erkrankung_prozedur JOIN erkrankung ON (erkrankung.id = erkrankung_prozedur.erkrankung.id) WHERE erkrankung_prozedur.prozedur_id = ?",
+                                "SELECT * FROM erkrankung_prozedur JOIN erkrankung ON (erkrankung.id = erkrankung_prozedur.erkrankung_id) WHERE erkrankung_prozedur.prozedur_id = ?",
                                 getTableName(),
                                 getTableName()
                         ),

@@ -33,7 +33,7 @@ public class ResultSet {
      * @return The procedure id if any
      */
     public Integer getProcedureId() {
-        var procedureId = this.getInteger("procedure.id");
+        var procedureId = this.getInteger("id");
         if (procedureId == null) {
             throw new DataAccessException("No procedure id found");
         }
@@ -46,7 +46,7 @@ public class ResultSet {
      * @return The procedure id if any
      */
     public Integer getDiseaseId() {
-        var diseaseId = this.getInteger("erkrankung.id");
+        var diseaseId = this.getInteger("id");
         if (diseaseId == null) {
             throw new DataAccessException("No disease id found");
         }
