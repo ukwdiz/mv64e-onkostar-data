@@ -1,13 +1,10 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.mv64e.mtb.OncoProcedure;
+import dev.pcvolkmer.mv64e.mtb.PeriodDate;
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_prozedur'
@@ -17,10 +14,8 @@ import java.util.stream.Collectors;
  */
 public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<OncoProcedure> {
 
-    private final ProzedurCatalogue catalogue;
-
     public KpaProzedurDataMapper(final ProzedurCatalogue catalogue) {
-        this.catalogue = catalogue;
+        super(catalogue);
     }
 
     /**
@@ -36,14 +31,7 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
     }
 
     @Override
-    public List<OncoProcedure> getByParentId(final int parentId) {
-        return catalogue.getAllByParentId(parentId)
-                .stream()
-                .map(this::map)
-                .collect(Collectors.toList());
-    }
-
-    private OncoProcedure map(final ResultSet resultSet) {
+    protected OncoProcedure map(final ResultSet resultSet) {
         var diseases = catalogue.getDiseases(resultSet.getProcedureId());
 
         if (diseases.size() != 1) {

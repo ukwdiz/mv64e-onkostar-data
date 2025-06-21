@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.AbstractSubformDataCatalogue;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -12,7 +13,11 @@ import java.util.stream.Collectors;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public abstract class AbstractKpaTherapieverlaufDataMapper<T> implements SubformDataMapper<T> {
+public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSubformDataMapper<T> {
+
+    AbstractKpaTherapieverlaufDataMapper(AbstractSubformDataCatalogue catalogue) {
+        super(catalogue);
+    }
 
     protected MtbTherapyIntentCoding getMtbTherapyIntentCoding(String value) {
         if (value == null || !Arrays.stream(MtbTherapyIntentCodingCode.values()).map(MtbTherapyIntentCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
@@ -125,7 +130,7 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> implements Subform
     }
 
     protected OncoProcedureCoding getOncoProcedureCoding(String value) {
-        if (value == null || ! Arrays.stream(OncoProcedureCodingCode.values()).map(OncoProcedureCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
+        if (value == null || !Arrays.stream(OncoProcedureCodingCode.values()).map(OncoProcedureCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
             return null;
         }
 

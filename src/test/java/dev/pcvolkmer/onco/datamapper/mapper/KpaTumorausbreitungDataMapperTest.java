@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class KpaTumorausbreitungDataMapperTest {
@@ -60,15 +59,9 @@ class KpaTumorausbreitungDataMapperTest {
             return testData.get(columnName);
         }).when(resultSet).getDate(anyString());
 
-        when(resultSet.getProcedureId()).thenReturn(1);
-
         doAnswer(invocationOnMock -> List.of(resultSet))
                 .when(catalogue)
                 .getAllByParentId(anyInt());
-
-        doAnswer(invocationOnMock -> List.of(resultSet))
-                .when(catalogue)
-                .getDiseases(anyInt());
 
         var actualList = this.dataMapper.getByParentId(1);
         assertThat(actualList).hasSize(1);

@@ -6,7 +6,6 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorausbreitungCatalogue;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,12 +15,10 @@ import java.util.stream.Collectors;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaTumorausbreitungDataMapper implements SubformDataMapper<TumorStaging> {
-
-    private final TumorausbreitungCatalogue catalogue;
+public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<TumorStaging> {
 
     public KpaTumorausbreitungDataMapper(final TumorausbreitungCatalogue catalogue) {
-        this.catalogue = catalogue;
+        super(catalogue);
     }
 
     /**
@@ -37,15 +34,7 @@ public class KpaTumorausbreitungDataMapper implements SubformDataMapper<TumorSta
     }
 
     @Override
-    public List<TumorStaging> getByParentId(final int parentId) {
-        return catalogue.getAllByParentId(parentId)
-                .stream()
-                .map(this::map)
-                .sorted(Comparator.comparing(TumorStaging::getDate))
-                .collect(Collectors.toList());
-    }
-
-    private TumorStaging map(final ResultSet resultSet) {
+    protected TumorStaging map(final ResultSet resultSet) {
         var builder = TumorStaging.builder();
         builder
                 .date(resultSet.getDate("zeitpunkt"))

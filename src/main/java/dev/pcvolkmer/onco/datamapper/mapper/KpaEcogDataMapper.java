@@ -19,12 +19,10 @@ import java.util.stream.Collectors;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaEcogDataMapper implements SubformDataMapper<PerformanceStatus> {
-
-    private final EcogCatalogue catalogue;
+public class KpaEcogDataMapper extends AbstractSubformDataMapper<PerformanceStatus> {
 
     public KpaEcogDataMapper(final EcogCatalogue catalogue) {
-        this.catalogue = catalogue;
+        super(catalogue);
     }
 
     /**
@@ -48,7 +46,8 @@ public class KpaEcogDataMapper implements SubformDataMapper<PerformanceStatus> {
                 .collect(Collectors.toList());
     }
 
-    private PerformanceStatus map(final ResultSet resultSet) {
+    @Override
+    protected PerformanceStatus map(final ResultSet resultSet) {
         var builder = PerformanceStatus.builder();
         builder
                 .id(resultSet.getProcedureId().toString())

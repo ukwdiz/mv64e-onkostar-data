@@ -6,9 +6,6 @@ import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_therapielinie'
  *
@@ -17,10 +14,8 @@ import java.util.stream.Collectors;
  */
 public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMapper<MtbSystemicTherapy> {
 
-    private final TherapielinieCatalogue catalogue;
-
     public KpaTherapielinieDataMapper(final TherapielinieCatalogue catalogue) {
-        this.catalogue = catalogue;
+        super(catalogue);
     }
 
     /**
@@ -36,14 +31,7 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
     }
 
     @Override
-    public List<MtbSystemicTherapy> getByParentId(final int parentId) {
-        return catalogue.getAllByParentId(parentId)
-                .stream()
-                .map(this::map)
-                .collect(Collectors.toList());
-    }
-
-    private MtbSystemicTherapy map(final ResultSet resultSet) {
+    protected MtbSystemicTherapy map(final ResultSet resultSet) {
         var diseases = catalogue.getDiseases(resultSet.getProcedureId());
 
         if (diseases.size() != 1) {
