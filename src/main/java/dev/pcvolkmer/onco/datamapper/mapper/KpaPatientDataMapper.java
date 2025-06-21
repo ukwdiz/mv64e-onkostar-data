@@ -32,8 +32,8 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
         builder
                 .id(kpaData.getString("patient_id"))
                 .gender(getGenderCoding(kpaData))
-                .birthDate(mapDate(kpaData.getDate("geburtsdatum")))
-                .dateOfDeath(mapDate(kpaData.getDate("todesdatum")))
+                .birthDate(kpaData.getDate("geburtsdatum"))
+                .dateOfDeath(kpaData.getDate("todesdatum"))
                 .healthInsurance(getHealthInsurance(kpaData))
         ;
         return builder.build();

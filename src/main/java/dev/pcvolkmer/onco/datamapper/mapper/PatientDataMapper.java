@@ -36,8 +36,8 @@ public class PatientDataMapper implements DataMapper<Patient> {
         builder
                 .id(patientData.getString("id"))
                 .gender(getGenderCoding(patientData))
-                .birthDate(mapDate(patientData.getDate("geburtsdatum")))
-                .dateOfDeath(mapDate(patientData.getDate("sterbedatum")))
+                .birthDate(patientData.getDate("geburtsdatum"))
+                .dateOfDeath(patientData.getDate("sterbedatum"))
                 .address(Address.builder().municipalityCode(getMunicipalityCode(patientData)).build())
         ;
         return builder.build();

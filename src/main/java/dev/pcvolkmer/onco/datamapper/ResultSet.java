@@ -2,7 +2,7 @@ package dev.pcvolkmer.onco.datamapper;
 
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.Map;
 
 /**
