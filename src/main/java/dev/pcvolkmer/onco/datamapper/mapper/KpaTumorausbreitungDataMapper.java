@@ -46,12 +46,6 @@ public class KpaTumorausbreitungDataMapper implements SubformDataMapper<TumorSta
     }
 
     private TumorStaging map(final ResultSet resultSet) {
-        var diseases = catalogue.getDiseases(resultSet.getProcedureId());
-
-        if (diseases.size() != 1) {
-            throw new IllegalStateException(String.format("No unique disease for procedure %s", resultSet.getProcedureId()));
-        }
-
         var builder = TumorStaging.builder();
         builder
                 .date(resultSet.getDate("zeitpunkt"))
@@ -59,7 +53,6 @@ public class KpaTumorausbreitungDataMapper implements SubformDataMapper<TumorSta
                 .otherClassifications(List.of(Coding.builder().code(resultSet.getString("wert")).build()))
                 .tnmClassification(getTnmClassification(resultSet))
         ;
-
 
         return builder.build();
     }
