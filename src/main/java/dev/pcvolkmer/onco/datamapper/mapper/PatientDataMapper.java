@@ -6,7 +6,6 @@ import dev.pcvolkmer.mv64e.mtb.GenderCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Patient;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
-import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 
 /**
  * Mapper class to load and map diagnosis data from database table 'dk_dnpm_kpa'
@@ -65,7 +64,7 @@ public class PatientDataMapper implements DataMapper<Patient> {
     private String getMunicipalityCode(final ResultSet data) {
         var gkz = data.getString("GKZ");
         if (gkz == null || gkz.trim().length() != 8) {
-            throw new DataAccessException("Municipality code not found");
+            return null;
         }
         return gkz.substring(0, 5);
     }
