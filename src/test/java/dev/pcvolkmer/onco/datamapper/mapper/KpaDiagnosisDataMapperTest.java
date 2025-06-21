@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,11 +36,11 @@ class KpaDiagnosisDataMapperTest {
     }
 
     @Test
-    void shouldCreateDiagnosis(@Mock Map<String, Object> resultSet) {
+    void shouldCreateDiagnosis(@Mock ResultSet resultSet) {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData().get(columnName);
-        }).when(resultSet).get(anyString());
+        }).when(resultSet).getString(anyString());
 
         doAnswer(invocationOnMock -> resultSet)
                 .when(kpaCatalogue)

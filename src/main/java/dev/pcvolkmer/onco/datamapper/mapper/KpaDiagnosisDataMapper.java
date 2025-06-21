@@ -4,8 +4,6 @@ import dev.pcvolkmer.mv64e.mtb.Coding;
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 
-import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
-
 /**
  * Mapper class to load and map diagnosis data from database table 'dk_dnpm_kpa'
  *
@@ -30,12 +28,12 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
     public MtbDiagnosis getById(int id) {
         var data = kpaCatalogue.getById(id);
 
-        var builder =  MtbDiagnosis.builder();
+        var builder = MtbDiagnosis.builder();
         builder
-                .id(asString(data.get("id")))
+                .id(data.getString("id"))
                 .code(
                         Coding.builder()
-                                .code(asString(data.get("icd10")))
+                                .code(data.getString("icd10"))
                                 .build()
                 );
         return builder.build();

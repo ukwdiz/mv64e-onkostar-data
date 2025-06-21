@@ -4,13 +4,9 @@ import dev.pcvolkmer.mv64e.mtb.Address;
 import dev.pcvolkmer.mv64e.mtb.GenderCoding;
 import dev.pcvolkmer.mv64e.mtb.GenderCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Patient;
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
-
-import java.util.Map;
-
-import static dev.pcvolkmer.onco.datamapper.TypeMapper.asDate;
-import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
 
 /**
  * Mapper class to load and map diagnosis data from database table 'dk_dnpm_kpa'
@@ -33,23 +29,23 @@ public class PatientDataMapper implements DataMapper<Patient> {
      * @return The loaded MtbDiagnosis file
      */
     @Override
-    public Patient getById(int id) {
+    public Patient getById(final int id) {
         var patientData = patientCatalogue.getById(id);
 
         var builder = Patient.builder();
         builder
-                .id(asString(patientData.get("id")))
+                .id(patientData.getString("id"))
                 .gender(getGenderCoding(patientData))
-                .birthDate(mapDate(asDate(patientData.get("geburtsdatum"))))
-                .dateOfDeath(mapDate(asDate(patientData.get("sterbedatum"))))
+                .birthDate(mapDate(patientData.getDate("geburtsdatum")))
+                .dateOfDeath(mapDate(patientData.getDate("sterbedatum")))
                 .address(Address.builder().municipalityCode(getMunicipalityCode(patientData)).build())
         ;
         return builder.build();
     }
 
-    private GenderCoding getGenderCoding(Map<String, Object> data) {
+    private GenderCoding getGenderCoding(final ResultSet data) {
         var genderCodingBuilder = GenderCoding.builder();
-        String geschlecht = asString(data.get("geschlecht"));
+        String geschlecht = data.getString("geschlecht");
         switch (geschlecht) {
             case "M":
                 genderCodingBuilder.code(GenderCodingCode.MALE);
@@ -66,8 +62,8 @@ public class PatientDataMapper implements DataMapper<Patient> {
         return genderCodingBuilder.build();
     }
 
-    private String getMunicipalityCode(Map<String, Object> data) {
-        var gkz = asString(data.get("GKZ"));
+    private String getMunicipalityCode(final ResultSet data) {
+        var gkz = data.getString("GKZ");
         if (gkz == null || gkz.trim().length() != 8) {
             throw new DataAccessException("Municipality code not found");
         }

@@ -3,6 +3,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 import dev.pcvolkmer.mv64e.mtb.Address;
 import dev.pcvolkmer.mv64e.mtb.GenderCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Patient;
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class PatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientAlive(@Mock Map<String, Object> resultSet) {
+    void shouldCreatePatientAlive(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "id", "1",
                 "geschlecht", "M",
@@ -51,7 +52,12 @@ class PatientDataMapperTest {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData.get(columnName);
-        }).when(resultSet).get(anyString());
+        }).when(resultSet).getString(anyString());
+
+        doAnswer(invocationOnMock -> {
+            var columnName = invocationOnMock.getArgument(0, String.class);
+            return testData.get(columnName);
+        }).when(resultSet).getDate(anyString());
 
         doAnswer(invocationOnMock -> resultSet)
                 .when(patientCatalogue)
@@ -67,7 +73,7 @@ class PatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientDead(@Mock Map<String, Object> resultSet) {
+    void shouldCreatePatientDead(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "id", "1",
                 "geschlecht", "M",
@@ -78,7 +84,12 @@ class PatientDataMapperTest {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData.get(columnName);
-        }).when(resultSet).get(anyString());
+        }).when(resultSet).getString(anyString());
+
+        doAnswer(invocationOnMock -> {
+            var columnName = invocationOnMock.getArgument(0, String.class);
+            return testData.get(columnName);
+        }).when(resultSet).getDate(anyString());
 
         doAnswer(invocationOnMock -> resultSet)
                 .when(patientCatalogue)

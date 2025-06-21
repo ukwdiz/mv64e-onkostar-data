@@ -1,5 +1,6 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -28,7 +29,7 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
      * @return The procedure id
      */
     @Override
-    public Map<String, Object> getById(int id) {
+    public ResultSet getById(int id) {
         var result = this.jdbcTemplate.queryForList(
                 String.format(
                         "SELECT * FROM %s JOIN prozedur ON (prozedur.id = %s.id) WHERE geloescht = 0 AND prozedur.id = ?",
@@ -43,7 +44,7 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
             throw new DataAccessException("Multiple records found for id: " + id);
         }
 
-        return result.get(0);
+        return ResultSet.from(result.get(0));
     }
 
 }

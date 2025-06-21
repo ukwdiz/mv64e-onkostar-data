@@ -1,12 +1,8 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
-
-import java.util.Map;
-
-import static dev.pcvolkmer.onco.datamapper.TypeMapper.asDate;
-import static dev.pcvolkmer.onco.datamapper.TypeMapper.asString;
 
 /**
  * Mapper class to load and map patient data from database table 'dk_dnpm_kpa'
@@ -34,18 +30,18 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
 
         var builder = Patient.builder();
         builder
-                .id(asString(kpaData.get("patient_id")))
+                .id(kpaData.getString("patient_id"))
                 .gender(getGenderCoding(kpaData))
-                .birthDate(mapDate(asDate(kpaData.get("geburtsdatum"))))
-                .dateOfDeath(mapDate(asDate(kpaData.get("todesdatum"))))
+                .birthDate(mapDate(kpaData.getDate("geburtsdatum")))
+                .dateOfDeath(mapDate(kpaData.getDate("todesdatum")))
                 .healthInsurance(getHealthInsurance(kpaData))
         ;
         return builder.build();
     }
 
-    private GenderCoding getGenderCoding(Map<String, Object> data) {
+    private GenderCoding getGenderCoding(ResultSet data) {
         var genderCodingBuilder = GenderCoding.builder();
-        String geschlecht = asString(data.get("geschlecht"));
+        String geschlecht = data.getString("geschlecht");
         switch (geschlecht) {
             case "m":
                 genderCodingBuilder.code(GenderCodingCode.MALE);
@@ -63,9 +59,9 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
         return genderCodingBuilder.build();
     }
 
-    private HealthInsurance getHealthInsurance(Map<String, Object> data) {
+    private HealthInsurance getHealthInsurance(ResultSet data) {
         var healthInsuranceCodingBuilder = HealthInsuranceCoding.builder();
-        String healthInsuranceType = asString(data.get("artderkrankenkasse"));
+        String healthInsuranceType = data.getString("artderkrankenkasse");
         if (healthInsuranceType == null) {
             healthInsuranceCodingBuilder.code(HealthInsuranceCodingCode.UNK).build();
             return HealthInsurance.builder().type(healthInsuranceCodingBuilder.build()).build();

@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class KpaPatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientAlive(@Mock Map<String, Object> resultSet) {
+    void shouldCreatePatientAlive(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "patient_id", "1",
                 "geschlecht", "m",
@@ -49,7 +50,12 @@ class KpaPatientDataMapperTest {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData.get(columnName);
-        }).when(resultSet).get(anyString());
+        }).when(resultSet).getString(anyString());
+
+        doAnswer(invocationOnMock -> {
+            var columnName = invocationOnMock.getArgument(0, String.class);
+            return testData.get(columnName);
+        }).when(resultSet).getDate(anyString());
 
         doAnswer(invocationOnMock -> resultSet)
                 .when(kpaCatalogue)
@@ -67,7 +73,7 @@ class KpaPatientDataMapperTest {
     }
 
     @Test
-    void shouldCreatePatientDead(@Mock Map<String, Object> resultSet) {
+    void shouldCreatePatientDead(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "patient_id", "1",
                 "geschlecht", "w",
@@ -78,7 +84,12 @@ class KpaPatientDataMapperTest {
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData.get(columnName);
-        }).when(resultSet).get(anyString());
+        }).when(resultSet).getString(anyString());
+
+        doAnswer(invocationOnMock -> {
+            var columnName = invocationOnMock.getArgument(0, String.class);
+            return testData.get(columnName);
+        }).when(resultSet).getDate(anyString());
 
         doAnswer(invocationOnMock -> resultSet)
                 .when(kpaCatalogue)

@@ -1,9 +1,8 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.util.Map;
 
 /**
  * Load raw result sets from database table 'patient'
@@ -25,11 +24,12 @@ public class PatientCatalogue implements DataCatalogue {
 
     /**
      * Get patient result set by procedure id
+     *
      * @param id The procedure id
      * @return The procedure id
      */
     @Override
-    public Map<String, Object> getById(int id) {
+    public ResultSet getById(int id) {
 
         var result = this.jdbcTemplate.queryForList(
                 "SELECT * FROM patient WHERE id = ?",
@@ -41,7 +41,7 @@ public class PatientCatalogue implements DataCatalogue {
             throw new DataAccessException("Multiple patient records found for id: " + id);
         }
 
-        return result.get(0);
+        return ResultSet.from(result.get(0));
     }
 
 }
