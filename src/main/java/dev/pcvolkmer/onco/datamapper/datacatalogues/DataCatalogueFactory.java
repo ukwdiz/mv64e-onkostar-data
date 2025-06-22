@@ -67,6 +67,8 @@ public class DataCatalogueFactory {
                 return VerwandteCatalogue.create(jdbcTemplate);
             } else if (c == VorbefundeCatalogue.class) {
                 return VorbefundeCatalogue.create(jdbcTemplate);
+            } else if (c == TherapieplanCatalogue.class) {
+                return TherapieplanCatalogue.create(jdbcTemplate);
             }
             throw new DataCatalogueCreationException(clazz);
         });

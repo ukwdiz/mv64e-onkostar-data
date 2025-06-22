@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Mapper class to load and map Mtb files from database
@@ -78,6 +79,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(EcogCatalogue.class)
         );
 
+        var therapieplanCatalogue = catalogueFactory.catalogue(TherapieplanCatalogue.class);
+        var therapieplanDataMapper = new TherapieplanDataMapper(therapieplanCatalogue, propertyCatalogue);
+
         var resultBuilder = Mtb.builder();
 
         try {
@@ -87,10 +91,18 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
             resultBuilder
                     .patient(kpaPatient)
+                    // DNPM Klinik/Anamnese
                     .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)))
                     .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
                     .guidelineTherapies(therapielinieMapper.getByParentId(kpaId))
                     .performanceStatus(ecogMapper.getByParentId(kpaId))
+                    // DNPM Therapieplan
+                    .carePlans(
+                            therapieplanCatalogue
+                                    .getByKpaId(kpaId).stream()
+                                    .map(therapieplanDataMapper::getById)
+                                    .collect(Collectors.toList())
+                    )
             ;
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);
