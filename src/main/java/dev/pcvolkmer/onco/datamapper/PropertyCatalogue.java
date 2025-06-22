@@ -43,8 +43,16 @@ public class PropertyCatalogue {
     public Entry getByCodeAndVersion(String code, int version) {
         try {
             return this.jdbcTemplate.queryForObject(
-                    "SELECT code, shortdesc, description FROM property_catalogue_version_entry WHERE code = ? AND property_version_id = ?",
-                    (rs, rowNum) -> new Entry(rs.getString("code"), rs.getString("shortdesc"), rs.getString("description")),
+                    "SELECT code, shortdesc, e.description, v.oid AS version_oid, v.description AS version_description FROM property_catalogue_version_entry e" +
+                            " JOIN property_catalogue_version v ON (e.property_version_id = v.id)" +
+                            " WHERE code = ? AND property_version_id = ?",
+                    (rs, rowNum) -> new Entry(
+                            rs.getString("code"),
+                            rs.getString("shortdesc"),
+                            rs.getString("description"),
+                            rs.getString("version_oid"),
+                            rs.getString("version_description")
+                    ),
                     code,
                     version);
         } catch (RuntimeException e) {
@@ -59,11 +67,19 @@ public class PropertyCatalogue {
         private final String code;
         private final String shortdesc;
         private final String description;
+        private final String versionOid;
+        private final String versionDescription;
 
         public Entry(String code, String shortdesc, String description) {
+            this(code, shortdesc, description, null, null);
+        }
+
+        public Entry(String code, String shortdesc, String description, String versionOid, String versionDescription) {
             this.code = code;
             this.shortdesc = shortdesc;
             this.description = description;
+            this.versionOid = versionOid;
+            this.versionDescription = versionDescription;
         }
 
         public String getCode() {
@@ -76,6 +92,14 @@ public class PropertyCatalogue {
 
         public String getShortdesc() {
             return shortdesc;
+        }
+
+        public String getVersionOid() {
+            return versionOid;
+        }
+
+        public String getVersionDescription() {
+            return versionDescription;
         }
     }
 

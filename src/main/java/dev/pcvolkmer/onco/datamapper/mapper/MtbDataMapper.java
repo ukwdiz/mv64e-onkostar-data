@@ -63,7 +63,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
         var diagnosisDataMapper = new KpaDiagnosisDataMapper(
                 kpaCatalogue,
                 catalogueFactory.catalogue(TumorausbreitungCatalogue.class),
-                catalogueFactory.catalogue(TumorgradingCatalogue.class)
+                catalogueFactory.catalogue(TumorgradingCatalogue.class),
+                propertyCatalogue
         );
         var prozedurMapper = new KpaProzedurDataMapper(catalogueFactory.catalogue(ProzedurCatalogue.class));
 

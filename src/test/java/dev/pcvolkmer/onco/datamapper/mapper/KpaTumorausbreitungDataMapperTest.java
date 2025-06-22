@@ -69,7 +69,12 @@ class KpaTumorausbreitungDataMapperTest {
         var actual = actualList.get(0);
         assertThat(actual).isInstanceOf(TumorStaging.class);
         assertThat(actual.getDate()).isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()));
-        assertThat(actual.getMethod()).isEqualTo(TumorStagingMethodCoding.builder().code(TumorStagingMethodCodingCode.PATHOLOGIC).build());
+        assertThat(actual.getMethod()).isEqualTo(
+                TumorStagingMethodCoding.builder()
+                        .code(TumorStagingMethodCodingCode.PATHOLOGIC)
+                        .system("dnpm-dip/mtb/tumor-staging/method")
+                        .build()
+        );
         assertThat(actual.getOtherClassifications()).hasSize(1);
         assertThat(actual.getOtherClassifications().get(0).getCode()).isEqualTo("tumor-free");
         assertThat(actual.getTnmClassification().getTumor().getCode()).isEqualTo("p0");

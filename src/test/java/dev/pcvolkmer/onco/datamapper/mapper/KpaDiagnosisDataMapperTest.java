@@ -1,8 +1,11 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorausbreitungCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorgradingCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +24,24 @@ import static org.mockito.Mockito.doAnswer;
 class KpaDiagnosisDataMapperTest {
 
     KpaCatalogue kpaCatalogue;
+    TumorausbreitungCatalogue tumorausbreitungCatalogue;
+    TumorgradingCatalogue tumorgradingCatalogue;
+    PropertyCatalogue propertyCatalogue;
 
     KpaDiagnosisDataMapper dataMapper;
 
     @BeforeEach
-    void setUp(@Mock KpaCatalogue kpaCatalogue) {
+    void setUp(
+            @Mock KpaCatalogue kpaCatalogue,
+            @Mock TumorausbreitungCatalogue tumorausbreitungCatalogue,
+            @Mock TumorgradingCatalogue tumorgradingCatalogue,
+            @Mock PropertyCatalogue propertyCatalogue
+    ) {
         this.kpaCatalogue = kpaCatalogue;
-        this.dataMapper = new KpaDiagnosisDataMapper(kpaCatalogue);
+        this.tumorausbreitungCatalogue = tumorausbreitungCatalogue;
+        this.tumorgradingCatalogue = tumorgradingCatalogue;
+        this.propertyCatalogue = propertyCatalogue;
+        this.dataMapper = new KpaDiagnosisDataMapper(kpaCatalogue, tumorausbreitungCatalogue, tumorgradingCatalogue, propertyCatalogue);
     }
 
     @Test
@@ -45,6 +59,10 @@ class KpaDiagnosisDataMapperTest {
         doAnswer(invocationOnMock -> resultSet)
                 .when(kpaCatalogue)
                 .getById(anyInt());
+
+        doAnswer(invocationOnMock ->
+                new PropertyCatalogue.Entry("C00.0", "Bösartige Neubildung: Äußere Oberlippe", "Bösartige Neubildung: Äußere Oberlippe")
+        ).when(propertyCatalogue).getByCodeAndVersion(anyString(), anyInt());
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(MtbDiagnosis.class);

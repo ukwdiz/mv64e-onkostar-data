@@ -39,7 +39,14 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
         builder
                 .date(resultSet.getDate("zeitpunkt"))
                 .method(getTumorStagingMethodCoding(resultSet.getString("typ")))
-                .otherClassifications(List.of(Coding.builder().code(resultSet.getString("wert")).build()))
+                .otherClassifications(
+                        List.of(
+                                Coding.builder()
+                                        .code(resultSet.getString("wert"))
+                                        .system("dnpm-dip/mtb/diagnosis/kds-tumor-spread")
+                                        .build()
+                        )
+                )
                 .tnmClassification(getTnmClassification(resultSet))
         ;
 
@@ -51,7 +58,8 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
             return null;
         }
 
-        var resultBuilder = TumorStagingMethodCoding.builder();
+        var resultBuilder = TumorStagingMethodCoding.builder()
+                .system("dnpm-dip/mtb/tumor-staging/method");
         try {
             resultBuilder.code(TumorStagingMethodCodingCode.forValue(value));
         } catch (IOException e) {
@@ -69,7 +77,11 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
         var tnmt = resultSet.getString("tnmt");
         if (tnmt != null && !tnmt.isBlank()) {
             tnpmClassificationBuilder.tumor(
-                    Coding.builder().code(String.format("%s%s", resultSet.getString("tnmtprefix"), tnmt)).build()
+                    Coding.builder()
+                            // TODO With or withour prefix?
+                            .code(String.format("%s%s", resultSet.getString("tnmtprefix"), tnmt))
+                            .system("UICC")
+                            .build()
             );
             hasContent = true;
         }
@@ -77,7 +89,11 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
         var tnmn = resultSet.getString("tnmn");
         if (tnmn != null && !tnmn.isBlank()) {
             tnpmClassificationBuilder.nodes(
-                    Coding.builder().code(String.format("%s%s", resultSet.getString("tnmnprefix"), tnmn)).build()
+                    Coding.builder()
+                            // TODO With or withour prefix?
+                            .code(String.format("%s%s", resultSet.getString("tnmnprefix"), tnmn))
+                            .system("UICC")
+                            .build()
             );
             hasContent = true;
         }
@@ -85,7 +101,11 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
         var tnmm = resultSet.getString("tnmm");
         if (tnmm != null && !tnmm.isBlank()) {
             tnpmClassificationBuilder.metastasis(
-                    Coding.builder().code(String.format("%s%s", resultSet.getString("tnmmprefix"), tnmm)).build()
+                    Coding.builder()
+                            // TODO With or withour prefix?
+                            .code(String.format("%s%s", resultSet.getString("tnmmprefix"), tnmm))
+                            .system("UICC")
+                            .build()
             );
             hasContent = true;
         }
