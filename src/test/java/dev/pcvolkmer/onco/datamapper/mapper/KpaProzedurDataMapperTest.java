@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +25,18 @@ import static org.mockito.Mockito.when;
 class KpaProzedurDataMapperTest {
 
     ProzedurCatalogue catalogue;
+    PropertyCatalogue propertyCatalogue;
 
     KpaProzedurDataMapper dataMapper;
 
     @BeforeEach
-    void setUp(@Mock ProzedurCatalogue catalogue) {
+    void setUp(
+            @Mock ProzedurCatalogue catalogue,
+            @Mock PropertyCatalogue propertyCatalogue
+    ) {
         this.catalogue = catalogue;
-        this.dataMapper = new KpaProzedurDataMapper(catalogue);
+        this.propertyCatalogue = propertyCatalogue;
+        this.dataMapper = new KpaProzedurDataMapper(catalogue, propertyCatalogue);
     }
 
     @Test
@@ -74,6 +80,19 @@ class KpaProzedurDataMapperTest {
                 .when(catalogue)
                 .getDiseases(anyInt());
 
+        doAnswer(invocationOnMock -> {
+                    var testPropertyData = Map.of(
+                            "S", new PropertyCatalogue.Entry("S", "Sonstiges", "Sonstiges"),
+                            "stopped", new PropertyCatalogue.Entry("stopped", "Abgebrochen", "Abgebrochen"),
+                            "patient-death", new PropertyCatalogue.Entry("patient-death", "Tod", "Tod"),
+                            "surgery", new PropertyCatalogue.Entry("surgery", "OP", "OP")
+                    );
+
+                    var code = invocationOnMock.getArgument(0, String.class);
+                    return testPropertyData.get(code);
+                }
+        ).when(propertyCatalogue).getByCodeAndVersion(anyString(), anyInt());
+
         var actualList = this.dataMapper.getByParentId(1);
         assertThat(actualList).hasSize(1);
 
@@ -87,19 +106,39 @@ class KpaProzedurDataMapperTest {
                         .build()
         );
         assertThat(actual.getRecordedOn()).isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
-        assertThat(actual.getIntent()).isEqualTo(
-                MtbTherapyIntentCoding.builder().code(MtbTherapyIntentCodingCode.S).build()
-        );
-        assertThat(actual.getStatus()).isEqualTo(
-                TherapyStatusCoding.builder().code(TherapyStatusCodingCode.STOPPED).build()
-        );
-        assertThat(actual.getStatusReason()).isEqualTo(
-                MtbTherapyStatusReasonCoding.builder().code(MtbTherapyStatusReasonCodingCode.PATIENT_DEATH).build()
-        );
+        assertThat(actual.getIntent())
+                .isEqualTo(
+                        MtbTherapyIntentCoding.builder()
+                                .code(MtbTherapyIntentCodingCode.S)
+                                .display("Sonstiges")
+                                .system("dnpm-dip/therapy/intent")
+                                .build()
+                );
+        assertThat(actual.getStatus())
+                .isEqualTo(
+                        TherapyStatusCoding.builder()
+                                .code(TherapyStatusCodingCode.STOPPED)
+                                .display("Abgebrochen")
+                                .system("dnpm-dip/therapy/status")
+                                .build()
+                );
+        assertThat(actual.getStatusReason())
+                .isEqualTo(
+                        MtbTherapyStatusReasonCoding.builder()
+                                .code(MtbTherapyStatusReasonCodingCode.PATIENT_DEATH)
+                                .display("Tod")
+                                .system("dnpm-dip/therapy/status-reason")
+                                .build()
+                );
         assertThat(actual.getTherapyLine()).isEqualTo(1);
-        assertThat(actual.getCode()).isEqualTo(
-                OncoProcedureCoding.builder().code(OncoProcedureCodingCode.SURGERY).build()
-        );
+        assertThat(actual.getCode())
+                .isEqualTo(
+                        OncoProcedureCoding.builder()
+                                .code(OncoProcedureCodingCode.SURGERY)
+                                .display("OP")
+                                .system("dnpm-dip/therapy/type")
+                                .build()
+                );
     }
 
 }

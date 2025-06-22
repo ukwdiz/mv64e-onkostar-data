@@ -3,6 +3,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 import dev.pcvolkmer.mv64e.mtb.OncoProcedure;
 import dev.pcvolkmer.mv64e.mtb.PeriodDate;
 import dev.pcvolkmer.mv64e.mtb.Reference;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
 
@@ -14,8 +15,8 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
  */
 public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<OncoProcedure> {
 
-    public KpaProzedurDataMapper(final ProzedurCatalogue catalogue) {
-        super(catalogue);
+    public KpaProzedurDataMapper(final ProzedurCatalogue catalogue, final PropertyCatalogue propertyCatalogue) {
+        super(catalogue, propertyCatalogue);
     }
 
     /**
@@ -45,11 +46,36 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
                 .basedOn(Reference.builder().id(diseases.get(0).getDiseaseId().toString()).build())
                 .recordedOn(resultSet.getDate("erfassungsdatum"))
                 .therapyLine(resultSet.getLong("therapielinie"))
-                .intent(getMtbTherapyIntentCoding(resultSet.getString("intention")))
-                .status(getTherapyStatusCoding(resultSet.getString("status")))
-                .statusReason(getMtbTherapyStatusReasonCoding(resultSet.getString("statusgrund")))
-                .period(PeriodDate.builder().start(resultSet.getDate("beginn")).end(resultSet.getDate("ende")).build())
-                .code(getOncoProcedureCoding(resultSet.getString("typ")))
+                .intent(
+                        getMtbTherapyIntentCoding(
+                                resultSet.getString("intention"),
+                                resultSet.getInteger("intention_propcat_version")
+                        )
+                )
+                .status(
+                        getTherapyStatusCoding(
+                                resultSet.getString("status"),
+                                resultSet.getInteger("status_propcat_version")
+                        )
+                )
+                .statusReason(
+                        getMtbTherapyStatusReasonCoding(
+                                resultSet.getString("statusgrund"),
+                                resultSet.getInteger("statusgrund_propcat_version")
+                        )
+                )
+                .period(
+                        PeriodDate.builder()
+                                .start(resultSet.getDate("beginn"))
+                                .end(resultSet.getDate("ende"))
+                                .build()
+                )
+                .code(
+                        getOncoProcedureCoding(
+                                resultSet.getString("typ"),
+                                resultSet.getInteger("typ_propcat_version")
+                        )
+                )
         ;
         return builder.build();
     }
