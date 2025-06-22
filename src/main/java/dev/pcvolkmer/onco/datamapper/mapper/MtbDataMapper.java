@@ -66,7 +66,14 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(TumorgradingCatalogue.class),
                 propertyCatalogue
         );
-        var prozedurMapper = new KpaProzedurDataMapper(catalogueFactory.catalogue(ProzedurCatalogue.class));
+        var prozedurMapper = new KpaProzedurDataMapper(
+                catalogueFactory.catalogue(ProzedurCatalogue.class),
+                propertyCatalogue
+        );
+        var therapielinieMapper = new KpaTherapielinieDataMapper(
+                catalogueFactory.catalogue(TherapielinieCatalogue.class),
+                propertyCatalogue
+        );
 
         var resultBuilder = Mtb.builder();
 
@@ -79,6 +86,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .patient(kpaPatient)
                     .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)))
                     .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
+                    .guidelineTherapies(therapielinieMapper.getByParentId(kpaId))
             ;
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);

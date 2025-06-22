@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +25,18 @@ import static org.mockito.Mockito.when;
 class KpaTherapielinieDataMapperTest {
 
     TherapielinieCatalogue catalogue;
+    PropertyCatalogue propertyCatalogue;
 
     KpaTherapielinieDataMapper dataMapper;
 
     @BeforeEach
-    void setUp(@Mock TherapielinieCatalogue catalogue) {
+    void setUp(
+            @Mock TherapielinieCatalogue catalogue,
+            @Mock PropertyCatalogue propertyCatalogue
+    ) {
         this.catalogue = catalogue;
-        this.dataMapper = new KpaTherapielinieDataMapper(catalogue);
+        this.propertyCatalogue = propertyCatalogue;
+        this.dataMapper = new KpaTherapielinieDataMapper(catalogue, propertyCatalogue);
     }
 
     @Test
@@ -73,29 +79,61 @@ class KpaTherapielinieDataMapperTest {
                 .when(catalogue)
                 .getDiseases(anyInt());
 
+        doAnswer(invocationOnMock -> {
+                    var testPropertyData = Map.of(
+                            "S", new PropertyCatalogue.Entry("S", "Sonstiges", "Sonstiges"),
+                            "stopped", new PropertyCatalogue.Entry("stopped", "Abgebrochen", "Abgebrochen"),
+                            "patient-death", new PropertyCatalogue.Entry("patient-death", "Tod", "Tod")
+                    );
+
+                    var code = invocationOnMock.getArgument(0, String.class);
+                    return testPropertyData.get(code);
+                }
+        ).when(propertyCatalogue).getByCodeAndVersion(anyString(), anyInt());
+
         var actualList = this.dataMapper.getByParentId(1);
         assertThat(actualList).hasSize(1);
 
         var actual = actualList.get(0);
-        assertThat(actual).isInstanceOf(MtbSystemicTherapy.class);
-        assertThat(actual.getId()).isEqualTo("1");
-        assertThat(actual.getPeriod()).isEqualTo(
-                PeriodDate.builder()
-                        .start(Date.from(Instant.parse("2000-01-01T12:00:00Z")))
-                        .end(Date.from(Instant.parse("2024-06-19T12:00:00Z")))
-                        .build()
-        );
-        assertThat(actual.getRecordedOn()).isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
-        assertThat(actual.getIntent()).isEqualTo(
-                MtbTherapyIntentCoding.builder().code(MtbTherapyIntentCodingCode.S).build()
-        );
-        assertThat(actual.getStatus()).isEqualTo(
-                TherapyStatusCoding.builder().code(TherapyStatusCodingCode.STOPPED).build()
-        );
-        assertThat(actual.getStatusReason()).isEqualTo(
-                MtbTherapyStatusReasonCoding.builder().code(MtbTherapyStatusReasonCodingCode.PATIENT_DEATH).build()
-        );
-        assertThat(actual.getTherapyLine()).isEqualTo(1);
+        assertThat(actual)
+                .isInstanceOf(MtbSystemicTherapy.class);
+        assertThat(actual.getId())
+                .isEqualTo("1");
+        assertThat(actual.getPeriod())
+                .isEqualTo(
+                        PeriodDate.builder()
+                                .start(Date.from(Instant.parse("2000-01-01T12:00:00Z")))
+                                .end(Date.from(Instant.parse("2024-06-19T12:00:00Z")))
+                                .build()
+                );
+        assertThat(actual.getRecordedOn())
+                .isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
+        assertThat(actual.getIntent())
+                .isEqualTo(
+                        MtbTherapyIntentCoding.builder()
+                                .code(MtbTherapyIntentCodingCode.S)
+                                .display("Sonstiges")
+                                .system("dnpm-dip/therapy/intent")
+                                .build()
+                );
+        assertThat(actual.getStatus())
+                .isEqualTo(
+                        TherapyStatusCoding.builder()
+                                .code(TherapyStatusCodingCode.STOPPED)
+                                .display("Abgebrochen")
+                                .system("dnpm-dip/therapy/status")
+                                .build()
+                );
+        assertThat(actual.getStatusReason())
+                .isEqualTo(
+                        MtbTherapyStatusReasonCoding.builder()
+                                .code(MtbTherapyStatusReasonCodingCode.PATIENT_DEATH)
+                                .display("Tod")
+                                .system("dnpm-dip/therapy/status-reason")
+                                .build()
+                );
+        assertThat(actual.getTherapyLine())
+                .isEqualTo(1);
     }
 
 }
