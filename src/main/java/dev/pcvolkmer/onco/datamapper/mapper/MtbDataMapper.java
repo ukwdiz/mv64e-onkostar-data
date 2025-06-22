@@ -74,6 +74,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(TherapielinieCatalogue.class),
                 propertyCatalogue
         );
+        var ecogMapper = new KpaEcogDataMapper(
+                catalogueFactory.catalogue(EcogCatalogue.class)
+        );
 
         var resultBuilder = Mtb.builder();
 
@@ -87,6 +90,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)))
                     .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
                     .guidelineTherapies(therapielinieMapper.getByParentId(kpaId))
+                    .performanceStatus(ecogMapper.getByParentId(kpaId))
             ;
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);

@@ -51,7 +51,13 @@ public class KpaEcogDataMapper extends AbstractSubformDataMapper<PerformanceStat
         var builder = PerformanceStatus.builder();
         builder
                 .id(resultSet.getProcedureId().toString())
-                .patient(Reference.builder().id(resultSet.getString("patient_id")).build())
+                .patient(
+                        Reference.builder()
+                                .id(resultSet.getString("patient_id"))
+                                // Use "Patient" since Onkostar only provides patient data
+                                .type("Patient")
+                                .build()
+                )
                 .effectiveDate(resultSet.getDate("datum"))
                 .value(getEcogCoding(resultSet.getString("ecog")))
         ;
@@ -64,9 +70,12 @@ public class KpaEcogDataMapper extends AbstractSubformDataMapper<PerformanceStat
             return null;
         }
 
-        var resultBuilder = EcogCoding.builder();
+        var resultBuilder = EcogCoding.builder()
+                .system("ECOG-Performance-Status");
+
         try {
             resultBuilder.code(EcogCodingCode.forValue(value));
+            resultBuilder.display(String.format("ECOG %s", value));
         } catch (IOException e) {
             throw new IllegalStateException("No valid code found");
         }

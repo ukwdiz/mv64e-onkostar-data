@@ -67,9 +67,21 @@ class KpaEcogDataMapperTest {
         var actual = actualList.get(0);
         assertThat(actual).isInstanceOf(PerformanceStatus.class);
         assertThat(actual.getId()).isEqualTo("1");
-        assertThat(actual.getPatient()).isEqualTo(Reference.builder().id("42").build());
+        assertThat(actual.getPatient())
+                .isEqualTo(Reference.builder()
+                        .id("42")
+                        .type("Patient")
+                        .build()
+                );
         assertThat(actual.getEffectiveDate()).isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()));
-        assertThat(actual.getValue()).isEqualTo(EcogCoding.builder().code(EcogCodingCode.CODE_1).build());
+        assertThat(actual.getValue())
+                .isEqualTo(
+                        EcogCoding.builder()
+                                .code(EcogCodingCode.CODE_1)
+                                .display("ECOG 1")
+                                .system("ECOG-Performance-Status")
+                                .build()
+                );
     }
 
 }
