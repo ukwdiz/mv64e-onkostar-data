@@ -55,7 +55,7 @@ class KpaEcogDataMapperTest {
             return testData.get(columnName);
         }).when(resultSet).getDate(anyString());
 
-        when(resultSet.getProcedureId()).thenReturn(1);
+        when(resultSet.getId()).thenReturn(1);
 
         doAnswer(invocationOnMock -> List.of(resultSet))
                 .when(catalogue)

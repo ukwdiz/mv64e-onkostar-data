@@ -80,7 +80,11 @@ public class MtbDataMapper implements DataMapper<Mtb> {
         );
 
         var therapieplanCatalogue = catalogueFactory.catalogue(TherapieplanCatalogue.class);
-        var therapieplanDataMapper = new TherapieplanDataMapper(therapieplanCatalogue, propertyCatalogue);
+        var therapieplanDataMapper = new TherapieplanDataMapper(
+                therapieplanCatalogue,
+                catalogueFactory.catalogue(EinzelempfehlungCatalogue.class),
+                propertyCatalogue
+        );
 
         var resultBuilder = Mtb.builder();
 

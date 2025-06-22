@@ -51,7 +51,7 @@ public class KpaEcogDataMapper extends AbstractSubformDataMapper<PerformanceStat
     protected PerformanceStatus map(final ResultSet resultSet) {
         var builder = PerformanceStatus.builder();
         builder
-                .id(resultSet.getProcedureId().toString())
+                .id(resultSet.getId().toString())
                 .patient(getPatientReference(resultSet.getString("patient_id")))
                 .effectiveDate(resultSet.getDate("datum"))
                 .value(getEcogCoding(resultSet.getString("ecog")))

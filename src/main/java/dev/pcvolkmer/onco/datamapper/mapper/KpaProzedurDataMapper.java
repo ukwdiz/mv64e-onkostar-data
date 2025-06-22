@@ -35,17 +35,17 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
 
     @Override
     protected OncoProcedure map(final ResultSet resultSet) {
-        var diseases = catalogue.getDiseases(resultSet.getProcedureId());
+        var diseases = catalogue.getDiseases(resultSet.getId());
 
         if (diseases.size() != 1) {
-            throw new IllegalStateException(String.format("No unique disease for procedure %s", resultSet.getProcedureId()));
+            throw new IllegalStateException(String.format("No unique disease for procedure %s", resultSet.getId()));
         }
 
         var builder = OncoProcedure.builder();
         builder
                 .id(resultSet.getString("id"))
                 .patient(getPatientReference(resultSet.getString("patient_id")))
-                .basedOn(Reference.builder().id(diseases.get(0).getDiseaseId().toString()).build())
+                .basedOn(Reference.builder().id(diseases.get(0).getString("id")).build())
                 .recordedOn(resultSet.getDate("erfassungsdatum"))
                 .therapyLine(resultSet.getLong("therapielinie"))
                 .intent(

@@ -2,6 +2,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.MtbCarePlan;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapieplanCatalogue;
 
 import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
@@ -17,12 +18,19 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
     private final TherapieplanCatalogue therapieplanCatalogue;
     private final PropertyCatalogue propertyCatalogue;
 
+    private final EinzelempfehlungProzedurDataMapper einzelempfehlungProzedurDataMapper;
+    private final EinzelempfehlungWirkstoffDataMapper einzelempfehlungWirkstoffDataMapper;
+
     public TherapieplanDataMapper(
             final TherapieplanCatalogue therapieplanCatalogue,
+            final EinzelempfehlungCatalogue einzelempfehlungCatalogue,
             final PropertyCatalogue propertyCatalogue
     ) {
         this.therapieplanCatalogue = therapieplanCatalogue;
         this.propertyCatalogue = propertyCatalogue;
+
+        this.einzelempfehlungProzedurDataMapper = new EinzelempfehlungProzedurDataMapper(einzelempfehlungCatalogue);
+        this.einzelempfehlungWirkstoffDataMapper = new EinzelempfehlungWirkstoffDataMapper(einzelempfehlungCatalogue);
     }
 
     /**
@@ -40,6 +48,8 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                 .id(therapieplanData.getString("id"))
                 .patient(getPatientReference(therapieplanData.getString("patient_id")))
                 .issuedOn(therapieplanData.getDate("datum"))
+                .medicationRecommendations(einzelempfehlungWirkstoffDataMapper.getByParentId(id))
+                .procedureRecommendations(einzelempfehlungProzedurDataMapper.getByParentId(id))
         ;
         return builder.build();
     }

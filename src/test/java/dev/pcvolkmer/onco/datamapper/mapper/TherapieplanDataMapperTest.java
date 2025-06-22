@@ -4,6 +4,7 @@ import dev.pcvolkmer.mv64e.mtb.MtbCarePlan;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapieplanCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.doAnswer;
 class TherapieplanDataMapperTest {
 
     TherapieplanCatalogue therapieplanCatalogue;
+    EinzelempfehlungCatalogue einzelempfehlungCatalogue;
     PropertyCatalogue propertyCatalogue;
 
     TherapieplanDataMapper dataMapper;
@@ -29,11 +31,13 @@ class TherapieplanDataMapperTest {
     @BeforeEach
     void setUp(
             @Mock TherapieplanCatalogue therapieplanCatalogue,
+            @Mock EinzelempfehlungCatalogue einzelempfehlungCatalogue,
             @Mock PropertyCatalogue propertyCatalogue
     ) {
         this.therapieplanCatalogue = therapieplanCatalogue;
+        this.einzelempfehlungCatalogue = einzelempfehlungCatalogue;
         this.propertyCatalogue = propertyCatalogue;
-        this.dataMapper = new TherapieplanDataMapper(therapieplanCatalogue, propertyCatalogue);
+        this.dataMapper = new TherapieplanDataMapper(therapieplanCatalogue, einzelempfehlungCatalogue, propertyCatalogue);
     }
 
     @Test

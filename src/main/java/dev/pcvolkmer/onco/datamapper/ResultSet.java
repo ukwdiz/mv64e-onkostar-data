@@ -30,29 +30,16 @@ public class ResultSet {
     }
 
     /**
-     * Get the procedure id
+     * Get the id
      *
-     * @return The procedure id if any
+     * @return The procedures id
      */
-    public Integer getProcedureId() {
+    public Integer getId() {
         var procedureId = this.getInteger("id");
         if (procedureId == null) {
             throw new DataAccessException("No procedure id found");
         }
         return procedureId;
-    }
-
-    /**
-     * Get the disease id
-     *
-     * @return The procedure id if any
-     */
-    public Integer getDiseaseId() {
-        var diseaseId = this.getInteger("id");
-        if (diseaseId == null) {
-            throw new DataAccessException("No disease id found");
-        }
-        return diseaseId;
     }
 
     /**
