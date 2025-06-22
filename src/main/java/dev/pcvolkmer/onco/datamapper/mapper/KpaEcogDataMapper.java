@@ -3,7 +3,6 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 import dev.pcvolkmer.mv64e.mtb.EcogCoding;
 import dev.pcvolkmer.mv64e.mtb.EcogCodingCode;
 import dev.pcvolkmer.mv64e.mtb.PerformanceStatus;
-import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EcogCatalogue;
 
@@ -12,6 +11,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_ecog'
@@ -51,13 +52,7 @@ public class KpaEcogDataMapper extends AbstractSubformDataMapper<PerformanceStat
         var builder = PerformanceStatus.builder();
         builder
                 .id(resultSet.getProcedureId().toString())
-                .patient(
-                        Reference.builder()
-                                .id(resultSet.getString("patient_id"))
-                                // Use "Patient" since Onkostar only provides patient data
-                                .type("Patient")
-                                .build()
-                )
+                .patient(getPatientReference(resultSet.getString("patient_id")))
                 .effectiveDate(resultSet.getDate("datum"))
                 .value(getEcogCoding(resultSet.getString("ecog")))
         ;

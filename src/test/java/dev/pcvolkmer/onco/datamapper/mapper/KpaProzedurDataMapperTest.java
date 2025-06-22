@@ -42,7 +42,6 @@ class KpaProzedurDataMapperTest {
     @Test
     void shouldMapResultSet(@Mock ResultSet resultSet) {
         var testData = Map.of(
-                "erkrankung.id", "1",
                 "id", "1",
                 "beginn", new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
                 "ende", new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
@@ -51,7 +50,8 @@ class KpaProzedurDataMapperTest {
                 "status", "stopped",
                 "statusgrund", "patient-death",
                 "therapielinie", 1L,
-                "typ", "surgery"
+                "typ", "surgery",
+                "patient_id", "42"
         );
 
         doAnswer(invocationOnMock -> {
@@ -99,6 +99,8 @@ class KpaProzedurDataMapperTest {
         var actual = actualList.get(0);
         assertThat(actual).isInstanceOf(OncoProcedure.class);
         assertThat(actual.getId()).isEqualTo("1");
+        assertThat(actual.getPatient())
+                .isEqualTo(Reference.builder().id("42").type("Patient").build());
         assertThat(actual.getPeriod()).isEqualTo(
                 PeriodDate.builder()
                         .start(Date.from(Instant.parse("2000-01-01T12:00:00Z")))

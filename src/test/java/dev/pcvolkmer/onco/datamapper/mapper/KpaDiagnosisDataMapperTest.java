@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
@@ -67,13 +68,16 @@ class KpaDiagnosisDataMapperTest {
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(MtbDiagnosis.class);
         assertThat(actual.getId()).isEqualTo("1");
+        assertThat(actual.getPatient())
+                .isEqualTo(Reference.builder().id("42").type("Patient").build());
         assertThat(actual.getCode().getCode()).isEqualTo("F79.9");
     }
 
     private static Map<String, Object> testData() {
         return Map.of(
                 "id", "1",
-                "icd10", "F79.9"
+                "icd10", "F79.9",
+                "patient_id", "42"
         );
     }
 
