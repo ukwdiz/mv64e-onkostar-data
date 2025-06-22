@@ -2,6 +2,8 @@ package dev.pcvolkmer.onco.datamapper;
 
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Map;
 
@@ -124,7 +126,9 @@ public class ResultSet {
             return null;
         }
         if (raw instanceof Date) {
-            return (Date) raw;
+            var localDate = LocalDate.parse(raw.toString());
+            // JSON Converter uses UTC timezone
+            return Date.from(localDate.atStartOfDay(ZoneId.of("UTC")).toInstant());
         }
 
         throw new IllegalArgumentException("Cannot convert " + raw.getClass() + " to Date");
