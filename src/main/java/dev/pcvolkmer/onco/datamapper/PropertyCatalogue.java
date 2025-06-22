@@ -60,7 +60,7 @@ public class PropertyCatalogue {
         private final String shortdesc;
         private final String description;
 
-        Entry(String code, String shortdesc, String description) {
+        public Entry(String code, String shortdesc, String description) {
             this.code = code;
             this.shortdesc = shortdesc;
             this.description = description;

@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,13 +24,18 @@ import static org.mockito.Mockito.doAnswer;
 class KpaPatientDataMapperTest {
 
     KpaCatalogue kpaCatalogue;
+    PropertyCatalogue propertyCatalogue;
 
     KpaPatientDataMapper dataMapper;
 
     @BeforeEach
-    void setUp(@Mock KpaCatalogue kpaCatalogue) {
+    void setUp(
+            @Mock KpaCatalogue kpaCatalogue,
+            @Mock PropertyCatalogue propertyCatalogue
+    ) {
         this.kpaCatalogue = kpaCatalogue;
-        this.dataMapper = new KpaPatientDataMapper(kpaCatalogue);
+        this.propertyCatalogue = propertyCatalogue;
+        this.dataMapper = new KpaPatientDataMapper(kpaCatalogue, propertyCatalogue);
     }
 
     @Test
@@ -61,6 +67,10 @@ class KpaPatientDataMapperTest {
                 .when(kpaCatalogue)
                 .getById(anyInt());
 
+        doAnswer(invocationOnMock ->
+                new PropertyCatalogue.Entry("GKV", "Gesetzliche Krankenversicherung", "Gesetzliche Krankenversicherung")
+        ).when(propertyCatalogue).getByCodeAndVersion(anyString(), anyInt());
+
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
         assertThat(actual.getId()).isEqualTo("1");
@@ -68,7 +78,13 @@ class KpaPatientDataMapperTest {
         assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
         assertThat(actual.getDateOfDeath()).isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
         assertThat(actual.getHealthInsurance()).isEqualTo(
-                HealthInsurance.builder().type(HealthInsuranceCoding.builder().code(HealthInsuranceCodingCode.GKV).build()).build()
+                HealthInsurance.builder().type(
+                        HealthInsuranceCoding.builder()
+                                .code(HealthInsuranceCodingCode.GKV)
+                                .display("Gesetzliche Krankenversicherung")
+                                .system("http://fhir.de/CodeSystem/versicherungsart-de-basis")
+                                .build()
+                ).build()
         );
     }
 
@@ -95,6 +111,10 @@ class KpaPatientDataMapperTest {
                 .when(kpaCatalogue)
                 .getById(anyInt());
 
+        doAnswer(invocationOnMock ->
+                new PropertyCatalogue.Entry("PKV", "Private Krankenversicherung", "Private Krankenversicherung")
+        ).when(propertyCatalogue).getByCodeAndVersion(anyString(), anyInt());
+
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
         assertThat(actual.getId()).isEqualTo("1");
@@ -102,7 +122,13 @@ class KpaPatientDataMapperTest {
         assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
         assertThat(actual.getDateOfDeath()).isNull();
         assertThat(actual.getHealthInsurance()).isEqualTo(
-                HealthInsurance.builder().type(HealthInsuranceCoding.builder().code(HealthInsuranceCodingCode.PKV).build()).build()
+                HealthInsurance.builder().type(
+                        HealthInsuranceCoding.builder()
+                                .code(HealthInsuranceCodingCode.PKV)
+                                .display("Private Krankenversicherung")
+                                .system("http://fhir.de/CodeSystem/versicherungsart-de-basis")
+                                .build()
+                ).build()
         );
     }
 

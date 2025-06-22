@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 
@@ -13,9 +14,14 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 public class KpaPatientDataMapper implements DataMapper<Patient> {
 
     private final KpaCatalogue kpaCatalogue;
+    private final PropertyCatalogue propertyCatalogue;
 
-    public KpaPatientDataMapper(final KpaCatalogue kpaCatalogue) {
+    public KpaPatientDataMapper(
+            final KpaCatalogue kpaCatalogue,
+            final PropertyCatalogue propertyCatalogue
+    ) {
         this.kpaCatalogue = kpaCatalogue;
+        this.propertyCatalogue = propertyCatalogue;
     }
 
     /**
@@ -40,30 +46,36 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
     }
 
     private GenderCoding getGenderCoding(ResultSet data) {
-        var genderCodingBuilder = GenderCoding.builder();
+        var genderCodingBuilder = GenderCoding.builder()
+                .system("Gender");
+
         String geschlecht = data.getString("geschlecht");
         switch (geschlecht) {
             case "m":
-                genderCodingBuilder.code(GenderCodingCode.MALE);
+                genderCodingBuilder.code(GenderCodingCode.MALE).display("Männlich");
                 break;
             case "w":
-                genderCodingBuilder.code(GenderCodingCode.FEMALE);
+                genderCodingBuilder.code(GenderCodingCode.FEMALE).display("Weiblich");
                 break;
             case "d":
             case "x":
-                genderCodingBuilder.code(GenderCodingCode.OTHER);
+                genderCodingBuilder.code(GenderCodingCode.OTHER).display("Divers");
                 break;
             default:
-                genderCodingBuilder.code(GenderCodingCode.UNKNOWN);
+                genderCodingBuilder.code(GenderCodingCode.UNKNOWN).display("Unbekannt");
         }
         return genderCodingBuilder.build();
     }
 
     private HealthInsurance getHealthInsurance(ResultSet data) {
-        var healthInsuranceCodingBuilder = HealthInsuranceCoding.builder();
+        var healthInsuranceCodingBuilder = HealthInsuranceCoding.builder()
+                .system("http://fhir.de/CodeSystem/versicherungsart-de-basis");
+
         String healthInsuranceType = data.getString("artderkrankenkasse");
         if (healthInsuranceType == null) {
-            healthInsuranceCodingBuilder.code(HealthInsuranceCodingCode.UNK).build();
+            healthInsuranceCodingBuilder
+                    .code(HealthInsuranceCodingCode.UNK)
+                    .build();
             return HealthInsurance.builder().type(healthInsuranceCodingBuilder.build()).build();
         }
 
@@ -98,6 +110,13 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
             default:
                 healthInsuranceCodingBuilder.code(HealthInsuranceCodingCode.UNK).build();
         }
+
+        var healthInsurancePropertyEntry = propertyCatalogue.getByCodeAndVersion(
+                data.getString("artderkrankenkasse"),
+                data.getInteger("artderkrankenkasse_propcat_version")
+        );
+
+        healthInsuranceCodingBuilder.display(healthInsurancePropertyEntry.getDescription());
 
         return HealthInsurance.builder().type(healthInsuranceCodingBuilder.build()).build();
     }

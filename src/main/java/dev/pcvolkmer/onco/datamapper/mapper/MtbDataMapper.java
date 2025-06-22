@@ -1,10 +1,8 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Mtb;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.DataCatalogueFactory;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.PatientCatalogue;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +22,11 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final DataCatalogueFactory catalogueFactory;
+    private final PropertyCatalogue propertyCatalogue;
 
     MtbDataMapper(final JdbcTemplate jdbcTemplate) {
         this.catalogueFactory = DataCatalogueFactory.initialize(jdbcTemplate);
+        this.propertyCatalogue = PropertyCatalogue.initialize(jdbcTemplate);
     }
 
     /**
@@ -59,8 +59,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     public Mtb getById(int kpaId) {
         var kpaCatalogue = catalogueFactory.catalogue(KpaCatalogue.class);
         var patientDataMapper = new PatientDataMapper(catalogueFactory.catalogue(PatientCatalogue.class));
-        var kpaPatientDataMapper = new KpaPatientDataMapper(kpaCatalogue);
-        var diagnosisDataMapper = new KpaDiagnosisDataMapper(kpaCatalogue);
+        var kpaPatientDataMapper = new KpaPatientDataMapper(kpaCatalogue, propertyCatalogue);
+        var diagnosisDataMapper = new KpaDiagnosisDataMapper(
+                kpaCatalogue,
+                catalogueFactory.catalogue(TumorausbreitungCatalogue.class),
+                catalogueFactory.catalogue(TumorgradingCatalogue.class)
+        );
         var prozedurMapper = new KpaProzedurDataMapper(catalogueFactory.catalogue(ProzedurCatalogue.class));
 
         var resultBuilder = Mtb.builder();
