@@ -1,8 +1,5 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.FamilyMemberHistory;
-import dev.pcvolkmer.mv64e.mtb.FamilyMemberHistoryRelationshipTypeCoding;
-import dev.pcvolkmer.mv64e.mtb.FamilyMemberHistoryRelationshipTypeCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Mtb;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
@@ -14,8 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
 
 /**
  * Mapper class to load and map Mtb files from database
@@ -91,6 +86,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 propertyCatalogue
         );
 
+        var verwandteDataMapper = new KpaVerwandteDataMapper(catalogueFactory.catalogue(VerwandteCatalogue.class));
+
         var resultBuilder = Mtb.builder();
 
         try {
@@ -105,20 +102,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
                     .guidelineTherapies(therapielinieMapper.getByParentId(kpaId))
                     .performanceStatus(ecogMapper.getByParentId(kpaId))
-                    // TODO Refactoring of inlined mapping
-                    .familyMemberHistories(
-                            catalogueFactory.catalogue(VerwandteCatalogue.class).getAllByParentId(kpaId).stream()
-                                    .map(it -> FamilyMemberHistory.builder()
-                                            .id(it.getId().toString())
-                                            .patient(getPatientReference(patient.getId()))
-                                            .relationship(FamilyMemberHistoryRelationshipTypeCoding.builder().code(
-                                                    it.getString("verwandschaftsgrad").equals("FAMMEMB")
-                                                            ? FamilyMemberHistoryRelationshipTypeCodingCode.FAMMEMB
-                                                            : FamilyMemberHistoryRelationshipTypeCodingCode.EXT
-                                            ).build())
-                                            .build()
-                                    ).collect(Collectors.toList())
-                    )
+                    .familyMemberHistories(verwandteDataMapper.getByParentId(kpaId))
                     // DNPM Therapieplan
                     .carePlans(
                             therapieplanCatalogue
