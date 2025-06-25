@@ -40,6 +40,7 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractSubformDataMapp
                                 resultSet.getInteger("evidenzlevel_propcat_version")
                         )
                 )
+                .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
                 .build();
     }
 

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +45,8 @@ class TherapieplanDataMapperTest {
     void shouldCreateCarePlan(@Mock ResultSet resultSet) {
         final var testData = Map.of(
                 "id", "1",
-                "patient_id", "42"
+                "patient_id", "42",
+                "wirkstoffe_json", "[{\"code\":\"\",\"name\":\"PARP-Inhibierung\",\"system\":\"UNREGISTERED\"}]"
         );
 
         doAnswer(invocationOnMock -> {
@@ -56,11 +58,17 @@ class TherapieplanDataMapperTest {
                 .when(therapieplanCatalogue)
                 .getById(anyInt());
 
+        doAnswer(invocationOnMock -> List.of(resultSet))
+                .when(einzelempfehlungCatalogue)
+                .getAllByParentId(anyInt());
+
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(MtbCarePlan.class);
         assertThat(actual.getId()).isEqualTo("1");
         assertThat(actual.getPatient())
                 .isEqualTo(Reference.builder().id("42").type("Patient").build());
+
+        assertThat(actual.getMedicationRecommendations()).hasSize(1);
     }
 
 }

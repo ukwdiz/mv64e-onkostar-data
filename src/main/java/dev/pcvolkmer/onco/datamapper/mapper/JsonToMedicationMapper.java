@@ -23,6 +23,9 @@ public class JsonToMedicationMapper {
     }
 
     public static List<AtcUnregisteredMedicationCoding> map(String wirkstoffejson) {
+        if (wirkstoffejson == null) {
+            return List.of();
+        }
         try {
             return new ObjectMapper().readValue(wirkstoffejson, new TypeReference<List<Wirkstoff>>() {
                     }).stream()
