@@ -22,25 +22,25 @@ var jsonResult = Converter.toJsonString(mtbMapper.getByCaseId("16000123"));
 
 ## Status
 
-| DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                                  |
-|----------------------------------|--------|----------------------------------------------------------------------------|
-| Patient                          | ✅      | Verwendet Datenbank-ID, keine managing Site                                |
-| Episoden                         |        |                                                                            |
-| Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode             |
-| Verwandten-Diagnosen             | ✅      |                                                                            |
-| Systemische Leitlinien-Therapien | ✅      |                                                                            |
-| Leitlinien-Prozeduren            | ⌛      | Angabe der Wirkstoffe in Arbeit, Status noch vollständig nicht in Formular |
-| ECOG-Verlauf                     | ✅      |                                                                            |
-| Tumor-Probem                     |        |                                                                            |
-| vorherige Molekular-Diagnostik   |        |                                                                            |
-| Histologie-Berichte              |        |                                                                            |
-| IHC-Berichte                     |        |                                                                            |
-| MSI-Befunde                      |        |                                                                            |
-| NGS-Berichte                     |        |                                                                            |
-| MTB-Beschlüsse                   | ⌛      | Aktuell in Arbeit                                                          |
-| Follow-Up Verlauf                |        |                                                                            |
-| Antrag Kostenübernahme           |        |                                                                            |
-| Antwort Kostenübernahme          |        |                                                                            |
-| Therapien                        |        |                                                                            |
-| Response Befunde                 |        |                                                                            |
+| DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                      |
+|----------------------------------|--------|----------------------------------------------------------------|
+| Patient                          | ✅      | Verwendet Datenbank-ID, keine managing Site                    |
+| Episoden                         |        |                                                                |
+| Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode |
+| Verwandten-Diagnosen             | ✅      |                                                                |
+| Systemische Leitlinien-Therapien | ✅      |                                                                |
+| Leitlinien-Prozeduren            | ⌛      | Status noch nicht vollständig in Formular                      |
+| ECOG-Verlauf                     | ✅      |                                                                |
+| Tumor-Probem                     |        |                                                                |
+| vorherige Molekular-Diagnostik   |        |                                                                |
+| Histologie-Berichte              |        |                                                                |
+| IHC-Berichte                     |        |                                                                |
+| MSI-Befunde                      |        |                                                                |
+| NGS-Berichte                     |        |                                                                |
+| MTB-Beschlüsse                   | ⌛      | Aktuell in Arbeit                                              |
+| Follow-Up Verlauf                |        |                                                                |
+| Antrag Kostenübernahme           |        |                                                                |
+| Antwort Kostenübernahme          |        |                                                                |
+| Therapien                        |        |                                                                |
+| Response Befunde                 |        |                                                                |
 

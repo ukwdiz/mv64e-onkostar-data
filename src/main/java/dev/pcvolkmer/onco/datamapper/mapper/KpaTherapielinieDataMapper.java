@@ -72,8 +72,7 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                                 .end(resultSet.getDate("ende"))
                                 .build()
                 )
-        /* TODO JSON deserialisation */
-        //.medication()
+                .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")))
 
         /* TODO Yet missing form fields */
         //.category(getMtbSystemicTherapyCategoryCoding())

@@ -40,6 +40,7 @@ repositories {
 
 dependencies {
     api("dev.pcvolkmer.mv64e:mtb-dto:${versions["mtb-dto"]}") { isChanging = true }
+    api("com.fasterxml.jackson.core:jackson-databind:[2.12.2, )")
     implementation("org.springframework:spring-jdbc") {
         version {
             strictly("[4.3.8.RELEASE, )")
