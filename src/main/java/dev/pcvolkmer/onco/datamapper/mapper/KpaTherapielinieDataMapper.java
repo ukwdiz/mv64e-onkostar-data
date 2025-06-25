@@ -46,8 +46,8 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                 .id(resultSet.getString("id"))
                 .patient(getPatientReference(resultSet.getString("patient_id")))
                 .basedOn(Reference.builder().id(diseases.get(0).getString("id")).build())
+                .therapyLine(resultSet.getLong("nummer"))
                 .recordedOn(resultSet.getDate("erfassungsdatum"))
-                .therapyLine(resultSet.getLong("therapielinie"))
                 .intent(
                         getMtbTherapyIntentCoding(
                                 resultSet.getString("intention"),

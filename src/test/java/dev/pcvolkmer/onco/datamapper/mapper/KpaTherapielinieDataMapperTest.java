@@ -43,13 +43,13 @@ class KpaTherapielinieDataMapperTest {
     void shouldMapResultSet(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "id", "1",
+                "nummer", 42L,
                 "beginn", new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
                 "ende", new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
                 "erfassungsdatum", new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
                 "intention", "S",
                 "status", "stopped",
                 "statusgrund", "patient-death",
-                "therapielinie", 1L,
                 "patient_id", "42"
         );
 
@@ -101,6 +101,7 @@ class KpaTherapielinieDataMapperTest {
                 .isEqualTo("1");
         assertThat(actual.getPatient())
                 .isEqualTo(Reference.builder().id("42").type("Patient").build());
+        assertThat(actual.getTherapyLine()).isEqualTo(42);
         assertThat(actual.getPeriod())
                 .isEqualTo(
                         PeriodDate.builder()
@@ -134,8 +135,6 @@ class KpaTherapielinieDataMapperTest {
                                 .system("dnpm-dip/therapy/status-reason")
                                 .build()
                 );
-        assertThat(actual.getTherapyLine())
-                .isEqualTo(1);
     }
 
 }
