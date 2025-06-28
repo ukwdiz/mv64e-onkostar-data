@@ -50,11 +50,15 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                 .id(therapieplanData.getString("id"))
                 .patient(getPatientReference(therapieplanData.getString("patient_id")))
                 .issuedOn(therapieplanData.getDate("datum"))
-                // TODO see https://github.com/dnpm-dip/mtb-model/issues/8
-                .notes(List.of(therapieplanData.getString("protokollauszug")))
                 .medicationRecommendations(einzelempfehlungWirkstoffDataMapper.getByParentId(id))
                 .procedureRecommendations(einzelempfehlungProzedurDataMapper.getByParentId(id))
         ;
+
+        if (therapieplanData.getString("protokollauszug") != null) {
+            // TODO see https://github.com/dnpm-dip/mtb-model/issues/8
+            builder.notes(List.of(therapieplanData.getString("protokollauszug")));
+        }
+
         return builder.build();
     }
 

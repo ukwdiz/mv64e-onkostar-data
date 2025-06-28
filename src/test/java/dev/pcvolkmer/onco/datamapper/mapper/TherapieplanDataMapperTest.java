@@ -46,7 +46,8 @@ class TherapieplanDataMapperTest {
         final var testData = Map.of(
                 "id", "1",
                 "patient_id", "42",
-                "wirkstoffe_json", "[{\"code\":\"\",\"name\":\"PARP-Inhibierung\",\"system\":\"UNREGISTERED\"}]"
+                "wirkstoffe_json", "[{\"code\":\"\",\"name\":\"PARP-Inhibierung\",\"system\":\"UNREGISTERED\"}]",
+                "protokollauszug", "Das ist ein Protokollauszug"
         );
 
         doAnswer(invocationOnMock -> {
@@ -69,6 +70,9 @@ class TherapieplanDataMapperTest {
                 .isEqualTo(Reference.builder().id("42").type("Patient").build());
 
         assertThat(actual.getMedicationRecommendations()).hasSize(1);
+
+        assertThat(actual.getNotes()).hasSize(1);
+        assertThat(actual.getNotes().get(0)).isEqualTo("Das ist ein Protokollauszug");
     }
 
 }
