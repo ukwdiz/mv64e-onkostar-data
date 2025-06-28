@@ -53,9 +53,12 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                 .id(therapieplanData.getString("id"))
                 .patient(getPatientReference(therapieplanData.getString("patient_id")))
                 .issuedOn(therapieplanData.getDate("datum"))
-                .medicationRecommendations(einzelempfehlungWirkstoffDataMapper.getByParentId(id))
                 .procedureRecommendations(einzelempfehlungProzedurDataMapper.getByParentId(id))
         ;
+
+        if (therapieplanData.isTrue("mit_einzelempfehlung")) {
+            builder.medicationRecommendations(einzelempfehlungWirkstoffDataMapper.getByParentId(id));
+        }
 
         // Formularfeld "protokollauszug"
         if (therapieplanData.getString("protokollauszug") != null) {

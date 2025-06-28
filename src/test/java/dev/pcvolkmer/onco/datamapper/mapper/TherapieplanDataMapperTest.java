@@ -46,13 +46,19 @@ class TherapieplanDataMapperTest {
                 "id", "1",
                 "patient_id", "42",
                 "wirkstoffe_json", "[{\"code\":\"\",\"name\":\"PARP-Inhibierung\",\"system\":\"UNREGISTERED\"}]",
-                "protokollauszug", "Das ist ein Protokollauszug"
+                "protokollauszug", "Das ist ein Protokollauszug",
+                "mit_einzelempfehlung", true
         );
 
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData.get(columnName);
         }).when(resultSet).getString(anyString());
+
+        doAnswer(invocationOnMock -> {
+            var columnName = invocationOnMock.getArgument(0, String.class);
+            return testData.get(columnName);
+        }).when(resultSet).isTrue(anyString());
 
         doAnswer(invocationOnMock -> resultSet)
                 .when(therapieplanCatalogue)
