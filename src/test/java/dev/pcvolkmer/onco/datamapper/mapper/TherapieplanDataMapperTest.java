@@ -126,4 +126,50 @@ class TherapieplanDataMapperTest {
         );
     }
 
+    @Test
+    void shouldMapHumGenBeratung() {
+        final Map<String, Object> testData = Map.of(
+                "id", 1,
+                "patient_id", 42,
+                "humangen_beratung", 1,
+                "humangen_ber_grund", "other",
+                "humangen_ber_grund_propcat_version", 1234
+        );
+
+        doAnswer(invocationOnMock -> ResultSet.from(testData))
+                .when(therapieplanCatalogue)
+                .getById(anyInt());
+
+        doAnswer(invocationOnMock -> {
+                    var testPropertyData = Map.of(
+                            "other", new PropertyCatalogue.Entry("other", "Andere", "Andere")
+                    );
+
+                    var code = invocationOnMock.getArgument(0, String.class);
+                    return testPropertyData.get(code);
+                }
+        ).when(propertyCatalogue).getByCodeAndVersion(anyString(), anyInt());
+
+        var actual = this.dataMapper.getById(1);
+        assertThat(actual).isInstanceOf(MtbCarePlan.class);
+        assertThat(actual.getId()).isEqualTo("1");
+
+        assertThat(actual.getRecommendationsMissingReason()).isNull();
+
+
+        assertThat(actual.getGeneticCounselingRecommendation()).isEqualTo(
+                GeneticCounselingRecommendation.builder()
+                        .id("1")
+                        .patient(Reference.builder().id("42").type("Patient").build())
+                        .reason(
+                                GeneticCounselingRecommendationReasonCoding.builder()
+                                        .code(GeneticCounselingRecommendationReasonCodingCode.OTHER)
+                                        .display("Andere")
+                                        .system("dnpm-dip/mtb/recommendation/genetic-counseling/reason")
+                                        .build()
+                        )
+                        .build()
+        );
+    }
+
 }

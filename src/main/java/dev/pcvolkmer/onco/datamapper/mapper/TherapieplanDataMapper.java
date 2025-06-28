@@ -57,11 +57,13 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                 .procedureRecommendations(einzelempfehlungProzedurDataMapper.getByParentId(id))
         ;
 
+        // Formularfeld "protokollauszug"
         if (therapieplanData.getString("protokollauszug") != null) {
             // TODO see https://github.com/dnpm-dip/mtb-model/issues/8
             builder.notes(List.of(therapieplanData.getString("protokollauszug")));
         }
 
+        // Formularfeld "status_begruendung"
         if (
                 null != therapieplanData.getString("status_begruendung")
                         && therapieplanData.getString("status_begruendung").equals(MtbCarePlanRecommendationsMissingReasonCodingCode.NO_TARGET.toValue())
@@ -77,6 +79,23 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
             );
         }
 
+        // Humangenetische Beratung
+        if (therapieplanData.isTrue("humangen_beratung")) {
+            builder.geneticCounselingRecommendation(
+                    GeneticCounselingRecommendation.builder()
+                            .id(therapieplanData.getString("id"))
+                            .patient(getPatientReference(therapieplanData.getString("patient_id")))
+                            .issuedOn(therapieplanData.getDate("datum_tk_humangenber"))
+                            .reason(
+                                    getGeneticCounselingRecommendationReasonCoding(
+                                            therapieplanData.getString("humangen_ber_grund"),
+                                            therapieplanData.getInteger("humangen_ber_grund_propcat_version")
+                                    )
+                            )
+                            .build()
+            );
+        }
+
         return builder.build();
     }
 
@@ -88,6 +107,23 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
         var resultBuilder = CarePlanNoSequencingPerformedReasonCoding.builder();
         try {
             resultBuilder.code(NoSequencingPerformedReasonCode.forValue(value));
+        } catch (IOException e) {
+            return null;
+        }
+
+        return resultBuilder.build();
+    }
+
+    private GeneticCounselingRecommendationReasonCoding getGeneticCounselingRecommendationReasonCoding(String value, int version) {
+        if (value == null || !Arrays.stream(GeneticCounselingRecommendationReasonCodingCode.values()).map(GeneticCounselingRecommendationReasonCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
+            return null;
+        }
+
+        var resultBuilder = GeneticCounselingRecommendationReasonCoding.builder()
+                .system("dnpm-dip/mtb/recommendation/genetic-counseling/reason");
+        try {
+            resultBuilder.code(GeneticCounselingRecommendationReasonCodingCode.forValue(value));
+            resultBuilder.display(propertyCatalogue.getByCodeAndVersion(value, version).getShortdesc());
         } catch (IOException e) {
             return null;
         }

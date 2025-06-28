@@ -121,4 +121,29 @@ public class ResultSet {
         throw new IllegalArgumentException("Cannot convert " + raw.getClass() + " to Date");
     }
 
+    /**
+     * Check column value is equal to true
+     *
+     * @param columnName The name of the column
+     * @return True if column value is equal to true
+     */
+    public boolean isTrue(String columnName) {
+        var raw = this.rawData.get(columnName);
+
+        if (raw == null) {
+            return false;
+        }
+        if (raw instanceof Boolean) {
+            return ((Boolean) raw);
+        } else if (raw instanceof Integer) {
+            return ((Integer) raw) == 1;
+        } else if (raw instanceof Long) {
+            return ((Long) raw) == 1;
+        } else if (raw instanceof String) {
+            return raw.toString().equals("1");
+        }
+
+        throw new IllegalArgumentException("Cannot convert " + raw.getClass() + " to Boolean");
+    }
+
 }
