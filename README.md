@@ -25,7 +25,7 @@ var jsonResult = Converter.toJsonString(mtbMapper.getByCaseId("16000123"));
 | DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                      |
 |----------------------------------|--------|----------------------------------------------------------------|
 | Patient                          | ✅      | Verwendet Datenbank-ID, keine managing Site                    |
-| Episoden                         |        |                                                                |
+| Episoden                         | ✅      |                                                                |
 | Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode |
 | Verwandten-Diagnosen             | ✅      |                                                                |
 | Systemische Leitlinien-Therapien | ⌛      | Status noch nicht vollständig in Formular                      |

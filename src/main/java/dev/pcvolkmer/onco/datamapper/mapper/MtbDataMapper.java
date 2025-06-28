@@ -67,6 +67,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(TumorgradingCatalogue.class),
                 propertyCatalogue
         );
+        var mtbEpisodeDataMapper = new MtbEpisodeDataMapper(kpaCatalogue, propertyCatalogue);
         var prozedurMapper = new KpaProzedurDataMapper(
                 catalogueFactory.catalogue(ProzedurCatalogue.class),
                 propertyCatalogue
@@ -97,6 +98,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
             resultBuilder
                     .patient(kpaPatient)
+                    .episodesOfCare(List.of(mtbEpisodeDataMapper.getById(kpaId)))
                     // DNPM Klinik/Anamnese
                     .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)))
                     .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
