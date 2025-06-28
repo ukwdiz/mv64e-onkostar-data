@@ -1,7 +1,6 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.MtbCarePlan;
-import dev.pcvolkmer.mv64e.mtb.Reference;
+import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
@@ -73,6 +72,58 @@ class TherapieplanDataMapperTest {
 
         assertThat(actual.getNotes()).hasSize(1);
         assertThat(actual.getNotes().get(0)).isEqualTo("Das ist ein Protokollauszug");
+    }
+
+    @Test
+    void shouldSetRecommendationsMissingReason() {
+        final Map<String, Object> testData = Map.of(
+                "id", 1,
+                "patient_id", 42,
+                "status_begruendung", "no-target"
+        );
+
+        doAnswer(invocationOnMock -> ResultSet.from(testData))
+                .when(therapieplanCatalogue)
+                .getById(anyInt());
+
+        var actual = this.dataMapper.getById(1);
+        assertThat(actual).isInstanceOf(MtbCarePlan.class);
+        assertThat(actual.getId()).isEqualTo("1");
+
+        assertThat(actual.getRecommendationsMissingReason())
+                .isEqualTo(
+                        MtbCarePlanRecommendationsMissingReasonCoding.builder()
+                                .code(MtbCarePlanRecommendationsMissingReasonCodingCode.NO_TARGET)
+                                .build()
+                );
+
+        assertThat(actual.getNoSequencingPerformedReason()).isNull();
+    }
+
+    @Test
+    void shouldSetNoSequencingPerformedReason() {
+        final Map<String, Object> testData = Map.of(
+                "id", 1,
+                "patient_id", 42,
+                "status_begruendung", "non-genetic-cause"
+        );
+
+        doAnswer(invocationOnMock -> ResultSet.from(testData))
+                .when(therapieplanCatalogue)
+                .getById(anyInt());
+
+        var actual = this.dataMapper.getById(1);
+        assertThat(actual).isInstanceOf(MtbCarePlan.class);
+        assertThat(actual.getId()).isEqualTo("1");
+
+        assertThat(actual.getRecommendationsMissingReason()).isNull();
+
+
+        assertThat(actual.getNoSequencingPerformedReason()).isEqualTo(
+                CarePlanNoSequencingPerformedReasonCoding.builder()
+                        .code(NoSequencingPerformedReasonCode.NON_GENETIC_CAUSE)
+                        .build()
+        );
     }
 
 }
