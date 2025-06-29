@@ -5,8 +5,10 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
@@ -17,7 +19,7 @@ import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReferen
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class EinzelempfehlungProzedurDataMapper extends AbstractSubformDataMapper<ProcedureRecommendation> {
+public class EinzelempfehlungProzedurDataMapper extends AbstractEinzelempfehlungDataMapper<ProcedureRecommendation> {
 
     public EinzelempfehlungProzedurDataMapper(EinzelempfehlungCatalogue einzelempfehlungCatalogue) {
         super(einzelempfehlungCatalogue);
@@ -43,6 +45,7 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractSubformDataMappe
                                 resultSet.getInteger("art_der_therapie_propcat_version")
                         )
                 )
+                .levelOfEvidence(getLevelOfEvidence(resultSet))
                 .build();
     }
 
@@ -56,7 +59,7 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractSubformDataMappe
         return catalogue.getAllByParentId(parentId)
                 .stream()
                 // Filter Prozedurempfehlung (Weitere Empfehlungen)
-                .filter(it -> it.getString("art_der_therapie") != null && !it.getString("art_der_therapie").isBlank() )
+                .filter(it -> it.getString("art_der_therapie") != null && !it.getString("art_der_therapie").isBlank())
                 .map(this::map)
                 .collect(Collectors.toList());
     }
@@ -98,4 +101,5 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractSubformDataMappe
 
         return resultBuilder.build();
     }
+
 }

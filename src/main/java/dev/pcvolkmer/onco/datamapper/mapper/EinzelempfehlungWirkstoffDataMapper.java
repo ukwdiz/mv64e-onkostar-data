@@ -20,7 +20,7 @@ import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReferen
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class EinzelempfehlungWirkstoffDataMapper extends AbstractSubformDataMapper<MtbMedicationRecommendation> {
+public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlungDataMapper<MtbMedicationRecommendation> {
 
     public EinzelempfehlungWirkstoffDataMapper(EinzelempfehlungCatalogue einzelempfehlungCatalogue) {
         super(einzelempfehlungCatalogue);
@@ -41,6 +41,7 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractSubformDataMapp
                         )
                 )
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
+                .levelOfEvidence(getLevelOfEvidence(resultSet))
                 .build();
     }
 
