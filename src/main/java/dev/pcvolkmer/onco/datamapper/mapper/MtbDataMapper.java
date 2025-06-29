@@ -86,6 +86,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
         var therapieplanCatalogue = catalogueFactory.catalogue(TherapieplanCatalogue.class);
         var therapieplanDataMapper = new TherapieplanDataMapper(
                 therapieplanCatalogue,
+                catalogueFactory.catalogue(RebiopsieCatalogue.class),
+                catalogueFactory.catalogue(ReevaluationCatalogue.class),
                 einzelempfehlungCatalogue,
                 propertyCatalogue
         );

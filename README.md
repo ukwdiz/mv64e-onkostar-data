@@ -36,25 +36,30 @@ var jsonResult = Converter.toJsonString(
 
 ## Status
 
-| DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                                  |
-|----------------------------------|--------|----------------------------------------------------------------------------|
-| Patient                          | ✅      | Verwendet Datenbank-ID, keine managing Site                                |
-| Episoden                         | ✅      |                                                                            |
-| Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode             |
-| Verwandten-Diagnosen             | ✅      |                                                                            |
-| Systemische Leitlinien-Therapien | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                 |
-| Leitlinien-Prozeduren            | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                 |
-| ECOG-Verlauf                     | ✅      |                                                                            |
-| Tumor-Proben                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen |
-| vorherige Molekular-Diagnostik   | ⌛      | Aktuell in Arbeit                                                          |
-| Histologie-Berichte              | ⌛      | Aktuell in Arbeit                                                          |
-| IHC-Berichte                     |        |                                                                            |
-| MSI-Befunde                      |        |                                                                            |
-| NGS-Berichte                     | ⌛      | Aktuell in Arbeit                                                          |
-| MTB-Beschlüsse                   | ⌛      | Aktuell in Arbeit                                                          |
-| Follow-Up Verlauf                |        |                                                                            |
-| Antrag Kostenübernahme           |        |                                                                            |
-| Antwort Kostenübernahme          |        |                                                                            |
-| Therapien                        |        |                                                                            |
-| Response Befunde                 |        |                                                                            |
+| DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                                      |
+|----------------------------------|--------|--------------------------------------------------------------------------------|
+| Patient                          | ✅      | Verwendet Datenbank-ID, keine managing Site                                    |
+| Episoden                         | ✅      |                                                                                |
+| Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode                 |
+| Verwandten-Diagnosen             | ✅      |                                                                                |
+| Systemische Leitlinien-Therapien | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                     |
+| Leitlinien-Prozeduren            | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                     |
+| ECOG-Verlauf                     | ✅      |                                                                                |
+| Tumor-Proben                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (1) |
+| vorherige Molekular-Diagnostik   | ⌛      | Aktuell in Arbeit                                                              |
+| Histologie-Berichte              | ⌛      | Aktuell in Arbeit                                                              |
+| IHC-Berichte                     |        |                                                                                |
+| MSI-Befunde                      |        |                                                                                |
+| NGS-Berichte                     | ⌛      | Aktuell in Arbeit                                                              |
+| MTB-Beschlüsse                   | ⛅      | Best effort: Stützende molekulare Alteration(en) aktuell nicht möglich (2)     |
+| Follow-Up Verlauf                |        |                                                                                |
+| Antrag Kostenübernahme           |        |                                                                                |
+| Antwort Kostenübernahme          |        |                                                                                |
+| Therapien                        |        |                                                                                |
+| Response Befunde                 |        |                                                                                |
 
+### Hinweise
+
+1. Nicht alle möglichen Ausprägungen in `OS.Molekulargenetik` vorhanden.
+2. Nach Implementierung Mapping von HGNC-Symbol (Gen-Name) zu HGNC-ID ist die Angabe der optionalen stützenden
+   molekularen Alteration(en) möglich.

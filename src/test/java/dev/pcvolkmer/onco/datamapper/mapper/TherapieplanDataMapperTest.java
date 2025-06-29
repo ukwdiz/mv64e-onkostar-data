@@ -4,6 +4,8 @@ import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.RebiopsieCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.ReevaluationCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapieplanCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,8 @@ class TherapieplanDataMapperTest {
 
     TherapieplanCatalogue therapieplanCatalogue;
     EinzelempfehlungCatalogue einzelempfehlungCatalogue;
+    RebiopsieCatalogue rebiopsieCatalogue;
+    ReevaluationCatalogue reevaluationCatalogue;
     PropertyCatalogue propertyCatalogue;
 
     TherapieplanDataMapper dataMapper;
@@ -31,13 +35,23 @@ class TherapieplanDataMapperTest {
     @BeforeEach
     void setUp(
             @Mock TherapieplanCatalogue therapieplanCatalogue,
+            @Mock RebiopsieCatalogue rebiopsieCatalogue,
+            @Mock ReevaluationCatalogue reevaluationCatalogue,
             @Mock EinzelempfehlungCatalogue einzelempfehlungCatalogue,
             @Mock PropertyCatalogue propertyCatalogue
     ) {
         this.therapieplanCatalogue = therapieplanCatalogue;
+        this.rebiopsieCatalogue = rebiopsieCatalogue;
+        this.reevaluationCatalogue = reevaluationCatalogue;
         this.einzelempfehlungCatalogue = einzelempfehlungCatalogue;
         this.propertyCatalogue = propertyCatalogue;
-        this.dataMapper = new TherapieplanDataMapper(therapieplanCatalogue, einzelempfehlungCatalogue, propertyCatalogue);
+        this.dataMapper = new TherapieplanDataMapper(
+                therapieplanCatalogue,
+                rebiopsieCatalogue,
+                reevaluationCatalogue,
+                einzelempfehlungCatalogue,
+                propertyCatalogue
+        );
     }
 
     @Test
@@ -47,7 +61,8 @@ class TherapieplanDataMapperTest {
                 "patient_id", "42",
                 "wirkstoffe_json", "[{\"code\":\"\",\"name\":\"PARP-Inhibierung\",\"system\":\"UNREGISTERED\"}]",
                 "protokollauszug", "Das ist ein Protokollauszug",
-                "mit_einzelempfehlung", true
+                "mit_einzelempfehlung", true,
+                "empfehlungskategorie", "systemisch"
         );
 
         doAnswer(invocationOnMock -> {

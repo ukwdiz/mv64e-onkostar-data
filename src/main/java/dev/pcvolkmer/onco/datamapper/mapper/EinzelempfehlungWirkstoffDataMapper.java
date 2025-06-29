@@ -1,10 +1,12 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.MtbMedicationRecommendation;
-import dev.pcvolkmer.mv64e.mtb.Reference;
+import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,13 +20,19 @@ import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReferen
  */
 public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlungDataMapper<MtbMedicationRecommendation> {
 
-    public EinzelempfehlungWirkstoffDataMapper(EinzelempfehlungCatalogue einzelempfehlungCatalogue) {
+    private final PropertyCatalogue propertyCatalogue;
+
+    public EinzelempfehlungWirkstoffDataMapper(
+            EinzelempfehlungCatalogue einzelempfehlungCatalogue,
+            PropertyCatalogue propertyCatalogue
+    ) {
         super(einzelempfehlungCatalogue);
+        this.propertyCatalogue = propertyCatalogue;
     }
 
     @Override
     protected MtbMedicationRecommendation map(ResultSet resultSet) {
-        return MtbMedicationRecommendation.builder()
+        var resultBuilder = MtbMedicationRecommendation.builder()
                 .id(resultSet.getString("id"))
                 .patient(getPatientReference(resultSet.getString("patient_id")))
                 // TODO Fix id?
@@ -37,8 +45,31 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
                         )
                 )
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
-                .levelOfEvidence(getLevelOfEvidence(resultSet))
-                .build();
+                .levelOfEvidence(getLevelOfEvidence(resultSet));
+
+        if (null != resultSet.getString("art_der_therapie")) {
+            resultBuilder.category(
+                    getMtbMedicationRecommendationCategoryCoding(
+                            resultSet.getString("art_der_therapie"),
+                            resultSet.getInteger("art_der_therapie_propcat_version")
+                    )
+            );
+        }
+
+        if (null != resultSet.getString("empfehlungsart")) {
+            resultBuilder.useType(
+                    getMtbMedicationRecommendationUseTypeCoding(
+                            resultSet.getString("empfehlungsart"),
+                            resultSet.getInteger("empfehlungsart_propcat_version")
+                    )
+            );
+        }
+
+        if (null != resultSet.getString("st_mol_alt_variante")) {
+            // Empty for now
+        }
+
+        return resultBuilder.build();
     }
 
     @Override
@@ -51,13 +82,47 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
         return catalogue.getAllByParentId(parentId)
                 .stream()
                 // Filter Wirkstoffempfehlung (Systemische Therapie)
-                .filter(it -> it.getString("art_der_therapie") == null
-                        || it.getString("art_der_therapie").isBlank())
-                .filter(it -> it.getString("empfehlungskategorie") == null
-                        || it.getString("empfehlungskategorie").isBlank()
-                        || "systemisch".equals(it.getString("empfehlungskategorie")))
+                .filter(it -> "systemisch".equals(it.getString("empfehlungskategorie")))
                 .map(this::map)
                 .collect(Collectors.toList());
+    }
+
+    private MtbMedicationRecommendationCategoryCoding getMtbMedicationRecommendationCategoryCoding(String code, int version) {
+        if (code == null || !Arrays.stream(MtbMedicationRecommendationCategoryCodingCode.values()).map(MtbMedicationRecommendationCategoryCodingCode::toValue).collect(Collectors.toSet()).contains(code)) {
+            return null;
+        }
+
+        var resultBuilder = MtbMedicationRecommendationCategoryCoding.builder()
+                .system("dnpm-dip/mtb/recommendation/systemic-therapy/category");
+
+        try {
+            resultBuilder
+                    .code(MtbMedicationRecommendationCategoryCodingCode.forValue(code))
+                    .display(propertyCatalogue.getByCodeAndVersion(code, version).getShortdesc());
+        } catch (IOException e) {
+            return null;
+        }
+
+        return resultBuilder.build();
+    }
+
+    private MtbMedicationRecommendationUseTypeCoding getMtbMedicationRecommendationUseTypeCoding(String code, int version) {
+        if (code == null || !Arrays.stream(MtbMedicationRecommendationUseTypeCodingCode.values()).map(MtbMedicationRecommendationUseTypeCodingCode::toValue).collect(Collectors.toSet()).contains(code)) {
+            return null;
+        }
+
+        var resultBuilder = MtbMedicationRecommendationUseTypeCoding.builder()
+                .system("dnpm-dip/mtb/recommendation/systemic-therapy/use-type");
+
+        try {
+            resultBuilder
+                    .code(MtbMedicationRecommendationUseTypeCodingCode.forValue(code))
+                    .display(propertyCatalogue.getByCodeAndVersion(code, version).getShortdesc());
+        } catch (IOException e) {
+            return null;
+        }
+
+        return resultBuilder.build();
     }
 
 }
