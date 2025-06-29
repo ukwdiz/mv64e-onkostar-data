@@ -1,6 +1,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Mtb;
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
@@ -80,14 +81,25 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(EcogCatalogue.class)
         );
 
+        var einzelempfehlungCatalogue = catalogueFactory.catalogue(EinzelempfehlungCatalogue.class);
         var therapieplanCatalogue = catalogueFactory.catalogue(TherapieplanCatalogue.class);
         var therapieplanDataMapper = new TherapieplanDataMapper(
                 therapieplanCatalogue,
-                catalogueFactory.catalogue(EinzelempfehlungCatalogue.class),
+                einzelempfehlungCatalogue,
                 propertyCatalogue
         );
 
         var verwandteDataMapper = new KpaVerwandteDataMapper(catalogueFactory.catalogue(VerwandteCatalogue.class));
+
+        var molekulargenetikCatalogue = catalogueFactory.catalogue(MolekulargenetikCatalogue.class);
+        var molekulargenetikToSpecimenDataMapper = new MolekulargenetikToSpecimenDataMapper(
+                molekulargenetikCatalogue,
+                therapieplanCatalogue,
+                catalogueFactory.catalogue(RebiopsieCatalogue.class),
+                catalogueFactory.catalogue(ReevaluationCatalogue.class),
+                einzelempfehlungCatalogue,
+                propertyCatalogue
+        );
 
         var resultBuilder = Mtb.builder();
 
@@ -96,11 +108,13 @@ public class MtbDataMapper implements DataMapper<Mtb> {
             var patient = patientDataMapper.getById(Integer.parseInt(kpaPatient.getId()));
             kpaPatient.setAddress(patient.getAddress());
 
+            var diagnosis = diagnosisDataMapper.getById(kpaId);
+
             resultBuilder
                     .patient(kpaPatient)
                     .episodesOfCare(List.of(mtbEpisodeDataMapper.getById(kpaId)))
                     // DNPM Klinik/Anamnese
-                    .diagnoses(List.of(diagnosisDataMapper.getById(kpaId)))
+                    .diagnoses(List.of(diagnosis))
                     .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
                     .guidelineTherapies(therapielinieMapper.getByParentId(kpaId))
                     .performanceStatus(ecogMapper.getByParentId(kpaId))
@@ -111,6 +125,13 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                                     .getByKpaId(kpaId).stream()
                                     .map(therapieplanDataMapper::getById)
                                     .collect(Collectors.toList())
+                    )
+                    // Tumorproben
+                    .specimens(
+                        molekulargenetikToSpecimenDataMapper.getAllByKpaId(
+                                kpaId,
+                                Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()
+                        )
                     )
             ;
         } catch (DataAccessException e) {

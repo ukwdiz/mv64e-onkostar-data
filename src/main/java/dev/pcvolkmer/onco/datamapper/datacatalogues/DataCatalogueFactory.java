@@ -71,6 +71,12 @@ public class DataCatalogueFactory {
                 return TherapieplanCatalogue.create(jdbcTemplate);
             } else if (c == EinzelempfehlungCatalogue.class) {
                 return EinzelempfehlungCatalogue.create(jdbcTemplate);
+            } else if (c == MolekulargenetikCatalogue.class) {
+                return MolekulargenetikCatalogue.create(jdbcTemplate);
+            } else if (c == RebiopsieCatalogue.class) {
+                return RebiopsieCatalogue.create(jdbcTemplate);
+            } else if (c == ReevaluationCatalogue.class) {
+                return ReevaluationCatalogue.create(jdbcTemplate);
             }
             throw new DataCatalogueCreationException(clazz);
         });
