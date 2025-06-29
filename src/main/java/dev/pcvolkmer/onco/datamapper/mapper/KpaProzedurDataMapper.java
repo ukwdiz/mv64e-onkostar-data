@@ -7,6 +7,8 @@ import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
 
+import java.util.List;
+
 import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
 
 /**
@@ -78,7 +80,17 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
                                 resultSet.getInteger("typ_propcat_version")
                         )
                 )
+                .reason(
+                        Reference.builder()
+                                .id(resultSet.getString("ref_einzelempfehlung"))
+                                .build()
+                )
         ;
+
+        if (resultSet.getString("anmerkungen") != null) {
+            builder.notes(List.of(resultSet.getString("anmerkungen")));
+        }
+
         return builder.build();
     }
 

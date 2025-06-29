@@ -7,6 +7,8 @@ import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
 
+import java.util.List;
+
 import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
 
 /**
@@ -73,12 +75,44 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                                 .build()
                 )
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")))
-
-        /* TODO Yet missing form fields */
-        //.category(getMtbSystemicTherapyCategoryCoding())
-        //.dosage(getMtbSystemicTherapyDosageDensityCoding())
-        //.recommendationFulfillmentStatus(getMtbSystemicTherapyRecommendationFulfillmentStatusCoding()
+                .reason(
+                        Reference.builder()
+                                .id(resultSet.getString("ref_einzelempfehlung"))
+                                .build()
+                )
         ;
+
+        if (resultSet.getString("stellung_propcat_version") != null) {
+            builder.category(
+                    getMtbSystemicTherapyCategoryCoding(
+                            resultSet.getString("stellung"),
+                            resultSet.getInteger("stellung_propcat_version")
+                    )
+            );
+        }
+
+        if (resultSet.getString("dosisdichte_propcat_version") != null) {
+            builder.dosage(
+                    getMtbSystemicTherapyDosageDensityCoding(
+                            resultSet.getString("dosisdichte"),
+                            resultSet.getInteger("dosisdichte_propcat_version")
+                    )
+            );
+        }
+
+        if (resultSet.getString("umsetzung_propcat_version") != null) {
+            builder.recommendationFulfillmentStatus(
+                    getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(
+                            resultSet.getString("umsetzung"),
+                            resultSet.getInteger("umsetzung_propcat_version")
+                    )
+            );
+        }
+
+        if (resultSet.getString("anmerkungen") != null) {
+            builder.notes(List.of(resultSet.getString("anmerkungen")));
+        }
+
         return builder.build();
     }
 

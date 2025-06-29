@@ -100,7 +100,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
             return null;
         }
 
-        var resultBuilder = MtbSystemicTherapyRecommendationFulfillmentStatusCoding.builder();
+        var resultBuilder = MtbSystemicTherapyRecommendationFulfillmentStatusCoding.builder()
+                .system("dnpm-dip/therapy/recommendation-fulfillment-status")
+                .display(propertyCatalogue.getByCodeAndVersion(value, version).getShortdesc());
         try {
             resultBuilder.code(MtbSystemicTherapyRecommendationFulfillmentStatusCodingCode.forValue(value));
         } catch (IOException e) {
@@ -115,7 +117,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
             return null;
         }
 
-        var resultBuilder = MtbSystemicTherapyCategoryCoding.builder();
+        var resultBuilder = MtbSystemicTherapyCategoryCoding.builder()
+                .system("dnpm-dip/therapy/category")
+                .display(propertyCatalogue.getByCodeAndVersion(value, version).getShortdesc());
         try {
             resultBuilder.code(MtbSystemicTherapyCategoryCodingCode.forValue(value));
         } catch (IOException e) {
@@ -130,7 +134,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
             return null;
         }
 
-        var resultBuilder = MtbSystemicTherapyDosageDensityCoding.builder();
+        var resultBuilder = MtbSystemicTherapyDosageDensityCoding.builder()
+                .system("dnpm-dip/therapy/status-density")
+                .display(propertyCatalogue.getByCodeAndVersion(value, version).getShortdesc());
         try {
             resultBuilder.code(MtbSystemicTherapyDosageDensityCodingCode.forValue(value));
         } catch (IOException e) {
@@ -148,7 +154,7 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
         var resultBuilder = OncoProcedureCoding.builder()
                 .system("dnpm-dip/therapy/type")
                 .display(propertyCatalogue.getByCodeAndVersion(value, version).getShortdesc());
-        
+
         try {
             resultBuilder.code(OncoProcedureCodingCode.forValue(value));
         } catch (IOException e) {

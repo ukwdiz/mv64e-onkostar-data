@@ -28,8 +28,8 @@ var jsonResult = Converter.toJsonString(mtbMapper.getByCaseId("16000123"));
 | Episoden                         | ✅      |                                                                |
 | Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode |
 | Verwandten-Diagnosen             | ✅      |                                                                |
-| Systemische Leitlinien-Therapien | ⌛      | Status noch nicht vollständig in Formular                      |
-| Leitlinien-Prozeduren            | ✅      |                                                                |
+| Systemische Leitlinien-Therapien | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9     |
+| Leitlinien-Prozeduren            | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9     |
 | ECOG-Verlauf                     | ✅      |                                                                |
 | Tumor-Probem                     |        |                                                                |
 | vorherige Molekular-Diagnostik   |        |                                                                |
