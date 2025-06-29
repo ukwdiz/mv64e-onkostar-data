@@ -17,7 +17,21 @@ datasource.setPassword("devpass");
 
 var mtbMapper = MtbDataMapper.create(datasource);
 
-var jsonResult = Converter.toJsonString(mtbMapper.getByCaseId("16000123"));
+var jsonResult = Converter.toJsonString(
+  mtbMapper.getByCaseId("16000123")
+);
+```
+
+Es ist auch möglich, die Daten anhand der Patienten-ID und dem Tumoridentifikator zu ermitteln.
+Hierbei wird das letzte Formular `DNPM Klinik/Anamnese` andhand des Anmeldedatums MTB
+ausgewählt und verwendet.
+
+```
+...
+
+var jsonResult = Converter.toJsonString(
+  mtbMapper.getLatestByPatientIdAndTumorId("2000123456", 1))
+);
 ```
 
 ## Status
@@ -31,12 +45,12 @@ var jsonResult = Converter.toJsonString(mtbMapper.getByCaseId("16000123"));
 | Systemische Leitlinien-Therapien | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9     |
 | Leitlinien-Prozeduren            | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9     |
 | ECOG-Verlauf                     | ✅      |                                                                |
-| Tumor-Probem                     |        |                                                                |
-| vorherige Molekular-Diagnostik   |        |                                                                |
-| Histologie-Berichte              |        |                                                                |
+| Tumor-Proben                     | ⌛      | Aktuell in Arbeit                                              |
+| vorherige Molekular-Diagnostik   | ⌛      | Aktuell in Arbeit                                              |
+| Histologie-Berichte              | ⌛      | Aktuell in Arbeit                                              |
 | IHC-Berichte                     |        |                                                                |
 | MSI-Befunde                      |        |                                                                |
-| NGS-Berichte                     |        |                                                                |
+| NGS-Berichte                     | ⌛      | Aktuell in Arbeit                                              |
 | MTB-Beschlüsse                   | ⌛      | Aktuell in Arbeit                                              |
 | Follow-Up Verlauf                |        |                                                                |
 | Antrag Kostenübernahme           |        |                                                                |

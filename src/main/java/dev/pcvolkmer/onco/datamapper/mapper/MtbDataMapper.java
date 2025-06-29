@@ -131,4 +131,18 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 this.catalogueFactory.catalogue(KpaCatalogue.class).getProcedureIdByCaseId(caseId)
         );
     }
+
+    /**
+     * Loads and maps a Mtb file using the patient id and tumor id
+     *
+     * @param patientId The patients id (not database id)
+     * @param tumorId The tumor identification
+     * @return The loaded Mtb file
+     */
+    public Mtb getLatestByPatientIdAndTumorId(String patientId, int tumorId) {
+        return this.getById(
+                this.catalogueFactory.catalogue(KpaCatalogue.class)
+                        .getLatestProcedureIdByPatientIdAndTumor(patientId, tumorId)
+        );
+    }
 }

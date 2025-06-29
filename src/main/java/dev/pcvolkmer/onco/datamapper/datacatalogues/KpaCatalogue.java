@@ -46,6 +46,38 @@ public class KpaCatalogue extends AbstractDataCatalogue {
     }
 
     /**
+     * Get latest procedure database id by patient id and tumor id
+     *
+     * @param patientId The patients id (not database id)
+     * @param tumorId The tumor identifier
+     * @return The procedure id
+     */
+    public int getLatestProcedureIdByPatientIdAndTumor(String patientId, int tumorId) {
+        var sql = "SELECT prozedur.id FROM dk_dnpm_kpa " +
+                "    JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) " +
+                "    JOIN erkrankung_prozedur ON (erkrankung_prozedur.prozedur_id = prozedur.id) " +
+                "    JOIN erkrankung ON (erkrankung_prozedur.erkrankung_id = erkrankung.id) " +
+                "    JOIN patient ON (patient.id = prozedur.patient_id) " +
+                "    WHERE patient.patienten_id = ? AND erkrankung.tumoridentifikator = ? " +
+                "    ORDER BY dk_dnpm_kpa.anmeldedatummtb DESC " +
+                "    LIMIT 1";
+
+        var result = this.jdbcTemplate.query(
+                sql,
+                (resultSet, i) -> resultSet.getInt(1),
+                patientId, tumorId);
+
+        if (result.isEmpty()) {
+            throw new DataAccessException(String.format("No record found for patient '%s' and tumor '%d'", patientId, tumorId));
+        } else if (result.size() > 1) {
+            // This should not happen due to LIMIT 1
+            throw new DataAccessException(String.format("Multiple records found for patient '%s' and tumor '%d'", patientId, tumorId));
+        }
+
+        return result.get(0);
+    }
+
+    /**
      * Get patient database id by case id
      *
      * @param caseId The case id
