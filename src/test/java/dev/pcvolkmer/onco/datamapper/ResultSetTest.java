@@ -2,11 +2,13 @@ package dev.pcvolkmer.onco.datamapper;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.sql.Date;
+import java.time.Instant;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResultSetTest {
 
@@ -40,12 +42,22 @@ class ResultSetTest {
         assertThat(data.getDate("date")).isEqualTo(new Date(Date.from(Instant.parse("2025-06-21T00:00:00Z")).getTime()));
     }
 
+    @Test
+    void shouldHandleBooleanValues() {
+        var data = getTestData();
+
+        assertTrue(data.isTrue("true"));
+        assertFalse(data.isTrue("false"));
+    }
+
     static ResultSet getTestData() {
         return ResultSet.from(
                 Map.of(
                         "string", "TestString",
                         "int", 42,
-                        "date", new Date(Date.from(Instant.parse("2025-06-21T02:00:00Z")).getTime())
+                        "date", new Date(Date.from(Instant.parse("2025-06-21T02:00:00Z")).getTime()),
+                        "true", 1,
+                        "false", 0
                 )
         );
     }
