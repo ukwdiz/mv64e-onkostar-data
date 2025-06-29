@@ -1,7 +1,6 @@
-package dev.pcvolkmer.onco.datamapper.datacatalogues;
+package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.RequestedMedicationSystem;
-import dev.pcvolkmer.onco.datamapper.mapper.JsonToMedicationMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -25,6 +25,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
 
     private final EinzelempfehlungProzedurDataMapper einzelempfehlungProzedurDataMapper;
     private final EinzelempfehlungWirkstoffDataMapper einzelempfehlungWirkstoffDataMapper;
+    private final EinzelempfehlungStudieDataMapper einzelempfehlungStudieDataMapper;
 
     public TherapieplanDataMapper(
             final TherapieplanCatalogue therapieplanCatalogue,
@@ -36,6 +37,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
 
         this.einzelempfehlungProzedurDataMapper = new EinzelempfehlungProzedurDataMapper(einzelempfehlungCatalogue);
         this.einzelempfehlungWirkstoffDataMapper = new EinzelempfehlungWirkstoffDataMapper(einzelempfehlungCatalogue);
+        this.einzelempfehlungStudieDataMapper = new EinzelempfehlungStudieDataMapper(einzelempfehlungCatalogue);
     }
 
     /**
@@ -53,11 +55,12 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                 .id(therapieplanData.getString("id"))
                 .patient(getPatientReference(therapieplanData.getString("patient_id")))
                 .issuedOn(therapieplanData.getDate("datum"))
-                .procedureRecommendations(einzelempfehlungProzedurDataMapper.getByParentId(id))
         ;
 
         if (therapieplanData.isTrue("mit_einzelempfehlung")) {
             builder.medicationRecommendations(einzelempfehlungWirkstoffDataMapper.getByParentId(id));
+            builder.procedureRecommendations(einzelempfehlungProzedurDataMapper.getByParentId(id));
+            builder.studyEnrollmentRecommendations(einzelempfehlungStudieDataMapper.getByParentId(id));
         }
 
         // Formularfeld "protokollauszug"

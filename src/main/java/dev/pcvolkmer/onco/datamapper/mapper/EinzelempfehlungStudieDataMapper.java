@@ -1,6 +1,6 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.MtbMedicationRecommendation;
+import dev.pcvolkmer.mv64e.mtb.MtbStudyEnrollmentRecommendation;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
@@ -16,15 +16,15 @@ import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReferen
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlungDataMapper<MtbMedicationRecommendation> {
+public class EinzelempfehlungStudieDataMapper extends AbstractEinzelempfehlungDataMapper<MtbStudyEnrollmentRecommendation> {
 
-    public EinzelempfehlungWirkstoffDataMapper(EinzelempfehlungCatalogue einzelempfehlungCatalogue) {
+    public EinzelempfehlungStudieDataMapper(EinzelempfehlungCatalogue einzelempfehlungCatalogue) {
         super(einzelempfehlungCatalogue);
     }
 
     @Override
-    protected MtbMedicationRecommendation map(ResultSet resultSet) {
-        return MtbMedicationRecommendation.builder()
+    protected MtbStudyEnrollmentRecommendation map(ResultSet resultSet) {
+        return MtbStudyEnrollmentRecommendation.builder()
                 .id(resultSet.getString("id"))
                 .patient(getPatientReference(resultSet.getString("patient_id")))
                 // TODO Fix id?
@@ -38,24 +38,21 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
                 )
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
                 .levelOfEvidence(getLevelOfEvidence(resultSet))
+                .study(JsonToStudyMapper.map(resultSet.getString("studien_alle_json")))
                 .build();
     }
 
     @Override
-    public MtbMedicationRecommendation getById(int id) {
+    public MtbStudyEnrollmentRecommendation getById(int id) {
         return this.map(this.catalogue.getById(id));
     }
 
     @Override
-    public List<MtbMedicationRecommendation> getByParentId(final int parentId) {
+    public List<MtbStudyEnrollmentRecommendation> getByParentId(final int parentId) {
         return catalogue.getAllByParentId(parentId)
                 .stream()
                 // Filter Wirkstoffempfehlung (Systemische Therapie)
-                .filter(it -> it.getString("art_der_therapie") == null
-                        || it.getString("art_der_therapie").isBlank())
-                .filter(it -> it.getString("empfehlungskategorie") == null
-                        || it.getString("empfehlungskategorie").isBlank()
-                        || "systemisch".equals(it.getString("empfehlungskategorie")))
+                .filter(it -> "studie".equals(it.getString("empfehlungskategorie")))
                 .map(this::map)
                 .collect(Collectors.toList());
     }

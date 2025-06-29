@@ -1,14 +1,15 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCoding;
+import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCodingCode;
+import dev.pcvolkmer.mv64e.mtb.ProcedureRecommendation;
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
@@ -27,26 +28,33 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractEinzelempfehlung
 
     @Override
     protected ProcedureRecommendation map(ResultSet resultSet) {
-        return ProcedureRecommendation.builder()
+        var resultBuilder = ProcedureRecommendation.builder()
                 .id(resultSet.getString("id"))
                 .patient(getPatientReference(resultSet.getString("patient_id")))
                 // TODO Fix id?
                 .reason(Reference.builder().id(resultSet.getString("id")).build())
                 .issuedOn(resultSet.getDate("datum"))
-                .priority(
-                        getRecommendationPriorityCoding(
-                                resultSet.getString("evidenzlevel"),
-                                resultSet.getInteger("evidenzlevel_propcat_version")
-                        )
-                )
-                .code(
-                        getMtbProcedureRecommendationCategoryCoding(
-                                resultSet.getString("art_der_therapie"),
-                                resultSet.getInteger("art_der_therapie_propcat_version")
-                        )
-                )
-                .levelOfEvidence(getLevelOfEvidence(resultSet))
-                .build();
+                .levelOfEvidence(getLevelOfEvidence(resultSet));
+
+        if (null != resultSet.getString("evidenzlevel")) {
+            resultBuilder.priority(
+                    getRecommendationPriorityCoding(
+                            resultSet.getString("evidenzlevel"),
+                            resultSet.getInteger("evidenzlevel_propcat_version")
+                    )
+            );
+        }
+
+        if (null != resultSet.getString("art_der_therapie")) {
+            resultBuilder.code(
+                    getMtbProcedureRecommendationCategoryCoding(
+                            resultSet.getString("art_der_therapie"),
+                            resultSet.getInteger("art_der_therapie_propcat_version")
+                    )
+            );
+        }
+
+        return resultBuilder.build();
     }
 
     @Override
@@ -60,27 +68,9 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractEinzelempfehlung
                 .stream()
                 // Filter Prozedurempfehlung (Weitere Empfehlungen)
                 .filter(it -> it.getString("art_der_therapie") != null && !it.getString("art_der_therapie").isBlank())
+                .filter(it -> "sonstige".equals(it.getString("empfehlungskategorie")))
                 .map(this::map)
                 .collect(Collectors.toList());
-    }
-
-    private RecommendationPriorityCoding getRecommendationPriorityCoding(String code, int version) {
-        if (code == null || !Arrays.stream(RecommendationPriorityCodingCode.values()).map(RecommendationPriorityCodingCode::toValue).collect(Collectors.toSet()).contains(code)) {
-            return null;
-        }
-
-        var resultBuilder = RecommendationPriorityCoding.builder()
-                .system("dnpm-dip/recommendation/priority");
-
-        try {
-            resultBuilder
-                    .code(RecommendationPriorityCodingCode.forValue(code))
-                    .display(code);
-        } catch (IOException e) {
-            return null;
-        }
-
-        return resultBuilder.build();
     }
 
     private MtbProcedureRecommendationCategoryCoding getMtbProcedureRecommendationCategoryCoding(String code, int version) {

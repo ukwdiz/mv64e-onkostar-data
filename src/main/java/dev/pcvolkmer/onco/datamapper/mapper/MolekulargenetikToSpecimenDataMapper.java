@@ -6,6 +6,7 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
@@ -109,6 +110,7 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
         );
 
         return osMolGen.stream()
+                .filter(Objects::nonNull)
                 .map(this::getById)
                 .peek(it -> it.setDiagnosis(diagnoseReferenz))
                 .collect(Collectors.toList());

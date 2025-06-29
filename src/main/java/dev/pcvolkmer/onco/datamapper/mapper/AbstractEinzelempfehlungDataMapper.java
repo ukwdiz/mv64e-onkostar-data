@@ -4,6 +4,7 @@ import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -16,6 +17,25 @@ public abstract class AbstractEinzelempfehlungDataMapper<T> extends AbstractSubf
 
     protected AbstractEinzelempfehlungDataMapper(EinzelempfehlungCatalogue einzelempfehlungCatalogue) {
         super(einzelempfehlungCatalogue);
+    }
+
+    protected RecommendationPriorityCoding getRecommendationPriorityCoding(String code, int version) {
+        if (code == null || !Arrays.stream(RecommendationPriorityCodingCode.values()).map(RecommendationPriorityCodingCode::toValue).collect(Collectors.toSet()).contains(code)) {
+            return null;
+        }
+
+        var resultBuilder = RecommendationPriorityCoding.builder()
+                .system("dnpm-dip/recommendation/priority");
+
+        try {
+            resultBuilder
+                    .code(RecommendationPriorityCodingCode.forValue(code))
+                    .display(code);
+        } catch (IOException e) {
+            return null;
+        }
+
+        return resultBuilder.build();
     }
 
     protected LevelOfEvidence getLevelOfEvidence(ResultSet resultSet) {
