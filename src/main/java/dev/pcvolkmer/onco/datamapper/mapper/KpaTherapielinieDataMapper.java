@@ -47,7 +47,17 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
         builder
                 .id(resultSet.getString("id"))
                 .patient(getPatientReference(resultSet.getString("patient_id")))
-                .basedOn(Reference.builder().id(diseases.get(0).getString("id")).build())
+                .basedOn(
+                        Reference.builder()
+                                .id(resultSet.getString("ref_einzelempfehlung"))
+                                .build()
+                )
+                .reason(
+                        Reference.builder()
+                                .id(diseases.get(0).getString("id"))
+                                .type("MTBDiagnosis")
+                                .build()
+                )
                 .therapyLine(resultSet.getLong("nummer"))
                 .recordedOn(resultSet.getDate("erfassungsdatum"))
                 .intent(
@@ -75,11 +85,6 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                                 .build()
                 )
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")))
-                .reason(
-                        Reference.builder()
-                                .id(resultSet.getString("ref_einzelempfehlung"))
-                                .build()
-                )
         ;
 
         if (resultSet.getString("stellung_propcat_version") != null) {
