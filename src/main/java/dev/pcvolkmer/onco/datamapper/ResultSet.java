@@ -20,6 +20,7 @@
 
 package dev.pcvolkmer.onco.datamapper;
 
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 
 import java.time.LocalDate;
@@ -60,6 +61,22 @@ public class ResultSet {
             throw new DataAccessException("No procedure id found");
         }
         return procedureId;
+    }
+
+    /**
+     * Get the id
+     *
+     * @return The procedures id
+     */
+    public Reference getPatientReference() {
+        if (this.getString("patienten_id") == null) {
+            throw new DataAccessException("No patient id found");
+        }
+        return Reference.builder()
+                .id(this.getString("patienten_id"))
+                // Use "Patient" since Onkostar only provides patient data
+                .type("Patient")
+                .build();
     }
 
     /**

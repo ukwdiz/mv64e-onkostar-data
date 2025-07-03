@@ -78,12 +78,15 @@ class TherapieplanDataMapperTest {
     void shouldCreateCarePlan(@Mock ResultSet resultSet) {
         final var testData = Map.of(
                 "id", "1",
-                "patient_id", "42",
+                "patienten_id", "42",
                 "wirkstoffe_json", "[{\"code\":\"\",\"name\":\"PARP-Inhibierung\",\"system\":\"UNREGISTERED\"}]",
                 "protokollauszug", "Das ist ein Protokollauszug",
                 "mit_einzelempfehlung", true,
                 "empfehlungskategorie", "systemisch"
         );
+
+        doAnswer(invocationOnMock -> Reference.builder().id(testData.get("patienten_id").toString()).type("Patient").build())
+                .when(resultSet).getPatientReference();
 
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
@@ -119,7 +122,7 @@ class TherapieplanDataMapperTest {
     void shouldSetRecommendationsMissingReason() {
         final Map<String, Object> testData = Map.of(
                 "id", 1,
-                "patient_id", 42,
+                "patienten_id", 42,
                 "status_begruendung", "no-target"
         );
 
@@ -145,7 +148,7 @@ class TherapieplanDataMapperTest {
     void shouldSetNoSequencingPerformedReason() {
         final Map<String, Object> testData = Map.of(
                 "id", 1,
-                "patient_id", 42,
+                "patienten_id", 42,
                 "status_begruendung", "non-genetic-cause"
         );
 
@@ -171,7 +174,7 @@ class TherapieplanDataMapperTest {
     void shouldMapHumGenBeratung() {
         final Map<String, Object> testData = Map.of(
                 "id", 1,
-                "patient_id", 42,
+                "patienten_id", 42,
                 "humangen_beratung", 1,
                 "humangen_ber_grund", "other",
                 "humangen_ber_grund_propcat_version", 1234

@@ -29,8 +29,6 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
 
 import java.util.List;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_prozedur'
  *
@@ -66,7 +64,7 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
         var builder = OncoProcedure.builder();
         builder
                 .id(resultSet.getString("id"))
-                .patient(getPatientReference(resultSet.getString("patient_id")))
+                .patient(resultSet.getPatientReference())
                 .basedOn(Reference.builder().id(diseases.get(0).getString("id")).build())
                 .recordedOn(resultSet.getDate("erfassungsdatum"))
                 .therapyLine(resultSet.getLong("therapielinie"))

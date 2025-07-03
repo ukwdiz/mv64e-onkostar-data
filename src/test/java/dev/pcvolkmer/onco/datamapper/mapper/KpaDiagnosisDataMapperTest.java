@@ -72,6 +72,9 @@ class KpaDiagnosisDataMapperTest {
 
     @Test
     void shouldCreateDiagnosis(@Mock ResultSet resultSet) {
+        doAnswer(invocationOnMock -> Reference.builder().id(testData().get("patienten_id").toString()).type("Patient").build())
+                .when(resultSet).getPatientReference();
+
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);
             return testData().get(columnName);
@@ -97,7 +100,7 @@ class KpaDiagnosisDataMapperTest {
         return Map.of(
                 "id", "1",
                 "icd10", "F79.9",
-                "patient_id", "42"
+                "patienten_id", "42"
         );
     }
 

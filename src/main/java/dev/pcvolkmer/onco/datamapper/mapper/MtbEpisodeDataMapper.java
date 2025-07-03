@@ -28,8 +28,6 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 
 import java.util.List;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map patient data from database table 'dk_dnpm_kpa'
  *
@@ -63,7 +61,7 @@ public class MtbEpisodeDataMapper implements DataMapper<MtbEpisodeOfCare> {
         var builder = MtbEpisodeOfCare.builder();
         builder
                 .id(kpaData.getString("id"))
-                .patient(getPatientReference(kpaData.getString("patient_id")))
+                .patient(kpaData.getPatientReference())
                 .diagnoses(
                         List.of(
                                 Reference.builder()

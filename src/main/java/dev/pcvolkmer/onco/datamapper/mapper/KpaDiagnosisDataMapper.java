@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map diagnosis data from database table 'dk_dnpm_kpa'
  *
@@ -72,7 +70,7 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
         var builder = MtbDiagnosis.builder();
         builder
                 .id(data.getString("id"))
-                .patient(getPatientReference(data.getString("patient_id")))
+                .patient(data.getPatientReference())
                 .code(
                         Coding.builder()
                                 .code(data.getString("icd10"))

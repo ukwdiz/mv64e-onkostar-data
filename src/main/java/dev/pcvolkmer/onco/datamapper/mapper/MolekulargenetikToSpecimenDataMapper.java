@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map patient data from database table 'dk_molekulargenetik'
  *
@@ -76,7 +74,7 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
         var builder = TumorSpecimen.builder();
         builder
                 .id(data.getString("id"))
-                .patient(getPatientReference(data.getString("patient_id")))
+                .patient(data.getPatientReference())
                 .type(getTumorSpecimenCoding(data.getString("materialfixierung")))
                 .collection(getCollection(data))
         // TODO add diagnosis later

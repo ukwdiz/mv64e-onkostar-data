@@ -61,7 +61,7 @@ class TherapielinieCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_therapielinie JOIN prozedur ON (prozedur.id = dk_dnpm_therapielinie.id) WHERE geloescht = 0 AND prozedur.id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_therapielinie.*, prozedur.* FROM dk_dnpm_therapielinie JOIN prozedur ON (prozedur.id = dk_dnpm_therapielinie.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
     }
 
     @Test
@@ -76,7 +76,7 @@ class TherapielinieCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_therapielinie JOIN prozedur ON (prozedur.id = dk_dnpm_therapielinie.id) WHERE geloescht = 0 AND hauptprozedur_id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_therapielinie.*, prozedur.* FROM dk_dnpm_therapielinie JOIN prozedur ON (prozedur.id = dk_dnpm_therapielinie.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND hauptprozedur_id = ?");
     }
 
 }

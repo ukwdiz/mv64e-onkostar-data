@@ -22,14 +22,15 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.RebiopsieCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.ReevaluationCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapieplanCatalogue;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
 
 /**
  * Mapper class to load and map patient data from database table 'dk_dnpm_therapieplan'
@@ -78,7 +79,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
         var builder = MtbCarePlan.builder();
         builder
                 .id(therapieplanData.getString("id"))
-                .patient(getPatientReference(therapieplanData.getString("patient_id")))
+                .patient(therapieplanData.getPatientReference())
                 .issuedOn(therapieplanData.getDate("datum"))
                 .histologyReevaluationRequests(getHistologyReevaluationRequests(id))
                 .rebiopsyRequests(
@@ -125,7 +126,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
             builder.geneticCounselingRecommendation(
                     GeneticCounselingRecommendation.builder()
                             .id(therapieplanData.getString("id"))
-                            .patient(getPatientReference(therapieplanData.getString("patient_id")))
+                            .patient(therapieplanData.getPatientReference())
                             .issuedOn(therapieplanData.getDate("datum_tk_humangenber"))
                             .reason(
                                     getGeneticCounselingRecommendationReasonCoding(
@@ -177,7 +178,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                 .map(resultSet ->
                         RebiopsyRequest.builder()
                                 .id(resultSet.getString("id"))
-                                .patient(getPatientReference(resultSet.getString("patient_id")))
+                                .patient(resultSet.getPatientReference())
                                 .issuedOn(resultSet.getDate("datum"))
                                 .tumorEntity(diagnosisReference)
                                 .build()
@@ -190,7 +191,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                 .map(resultSet ->
                         HistologyReevaluationRequest.builder()
                                 .id(resultSet.getString("id"))
-                                .patient(getPatientReference(resultSet.getString("patient_id")))
+                                .patient(resultSet.getPatientReference())
                                 .issuedOn(resultSet.getDate("datum"))
                                 .specimen(Reference.builder().id(resultSet.getString("ref_molekulargenetik")).build())
                                 .build()

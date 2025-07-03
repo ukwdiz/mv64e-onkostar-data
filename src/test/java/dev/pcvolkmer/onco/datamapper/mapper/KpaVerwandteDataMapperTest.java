@@ -58,9 +58,12 @@ class KpaVerwandteDataMapperTest {
     void shouldMapResultSet(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "id", "1",
-                "patient_id", "42",
+                "patienten_id", "42",
                 "verwandtschaftsgrad", "EXT"
         );
+
+        doAnswer(invocationOnMock -> Reference.builder().id(testData.get("patienten_id")).type("Patient").build())
+                .when(resultSet).getPatientReference();
 
         doAnswer(invocationOnMock -> {
             var columnName = invocationOnMock.getArgument(0, String.class);

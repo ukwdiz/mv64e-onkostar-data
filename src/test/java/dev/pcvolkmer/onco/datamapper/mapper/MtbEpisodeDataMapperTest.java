@@ -62,7 +62,7 @@ class MtbEpisodeDataMapperTest {
     void shouldMapData() {
         final Map<String, Object> kpaData = Map.of(
                 "id", 4711,
-                "patient_id", 42,
+                "patienten_id", 42,
                 "anmeldedatummtb", new java.sql.Date(Date.from(Instant.parse("2025-06-28T12:00:00Z")).getTime())
         );
 

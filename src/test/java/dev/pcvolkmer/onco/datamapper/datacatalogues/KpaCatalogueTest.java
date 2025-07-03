@@ -63,7 +63,7 @@ class KpaCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT * FROM dk_dnpm_kpa JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) WHERE geloescht = 0 AND prozedur.id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_kpa.*, prozedur.* FROM dk_dnpm_kpa JOIN prozedur ON (prozedur.id = dk_dnpm_kpa.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
     }
 
     @Test

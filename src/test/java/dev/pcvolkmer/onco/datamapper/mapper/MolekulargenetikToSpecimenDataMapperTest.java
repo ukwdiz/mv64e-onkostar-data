@@ -111,7 +111,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
             return ResultSet.from(
                     Map.of(
                             "id", id,
-                            "patient_id", 4711,
+                            "patienten_id", 4711,
                             "entnahmemethode", "B",
                             "probenmaterial", "T"
                     )
@@ -164,7 +164,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
             return ResultSet.from(
                     Map.of(
                             "id", id,
-                            "patient_id", 4711,
+                            "patienten_id", 4711,
                             "entnahmemethode", "B",
                             "probenmaterial", "T"
                     )
@@ -201,7 +201,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
             return ResultSet.from(
                     Map.of(
                             "id", id,
-                            "patient_id", 4711,
+                            "patienten_id", 4711,
                             "materialfixierung", value,
                             "entnahmemethode", "B",
                             "probenmaterial", "T"
@@ -278,7 +278,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
             return ResultSet.from(
                     Map.of(
                             "id", id,
-                            "patient_id", 4711,
+                            "patienten_id", 4711,
                             "entnahmemethode", value,
                             "probenmaterial", "T"
                     )
@@ -348,7 +348,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
             return ResultSet.from(
                     Map.of(
                             "id", id,
-                            "patient_id", 4711,
+                            "patienten_id", 4711,
                             "entnahmemethode", "B",
                             "probenmaterial", value
                     )

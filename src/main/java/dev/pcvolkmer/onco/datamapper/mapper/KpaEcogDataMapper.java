@@ -32,8 +32,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_ecog'
  *
@@ -49,7 +47,7 @@ public class KpaEcogDataMapper extends AbstractSubformDataMapper<PerformanceStat
     /**
      * Loads and maps Prozedur related by database id
      *
-     * @param id The database id of the procedure data set
+     * @param id The patient id of the procedure data set
      * @return The loaded data set
      */
     @Override
@@ -72,7 +70,7 @@ public class KpaEcogDataMapper extends AbstractSubformDataMapper<PerformanceStat
         var builder = PerformanceStatus.builder();
         builder
                 .id(resultSet.getId().toString())
-                .patient(getPatientReference(resultSet.getString("patient_id")))
+                .patient(resultSet.getPatientReference())
                 .effectiveDate(resultSet.getDate("datum"))
                 .value(getEcogCoding(resultSet.getString("ecog")))
         ;

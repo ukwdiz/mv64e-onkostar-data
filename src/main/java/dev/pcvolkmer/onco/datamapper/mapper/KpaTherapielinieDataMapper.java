@@ -29,8 +29,6 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
 
 import java.util.List;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_therapielinie'
  *
@@ -66,7 +64,7 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
         var builder = MtbSystemicTherapy.builder();
         builder
                 .id(resultSet.getString("id"))
-                .patient(getPatientReference(resultSet.getString("patient_id")))
+                .patient(resultSet.getPatientReference())
                 .basedOn(
                         Reference.builder()
                                 .id(resultSet.getString("ref_einzelempfehlung"))

@@ -29,8 +29,6 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.VerwandteCatalogue;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_verwandte'
  *
@@ -60,7 +58,7 @@ public class KpaVerwandteDataMapper extends AbstractSubformDataMapper<FamilyMemb
         var builder = FamilyMemberHistory.builder();
         builder
                 .id(resultSet.getId().toString())
-                .patient(getPatientReference(resultSet.getString("patient_id")))
+                .patient(resultSet.getPatientReference())
                 .relationship(
                         getFamilyMemberHistoryRelationshipTypeCoding(resultSet.getString("verwandtschaftsgrad"))
                 )

@@ -23,7 +23,7 @@ var jsonResult = Converter.toJsonString(
 ```
 
 Es ist auch möglich, die Daten anhand der Patienten-ID und dem Tumoridentifikator zu ermitteln.
-Hierbei wird das letzte Formular `DNPM Klinik/Anamnese` andhand des Anmeldedatums MTB
+Hierbei wird das letzte Formular `DNPM Klinik/Anamnese` anhand des Anmeldedatums MTB
 ausgewählt und verwendet.
 
 ```
@@ -38,7 +38,7 @@ var jsonResult = Converter.toJsonString(
 
 | DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                                      |
 |----------------------------------|--------|--------------------------------------------------------------------------------|
-| Patient                          | ✅      | Verwendet Datenbank-ID, keine managing Site                                    |
+| Patient                          | ✅      | Verwendet Patienten-ID, nicht Datenbank-ID. Keine Managing Site                |
 | Episoden                         | ✅      |                                                                                |
 | Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode                 |
 | Verwandten-Diagnosen             | ✅      |                                                                                |

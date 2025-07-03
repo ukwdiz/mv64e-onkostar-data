@@ -30,8 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.pcvolkmer.onco.datamapper.mapper.MapperUtils.getPatientReference;
-
 /**
  * Mapper class to load and map diagnosis data from database table 'dk_dnpm_einzelempfehlung'
  *
@@ -54,7 +52,7 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
     protected MtbMedicationRecommendation map(ResultSet resultSet) {
         var resultBuilder = MtbMedicationRecommendation.builder()
                 .id(resultSet.getString("id"))
-                .patient(getPatientReference(resultSet.getString("patient_id")))
+                .patient(resultSet.getPatientReference())
                 // TODO Fix id?
                 .reason(Reference.builder().id(resultSet.getString("id")).build())
                 .issuedOn(resultSet.getDate("datum"))
