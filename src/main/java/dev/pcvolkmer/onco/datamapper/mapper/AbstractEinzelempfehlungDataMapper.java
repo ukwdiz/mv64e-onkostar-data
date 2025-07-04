@@ -195,7 +195,7 @@ public abstract class AbstractEinzelempfehlungDataMapper<T> extends AbstractSubf
                                     .type("Publication")
                                     .build();
                         }
-                        if (line.matches("^\\d{2}\\.\\d{4}/\\d+$")) {
+                        if (line.matches("^\\d{2}\\.\\d{4}/\\d+(\\.\\d+)?$")) {
                             return PublicationReference.builder()
                                     .id(line)
                                     .system(PublicationSystem.DOI_ORG)
