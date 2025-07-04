@@ -51,7 +51,7 @@ var jsonResult = Converter.toJsonString(
 | IHC-Berichte                     |        |                                                                                |
 | MSI-Befunde                      |        |                                                                                |
 | NGS-Berichte                     | ⌛      | Aktuell in Arbeit                                                              |
-| MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV              |
+| MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV (2)          |
 | Follow-Up Verlauf                |        |                                                                                |
 | Antrag Kostenübernahme           |        |                                                                                |
 | Antwort Kostenübernahme          |        |                                                                                |
@@ -61,8 +61,7 @@ var jsonResult = Converter.toJsonString(
 ### Hinweise
 
 1. Nicht alle möglichen Ausprägungen in `OS.Molekulargenetik` vorhanden.
-2. Nach Implementierung Mapping von HGNC-Symbol (Gen-Name) zu HGNC-ID ist die Angabe der optionalen stützenden
-   molekularen Alteration(en) möglich.
+2. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
 
 ## Enthaltene Liste mit Genen
 
