@@ -42,7 +42,7 @@ public class EinzelempfehlungStudieDataMapper extends AbstractEinzelempfehlungDa
 
     @Override
     protected MtbStudyEnrollmentRecommendation map(ResultSet resultSet) {
-        return MtbStudyEnrollmentRecommendation.builder()
+        var resultBuilder = MtbStudyEnrollmentRecommendation.builder()
                 .id(resultSet.getString("id"))
                 .patient(resultSet.getPatientReference())
                 // TODO Fix id?
@@ -56,8 +56,16 @@ public class EinzelempfehlungStudieDataMapper extends AbstractEinzelempfehlungDa
                 )
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
                 .levelOfEvidence(getLevelOfEvidence(resultSet))
-                .study(JsonToStudyMapper.map(resultSet.getString("studien_alle_json")))
-                .build();
+                .study(JsonToStudyMapper.map(resultSet.getString("studien_alle_json")));
+
+        // As of now: Simple variant and CSV only!
+        if (null != resultSet.getString("st_mol_alt_variante_json")) {
+            resultBuilder.supportingVariants(
+                    JsonToMolAltVarianteMapper.map(resultSet.getString("st_mol_alt_variante_json"))
+            );
+        }
+
+        return resultBuilder.build();
     }
 
     @Override

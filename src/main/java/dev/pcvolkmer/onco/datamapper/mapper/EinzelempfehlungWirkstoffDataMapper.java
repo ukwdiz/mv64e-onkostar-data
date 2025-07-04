@@ -83,8 +83,11 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
             );
         }
 
-        if (null != resultSet.getString("st_mol_alt_variante")) {
-            // Empty for now
+        // As of now: Simple variant and CSV only!
+        if (null != resultSet.getString("st_mol_alt_variante_json")) {
+            resultBuilder.supportingVariants(
+                    JsonToMolAltVarianteMapper.map(resultSet.getString("st_mol_alt_variante_json"))
+            );
         }
 
         return resultBuilder.build();

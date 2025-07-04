@@ -72,6 +72,13 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractEinzelempfehlung
             );
         }
 
+        // As of now: Simple variant and CSV only! - Not used but present for completeness
+        if (null != resultSet.getString("st_mol_alt_variante_json")) {
+            resultBuilder.supportingVariants(
+                    JsonToMolAltVarianteMapper.map(resultSet.getString("st_mol_alt_variante_json"))
+            );
+        }
+
         return resultBuilder.build();
     }
 
