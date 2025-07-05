@@ -22,6 +22,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 
@@ -67,7 +68,10 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
                 .patient(data.getPatientReference())
                 .issuedOn(data.getDate("datum"))
                 .specimen(Reference.builder().id(data.getString("einsendenummer")).type("Specimen").build())
-                .results(this.getNgsReportResults(id))
+                // TODO: OS.MolDiagSequenzierung kennt keine Unterscheidung zwischen 'genome-long-read' und 'genome-short-read'! -> OTHER
+                .type(getNgsReportCoding(data.getString("artdersequenzierung")))
+                .metadata(List.of(getNgsReportMetadata(data.getString("artdersequenzierung"))))
+                .results(this.getNgsReportResults(data))
         ;
 
         return builder.build();
@@ -87,10 +91,24 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
                 .collect(Collectors.toList());
     }
 
-    private NgsReportResults getNgsReportResults(int id) {
-        var subforms = this.untersuchungCatalogue.getAllByParentId(id);
+    private NgsReportResults getNgsReportResults(ResultSet resultSet) {
+        var subforms = this.untersuchungCatalogue.getAllByParentId(resultSet.getId());
 
         var resultBuilder = NgsReportResults.builder();
+
+        // TODO: Aktuell nicht eingebunden, da Fehler, wenn nicht bioinformatisch gemäß: https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144!
+        //  In Würzburg immer histologisch!
+        /*if (null != resultSet.getLong("tumorzellgehalt")) {
+            resultBuilder.tumorCellContent(
+                    TumorCellContent.builder()
+                            .id(resultSet.getId().toString())
+                            .patient(resultSet.getPatientReference())
+                            .specimen(Reference.builder().id(resultSet.getString("einsendenummer")).type("Specimen").build())
+                            .value(resultSet.getLong("tumorzellgehalt"))
+                            .build()
+            );
+        }*/
+
         resultBuilder.simpleVariants(
                 subforms.stream()
                         // P => Einfache Variante
@@ -163,4 +181,45 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
         return resultBuilder.build();
     }
 
+    private NgsReportCoding getNgsReportCoding(final String artdersequenzierung) {
+        switch (artdersequenzierung) {
+            case "WES":
+                return NgsReportCoding.builder()
+                        .code(NgsReportCodingCode.EXOME)
+                        .display("Exome")
+                        .system("http://bwhc.de/mtb/somatic-ngs-report/sequencing-type")
+                        .build();
+            case "PanelKit":
+                return NgsReportCoding.builder()
+                        .code(NgsReportCodingCode.PANEL)
+                        .display("Panel")
+                        .system("http://bwhc.de/mtb/somatic-ngs-report/sequencing-type")
+                        .build();
+            default:
+                return NgsReportCoding.builder()
+                        .code(NgsReportCodingCode.OTHER)
+                        .display("Other")
+                        .system("http://bwhc.de/mtb/somatic-ngs-report/sequencing-type")
+                        .build();
+        }
+    }
+
+    private NgsReportMetadata getNgsReportMetadata(final String artdersequenzierung) {
+        var resultBuilder = NgsReportMetadata.builder();
+
+        switch(artdersequenzierung) {
+            // TODO: Replace with real data in properties file
+            default:
+                resultBuilder
+                        .sequencer("")
+                        .kitManufacturer("")
+                        .pipeline("")
+                        .kitType("")
+                        .kitManufacturer("")
+                        .referenceGenome("")
+                ;
+        }
+
+        return resultBuilder.build();
+    }
 }

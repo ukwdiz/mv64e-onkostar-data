@@ -50,8 +50,8 @@ var jsonResult = Converter.toJsonString(
 | Histologie-Berichte              | ⌛      | Aktuell in Arbeit                                                              |
 | IHC-Berichte                     |        |                                                                                |
 | MSI-Befunde                      |        |                                                                                |
-| NGS-Berichte                     | ⌛      | Aktuell in Arbeit                                                              |
-| MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV (2)          |
+| NGS-Berichte                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2) |
+| MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV (3)          |
 | Follow-Up Verlauf                |        |                                                                                |
 | Antrag Kostenübernahme           |        |                                                                                |
 | Antwort Kostenübernahme          |        |                                                                                |
@@ -61,7 +61,9 @@ var jsonResult = Converter.toJsonString(
 ### Hinweise
 
 1. Nicht alle möglichen Ausprägungen in `OS.Molekulargenetik` vorhanden.
-2. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
+2. Aktuell nicht alle Angaben effektiv im Formular `OS.Molekulargenetik` wie gefordert angebbar.
+   Hinweis: Tumorzellgehalt-Methode problematisch, wenn auch im NGS-Bericht histologisch festgestellt.
+3. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
 
 ## Enthaltene Liste mit Genen
 
