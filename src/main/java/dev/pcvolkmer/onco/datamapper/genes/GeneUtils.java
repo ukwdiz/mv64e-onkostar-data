@@ -20,6 +20,7 @@
 
 package dev.pcvolkmer.onco.datamapper.genes;
 
+import dev.pcvolkmer.mv64e.mtb.Coding;
 import org.apache.commons.csv.CSVFormat;
 
 import java.io.IOException;
@@ -46,6 +47,14 @@ public class GeneUtils {
 
     public static Optional<Gene> findBySymbol(String symbol) {
         return genes().stream().filter(gene -> gene.getSymbol().equalsIgnoreCase(symbol)).findFirst();
+    }
+
+    public static Coding toCoding(Gene gene) {
+        return Coding.builder()
+                .code(gene.getHgncId())
+                .display(gene.getSymbol())
+                .system("https://www.genenames.org/")
+                .build();
     }
 
     private static List<Gene> genes() {

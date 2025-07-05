@@ -93,6 +93,8 @@ public class DataCatalogueFactory {
                 return EinzelempfehlungCatalogue.create(jdbcTemplate);
             } else if (c == MolekulargenetikCatalogue.class) {
                 return MolekulargenetikCatalogue.create(jdbcTemplate);
+            } else if (c == MolekulargenuntersuchungCatalogue.class) {
+                return MolekulargenuntersuchungCatalogue.create(jdbcTemplate);
             } else if (c == RebiopsieCatalogue.class) {
                 return RebiopsieCatalogue.create(jdbcTemplate);
             } else if (c == ReevaluationCatalogue.class) {

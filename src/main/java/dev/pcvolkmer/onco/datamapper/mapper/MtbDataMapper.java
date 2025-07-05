@@ -124,6 +124,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 propertyCatalogue
         );
 
+        var kpaMolekulargenetikDataMapper = new KpaMolekulargenetikDataMapper(molekulargenetikCatalogue, catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class), propertyCatalogue);
+
         var resultBuilder = Mtb.builder();
 
         try {
@@ -156,6 +158,11 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                                 Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()
                         )
                     )
+                    // NGS Berichte
+                    .ngsReports(
+                        kpaMolekulargenetikDataMapper.getAllByKpaId(kpaId)
+                    )
+
             ;
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);

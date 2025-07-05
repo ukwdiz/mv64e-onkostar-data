@@ -23,7 +23,6 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.pcvolkmer.mv64e.mtb.Coding;
 import dev.pcvolkmer.mv64e.mtb.GeneAlterationReference;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
@@ -53,19 +52,11 @@ public class JsonToMolAltVarianteMapper {
                     }).stream()
                     .map(variante -> {
                         var resultBuilder = GeneAlterationReference.builder();
-                        GeneUtils.findBySymbol(variante.getGen()).ifPresent(gene -> {
-                            resultBuilder
-                                    .gene(
-                                            Coding.builder()
-                                                    .code(gene.getHgncId())
-                                                    .display(gene.getSymbol())
-                                                    .system("https://www.genenames.org/")
-                                                    .build()
-                                    )
-                                    .variant(
-                                            Reference.builder().id(variante.id).type("Variant").build()
-                                    );
-                        });
+                        GeneUtils.findBySymbol(variante.getGen()).ifPresent(gene -> resultBuilder
+                                .gene(GeneUtils.toCoding(gene))
+                                .variant(
+                                        Reference.builder().id(variante.id).type("Variant").build()
+                                ));
                         return resultBuilder.build();
                     })
                     .collect(Collectors.toList());

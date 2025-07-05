@@ -20,7 +20,11 @@
 
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Load raw result sets from database table 'dk_molekulargenetik'
@@ -28,7 +32,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class MolekulargenetikCatalogue extends AbstractSubformDataCatalogue {
+public class MolekulargenetikCatalogue extends AbstractDataCatalogue {
 
     private MolekulargenetikCatalogue(JdbcTemplate jdbcTemplate) {
         super(jdbcTemplate);
@@ -41,6 +45,57 @@ public class MolekulargenetikCatalogue extends AbstractSubformDataCatalogue {
 
     public static MolekulargenetikCatalogue create(JdbcTemplate jdbcTemplate) {
         return new MolekulargenetikCatalogue(jdbcTemplate);
+    }
+
+    /**
+     * Get procedure IDs by related Therapieplan procedure id
+     * Related form references in Einzelempfehlung, Rebiopsie, Reevaluation
+     *
+     * @param therapieplanId The procedure id
+     * @return The procedure ids
+     */
+    public List<Integer> getByTherapieplanId(int therapieplanId) {
+        return this.jdbcTemplate.queryForList(
+                        "SELECT DISTINCT ref_molekulargenetik FROM dk_dnpm_uf_einzelempfehlung JOIN prozedur ON (prozedur.id = dk_dnpm_uf_einzelempfehlung.id) "
+                                + " WHERE ref_molekulargenetik IS NOT NULL AND hauptprozedur_id = ? "
+                                + " UNION SELECT ref_molekulargenetik FROM dk_dnpm_uf_rebiopsie JOIN prozedur ON (prozedur.id = dk_dnpm_uf_rebiopsie.id) "
+                                + " WHERE ref_molekulargenetik IS NOT NULL AND hauptprozedur_id = ? "
+                                + " UNION SELECT ref_molekulargenetik FROM dk_dnpm_uf_reevaluation JOIN prozedur ON (prozedur.id = dk_dnpm_uf_reevaluation.id) "
+                                + " WHERE ref_molekulargenetik IS NOT NULL AND hauptprozedur_id = ?;"
+                        ,
+                        therapieplanId,
+                        therapieplanId,
+                        therapieplanId)
+                .stream()
+                .map(ResultSet::from)
+                .map(rs -> rs.getInteger("ref_molekulargenetik"))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get procedure IDs used in related KPA/Therapieplan procedures
+     * Related form references in Einzelempfehlung, Rebiopsie, Reevaluation
+     *
+     * @param kpaId The procedure id
+     * @return The procedure ids
+     */
+    public List<Integer> getIdsByKpaId(int kpaId) {
+        return this.jdbcTemplate.queryForList(
+                        "SELECT DISTINCT ref_molekulargenetik FROM dk_dnpm_uf_einzelempfehlung JOIN prozedur ON (prozedur.id = dk_dnpm_uf_einzelempfehlung.id) "
+                                + " WHERE ref_molekulargenetik IS NOT NULL AND hauptprozedur_id IN (SELECT id FROM dk_dnpm_therapieplan WHERE ref_dnpm_klinikanamnese = ?) "
+                                + " UNION SELECT ref_molekulargenetik FROM dk_dnpm_uf_rebiopsie JOIN prozedur ON (prozedur.id = dk_dnpm_uf_rebiopsie.id) "
+                                + " WHERE ref_molekulargenetik IS NOT NULL AND hauptprozedur_id IN (SELECT id FROM dk_dnpm_therapieplan WHERE ref_dnpm_klinikanamnese = ?) "
+                                + " UNION SELECT ref_molekulargenetik FROM dk_dnpm_uf_reevaluation JOIN prozedur ON (prozedur.id = dk_dnpm_uf_reevaluation.id) "
+                                + " WHERE ref_molekulargenetik IS NOT NULL AND hauptprozedur_id IN (SELECT id FROM dk_dnpm_therapieplan WHERE ref_dnpm_klinikanamnese = ?);"
+                        ,
+                        kpaId,
+                        kpaId,
+                        kpaId)
+                .stream()
+                .map(ResultSet::from)
+                .map(rs -> rs.getInteger("ref_molekulargenetik"))
+                .distinct()
+                .collect(Collectors.toList());
     }
 
 }

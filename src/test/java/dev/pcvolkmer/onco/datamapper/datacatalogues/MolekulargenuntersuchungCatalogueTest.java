@@ -38,15 +38,15 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class MolekulargenetikCatalogueTest {
+class MolekulargenuntersuchungCatalogueTest {
 
     JdbcTemplate jdbcTemplate;
-    MolekulargenetikCatalogue catalogue;
+    MolekulargenuntersuchungCatalogue catalogue;
 
     @BeforeEach
     void setUp(@Mock JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.catalogue = MolekulargenetikCatalogue.create(jdbcTemplate);
+        this.catalogue = MolekulargenuntersuchungCatalogue.create(jdbcTemplate);
     }
 
     @Test
@@ -61,7 +61,22 @@ class MolekulargenetikCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT patient.patienten_id, dk_molekulargenetik.*, prozedur.* FROM dk_molekulargenetik JOIN prozedur ON (prozedur.id = dk_molekulargenetik.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_molekulargenuntersuchung.*, prozedur.* FROM dk_molekulargenuntersuchung JOIN prozedur ON (prozedur.id = dk_molekulargenuntersuchung.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
+    }
+
+    @Test
+    void shouldUseCorrectSubformQuery(@Mock Map<String, Object> resultSet) {
+        doAnswer(invocationOnMock -> List.of(resultSet))
+                .when(jdbcTemplate)
+                .queryForList(anyString(), anyInt());
+
+        this.catalogue.getAllByParentId(1);
+
+        var captor = ArgumentCaptor.forClass(String.class);
+        verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
+
+        assertThat(captor.getValue())
+                .isEqualTo("SELECT patient.patienten_id, dk_molekulargenuntersuchung.*, prozedur.* FROM dk_molekulargenuntersuchung JOIN prozedur ON (prozedur.id = dk_molekulargenuntersuchung.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND hauptprozedur_id = ?");
     }
 
 }
