@@ -51,7 +51,7 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
     public List<ResultSet> getAllByParentId(int id) {
         return this.jdbcTemplate.queryForList(
                         String.format(
-                                "SELECT patient.patienten_id, %s.*, prozedur.* FROM %s JOIN prozedur ON (prozedur.id = %s.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND hauptprozedur_id = ?",
+                                "SELECT patient.patienten_id, %s.*, prozedur.patient_id, prozedur.hauptprozedur_id FROM %s JOIN prozedur ON (prozedur.id = %s.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND hauptprozedur_id = ?",
                                 getTableName(),
                                 getTableName(),
                                 getTableName()

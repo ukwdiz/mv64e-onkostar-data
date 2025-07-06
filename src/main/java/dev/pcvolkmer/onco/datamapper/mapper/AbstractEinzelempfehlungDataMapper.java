@@ -212,4 +212,23 @@ public abstract class AbstractEinzelempfehlungDataMapper<T> extends AbstractSubf
 
         return resultBuilder.build();
     }
+
+    protected RecommendationPriorityCoding getRecommendationPriorityCoding(int value) {
+        var resultBuilder = RecommendationPriorityCoding.builder()
+                .system("dnpm-dip/recommendation/priority")
+                .display(String.format("%d", value));
+        switch (value) {
+            case 1:
+                resultBuilder.code(RecommendationPriorityCodingCode.CODE_1);
+            case 2:
+                resultBuilder.code(RecommendationPriorityCodingCode.CODE_3);
+            case 3:
+                resultBuilder.code(RecommendationPriorityCodingCode.CODE_3);
+            case 4:
+            default:
+                resultBuilder.code(RecommendationPriorityCodingCode.CODE_4);
+        }
+
+        return resultBuilder.build();
+    }
 }

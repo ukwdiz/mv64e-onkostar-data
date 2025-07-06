@@ -53,15 +53,10 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
         var resultBuilder = MtbMedicationRecommendation.builder()
                 .id(resultSet.getString("id"))
                 .patient(resultSet.getPatientReference())
+                .priority(getRecommendationPriorityCoding(resultSet.getInteger("prio")))
                 // TODO Fix id?
                 .reason(Reference.builder().id(resultSet.getString("id")).build())
                 .issuedOn(resultSet.getDate("datum"))
-                .priority(
-                        getRecommendationPriorityCoding(
-                                resultSet.getString("evidenzlevel"),
-                                resultSet.getInteger("evidenzlevel_propcat_version")
-                        )
-                )
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
                 .levelOfEvidence(getLevelOfEvidence(resultSet));
 

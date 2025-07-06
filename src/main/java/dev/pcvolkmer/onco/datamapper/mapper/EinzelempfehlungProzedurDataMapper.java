@@ -20,10 +20,7 @@
 
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCoding;
-import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCodingCode;
-import dev.pcvolkmer.mv64e.mtb.ProcedureRecommendation;
-import dev.pcvolkmer.mv64e.mtb.Reference;
+import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 
@@ -49,6 +46,7 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractEinzelempfehlung
         var resultBuilder = ProcedureRecommendation.builder()
                 .id(resultSet.getString("id"))
                 .patient(resultSet.getPatientReference())
+                .priority(getRecommendationPriorityCoding(resultSet.getInteger("prio")))
                 // TODO Fix id?
                 .reason(Reference.builder().id(resultSet.getString("id")).build())
                 .issuedOn(resultSet.getDate("datum"))

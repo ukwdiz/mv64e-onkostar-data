@@ -96,18 +96,20 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
 
         var resultBuilder = NgsReportResults.builder();
 
-        // TODO: Aktuell nicht eingebunden, da Fehler, wenn nicht bioinformatisch gemäß: https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144!
+        // TODO: Aktuell problematisch, wenn nicht bioinformatisch gemäß: https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144!
         //  In Würzburg immer histologisch!
-        /*if (null != resultSet.getLong("tumorzellgehalt")) {
+        if (null != resultSet.getLong("tumorzellgehalt")) {
             resultBuilder.tumorCellContent(
                     TumorCellContent.builder()
                             .id(resultSet.getId().toString())
                             .patient(resultSet.getPatientReference())
                             .specimen(Reference.builder().id(resultSet.getString("einsendenummer")).type("Specimen").build())
                             .value(resultSet.getLong("tumorzellgehalt"))
+                            // TODO: Missing in OS.Molekulargenetik
+                            .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.HISTOLOGIC).build())
                             .build()
             );
-        }*/
+        }
 
         resultBuilder.simpleVariants(
                 subforms.stream()
@@ -123,6 +125,7 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
                                     .id(subform.getString("id"))
                                     .patient(subform.getPatientReference())
                                     .gene(GeneUtils.toCoding(geneOptional.get()))
+                                    .transcriptId(TranscriptId.builder().value(geneOptional.get().getEnsemblId()).system(TranscriptIdSystem.ENSEMBL_ORG).build())
                                     .exonId(subform.getString("exon"))
                                     .dnaChange(subform.getString("cdnanomenklatur"))
                                     .proteinChange(subform.getString("proteinebenenomenklatur"));
@@ -133,10 +136,19 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
                             if (null != subform.getLong("evreaddepth")) {
                                 snvBuilder.readDepth(subform.getLong("evreaddepth"));
                             }
+                            if (null != subform.getString("evaltnucleotide")) {
+                                snvBuilder.altAllele(subform.getString("evaltnucleotide"));
+                            }
+                            if (null != subform.getString("evrefnucleotide")) {
+                                snvBuilder.altAllele(subform.getString("evrefnucleotide"));
+                            }
+
                             geneOptional.get().getSingleChromosomeInPropertyForm().ifPresent(snvBuilder::chromosome);
 
                             return snvBuilder.build();
                         })
+                        // TODO: Filter missing position, altAllele, refAllele
+                        .filter(snv -> snv.getPosition() != null && snv.getAltAllele() != null && snv.getRefAllele() != null)
                         .collect(Collectors.toList())
         );
 

@@ -22,6 +22,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
+import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorausbreitungCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorgradingCatalogue;
@@ -79,7 +80,9 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
                                 .version(propertyCatalogue.getByCodeAndVersion(data.getString("icd10"), data.getInteger("icd10_propcat_version")).getVersionDescription())
                                 .build()
                 )
-                .topography(Coding.builder().code(data.getString("icdo3localisation")).build())
+                .recordedOn(data.getDate("datumerstdiagnose"))
+                .topography(Coding.builder().code(data.getString("icdo3lokalisation")).build())
+                .type(getType(data))
                 // Nicht in Onkostar erfasst
                 //.germlineCodes()
                 .guidelineTreatmentStatus(
@@ -167,5 +170,30 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
         }
 
         return Staging.builder().history(all).build();
+    }
+
+    private Type getType(final ResultSet resultSet) {
+        var diagnosisCoding = MtbDiagnosisCoding.builder();
+        var code = resultSet.getString("diagnosetyp");
+        if (code == null || !Arrays.stream(ValueCode.values()).map(ValueCode::toValue).collect(Collectors.toSet()).contains(code)) {
+            return null;
+        }
+
+        try {
+            diagnosisCoding.code(ValueCode.forValue(code));
+        } catch (IOException e) {
+            throw new IllegalStateException("No valid code found");
+        }
+
+        return Type.builder()
+                .history(
+                        List.of(
+                                History.builder()
+                                        .date(resultSet.getDate("datumerstdiagnose"))
+                                        .value(diagnosisCoding.build())
+                                        .build()
+                        )
+                )
+                .build();
     }
 }
