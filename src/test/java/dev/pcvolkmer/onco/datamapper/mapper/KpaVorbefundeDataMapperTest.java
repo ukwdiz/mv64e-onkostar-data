@@ -26,6 +26,7 @@ import dev.pcvolkmer.mv64e.mtb.PriorDiagnosticReport;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenetikCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.VorbefundeCatalogue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,7 @@ import static org.mockito.Mockito.when;
 class KpaVorbefundeDataMapperTest {
 
     VorbefundeCatalogue catalogue;
+    MolekulargenetikCatalogue molekulargenetikCatalogue;
     PropertyCatalogue propertyCatalogue;
 
     KpaVorbefundeDataMapper dataMapper;
@@ -55,11 +57,13 @@ class KpaVorbefundeDataMapperTest {
     @BeforeEach
     void setUp(
             @Mock VorbefundeCatalogue catalogue,
+            @Mock MolekulargenetikCatalogue molekulargenetikCatalogue,
             @Mock PropertyCatalogue propertyCatalogue
     ) {
         this.catalogue = catalogue;
+        this.molekulargenetikCatalogue = molekulargenetikCatalogue;
         this.propertyCatalogue = propertyCatalogue;
-        this.dataMapper = new KpaVorbefundeDataMapper(catalogue, propertyCatalogue);
+        this.dataMapper = new KpaVorbefundeDataMapper(catalogue, molekulargenetikCatalogue, propertyCatalogue);
     }
 
     @Test
@@ -93,6 +97,10 @@ class KpaVorbefundeDataMapperTest {
                 .when(catalogue)
                 .getAllByParentId(anyInt());
 
+        doAnswer(invocationOnMock -> ResultSet.from(Map.of("id", 1, "einsendenummer", "X/2025/1234")))
+                .when(molekulargenetikCatalogue)
+                .getByEinsendenummer(anyString());
+
         doAnswer(invocationOnMock -> {
                     var testPropertyData = Map.of(
                             "panel", new PropertyCatalogue.Entry("panel", "Panel", "Panel")
@@ -119,7 +127,7 @@ class KpaVorbefundeDataMapperTest {
                 .isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-07-06T12:00:00Z")).getTime()));
         assertThat(actual.getSpecimen())
                 .isEqualTo(Reference.builder()
-                        .id("X/2025/1234")
+                        .id("1")
                         .type("Specimen")
                         .build()
                 );

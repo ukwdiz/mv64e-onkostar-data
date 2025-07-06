@@ -121,12 +121,16 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(RebiopsieCatalogue.class),
                 catalogueFactory.catalogue(ReevaluationCatalogue.class),
                 einzelempfehlungCatalogue,
-                propertyCatalogue
+                catalogueFactory.catalogue(VorbefundeCatalogue.class)
         );
 
         var kpaMolekulargenetikDataMapper = new KpaMolekulargenetikDataMapper(molekulargenetikCatalogue, catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class), propertyCatalogue);
 
-        var kpaVorbefundeDataMapper = new KpaVorbefundeDataMapper(catalogueFactory.catalogue(VorbefundeCatalogue.class), propertyCatalogue);
+        var kpaVorbefundeDataMapper = new KpaVorbefundeDataMapper(
+                catalogueFactory.catalogue(VorbefundeCatalogue.class),
+                molekulargenetikCatalogue,
+                propertyCatalogue
+        );
 
         var resultBuilder = Mtb.builder();
 

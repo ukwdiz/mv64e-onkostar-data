@@ -21,7 +21,6 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
-import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +49,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
     RebiopsieCatalogue rebiopsieCatalogue;
     ReevaluationCatalogue reevaluationCatalogue;
     EinzelempfehlungCatalogue einzelempfehlungCatalogue;
-    PropertyCatalogue propertyCatalogue;
+    VorbefundeCatalogue vorbefundeCatalogue;
 
     MolekulargenetikToSpecimenDataMapper mapper;
 
@@ -61,14 +60,14 @@ class MolekulargenetikToSpecimenDataMapperTest {
             @Mock RebiopsieCatalogue rebiopsieCatalogue,
             @Mock ReevaluationCatalogue reevaluationCatalogue,
             @Mock EinzelempfehlungCatalogue einzelempfehlungCatalogue,
-            @Mock PropertyCatalogue propertyCatalogue
+            @Mock VorbefundeCatalogue vorbefundeCatalogue
     ) {
         this.molekulargenetikCatalogue = molekulargenetikCatalogue;
         this.therapieplanCatalogue = therapieplanCatalogue;
         this.rebiopsieCatalogue = rebiopsieCatalogue;
         this.reevaluationCatalogue = reevaluationCatalogue;
         this.einzelempfehlungCatalogue = einzelempfehlungCatalogue;
-        this.propertyCatalogue = propertyCatalogue;
+        this.vorbefundeCatalogue = vorbefundeCatalogue;
 
         this.mapper = new MolekulargenetikToSpecimenDataMapper(
                 molekulargenetikCatalogue,
@@ -76,7 +75,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
                 rebiopsieCatalogue,
                 reevaluationCatalogue,
                 einzelempfehlungCatalogue,
-                propertyCatalogue
+                vorbefundeCatalogue
         );
     }
 

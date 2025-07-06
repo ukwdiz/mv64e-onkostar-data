@@ -20,15 +20,19 @@
 
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.mv64e.mtb.MolecularDiagnosticReportCoding;
+import dev.pcvolkmer.mv64e.mtb.MolecularDiagnosticReportCodingCode;
+import dev.pcvolkmer.mv64e.mtb.PriorDiagnosticReport;
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
-import dev.pcvolkmer.onco.datamapper.datacatalogues.EcogCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenetikCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.VorbefundeCatalogue;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -39,10 +43,16 @@ import java.util.stream.Collectors;
  */
 public class KpaVorbefundeDataMapper extends AbstractSubformDataMapper<PriorDiagnosticReport> {
 
+    private final MolekulargenetikCatalogue molekulargenetikCatalogue;
     private final PropertyCatalogue propertyCatalogue;
 
-    public KpaVorbefundeDataMapper(final VorbefundeCatalogue catalogue, PropertyCatalogue propertyCatalogue) {
+    public KpaVorbefundeDataMapper(
+            final VorbefundeCatalogue catalogue,
+            final MolekulargenetikCatalogue molekulargenetikCatalogue,
+            final PropertyCatalogue propertyCatalogue
+    ) {
         super(catalogue);
+        this.molekulargenetikCatalogue = molekulargenetikCatalogue;
         this.propertyCatalogue = propertyCatalogue;
     }
 
@@ -63,29 +73,39 @@ public class KpaVorbefundeDataMapper extends AbstractSubformDataMapper<PriorDiag
         return catalogue.getAllByParentId(parentId)
                 .stream()
                 .map(this::map)
+                .filter(Objects::nonNull)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
     @Override
     protected PriorDiagnosticReport map(final ResultSet resultSet) {
         var builder = PriorDiagnosticReport.builder();
-        builder
-                .id(resultSet.getId().toString())
-                .patient(resultSet.getPatientReference())
-                .issuedOn(resultSet.getDate("erstellungsdatum"))
-                .specimen(Reference.builder().id(resultSet.getString("befundnummer")).type("Specimen").build())
-                .type(
-                        getMolecularDiagnosticReportCoding(
-                                resultSet.getString("artderdiagnostik"),
-                                resultSet.getInteger("artderdiagnostik_propcat_version")
-                        )
-                )
-                .results(List.of(
-                        resultSet.getString("ergebnisse")
-                ))
-        ;
+        var einsendenummer = resultSet.getString("befundnummer");
 
-        return builder.build();
+        var osMolGen = molekulargenetikCatalogue.getByEinsendenummer(einsendenummer);
+
+        if (null != osMolGen) {
+            builder
+                    .id(resultSet.getId().toString())
+                    .patient(resultSet.getPatientReference())
+                    .issuedOn(resultSet.getDate("erstellungsdatum"))
+                    .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
+                    .type(
+                            getMolecularDiagnosticReportCoding(
+                                    resultSet.getString("artderdiagnostik"),
+                                    resultSet.getInteger("artderdiagnostik_propcat_version")
+                            )
+                    )
+                    .results(List.of(
+                            resultSet.getString("ergebnisse")
+                    ))
+            ;
+
+            return builder.build();
+        }
+
+        return null;
     }
 
     private MolecularDiagnosticReportCoding getMolecularDiagnosticReportCoding(String value, int version) {

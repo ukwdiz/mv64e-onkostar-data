@@ -21,6 +21,7 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -96,6 +97,44 @@ public class MolekulargenetikCatalogue extends AbstractDataCatalogue {
                 .map(rs -> rs.getInteger("ref_molekulargenetik"))
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get procedure result set by einsendenummer
+     *
+     * @param einsendenummer The case id related to this procedure
+     * @return The procedure id
+     */
+    public ResultSet getByEinsendenummer(String einsendenummer) {
+        var result = this.jdbcTemplate.queryForList(
+                String.format(
+                        "SELECT patient.patienten_id, %s.*, prozedur.* FROM %s JOIN prozedur ON (prozedur.id = %s.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND %s.einsendenummer = ?",
+                        getTableName(),
+                        getTableName(),
+                        getTableName(),
+                        getTableName()
+                ),
+                einsendenummer);
+
+        if (result.isEmpty()) {
+            throw new DataAccessException("No record found for einsendenummer: " + einsendenummer);
+        } else if (result.size() > 1) {
+            throw new DataAccessException("Multiple records found for einsendenummer: " + einsendenummer);
+        }
+
+        var resultSet = ResultSet.from(result.get(0));
+
+        if (resultSet.getRawData().containsKey("id")) {
+            var merkmale = getMerkmaleById(resultSet.getId());
+            if (merkmale.isEmpty()) {
+                return resultSet;
+            }
+            merkmale.forEach((key, value) ->
+                    resultSet.getRawData().put(key, value)
+            );
+        }
+
+        return resultSet;
     }
 
 }

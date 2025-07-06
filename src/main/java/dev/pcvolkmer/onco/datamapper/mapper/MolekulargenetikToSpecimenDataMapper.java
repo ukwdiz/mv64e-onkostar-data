@@ -42,7 +42,7 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
     private final RebiopsieCatalogue rebiopsieCatalogue;
     private final ReevaluationCatalogue reevaluationCatalogue;
     private final EinzelempfehlungCatalogue einzelempfehlungCatalogue;
-    private final PropertyCatalogue propertyCatalogue;
+    private final VorbefundeCatalogue vorbefundeCatalogue;
 
     public MolekulargenetikToSpecimenDataMapper(
             final MolekulargenetikCatalogue molekulargenetikCatalogue,
@@ -50,19 +50,19 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
             final RebiopsieCatalogue rebiopsieCatalogue,
             final ReevaluationCatalogue reevaluationCatalogue,
             final EinzelempfehlungCatalogue einzelempfehlungCatalogue,
-            final PropertyCatalogue propertyCatalogue
+            final VorbefundeCatalogue vorbefundeCatalogue
     ) {
         this.molekulargenetikCatalogue = molekulargenetikCatalogue;
         this.therapieplanCatalogue = therapieplanCatalogue;
         this.rebiopsieCatalogue = rebiopsieCatalogue;
         this.reevaluationCatalogue = reevaluationCatalogue;
         this.einzelempfehlungCatalogue = einzelempfehlungCatalogue;
-        this.propertyCatalogue = propertyCatalogue;
+        this.vorbefundeCatalogue = vorbefundeCatalogue;
     }
 
     /**
      * Loads and maps a specimen using the database id
-     * The result does not include a diagnosis reference!
+     * Not intended for direct use! The result does not include a diagnosis reference!
      *
      * @param id The database id of the procedure data set
      * @return The loaded Patient data
@@ -77,7 +77,7 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
                 .patient(data.getPatientReference())
                 .type(getTumorSpecimenCoding(data.getString("materialfixierung")))
                 .collection(getCollection(data))
-        // TODO add diagnosis later
+                // diagnosis is added in getAllByKpaId()
         ;
 
 
@@ -127,8 +127,18 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
                         .collect(Collectors.toSet())
         );
 
+        // Vorbefunde anhand Einsendenummer
+        osMolGen.addAll(
+                vorbefundeCatalogue.getAllByParentId(kpaId).stream()
+                        .map(rs -> rs.getString("befundnummer"))
+                        .map(molekulargenetikCatalogue::getByEinsendenummer)
+                        .map(ResultSet::getId)
+                        .collect(Collectors.toList())
+        );
+
         return osMolGen.stream()
                 .filter(Objects::nonNull)
+                .distinct()
                 .map(this::getById)
                 .peek(it -> it.setDiagnosis(diagnoseReferenz))
                 .collect(Collectors.toList());
