@@ -88,15 +88,24 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
     }
 
     private HealthInsurance getHealthInsurance(ResultSet data) {
+        var resultBuilder = HealthInsurance.builder()
+                .reference(
+                        Reference.builder()
+                                .id(data.getString("krankenkasse"))
+                                .system("https://www.dguv.de/arge-ik")
+                                .type("HealthInsurance")
+                                .build()
+                );
+
         var healthInsuranceCodingBuilder = HealthInsuranceCoding.builder()
                 .system("http://fhir.de/CodeSystem/versicherungsart-de-basis");
 
-        String healthInsuranceType = data.getString("artderkrankenkasse");
+        var healthInsuranceType = data.getString("artderkrankenkasse");
         if (healthInsuranceType == null) {
             healthInsuranceCodingBuilder
                     .code(HealthInsuranceCodingCode.UNK)
                     .build();
-            return HealthInsurance.builder().type(healthInsuranceCodingBuilder.build()).build();
+            return resultBuilder.type(healthInsuranceCodingBuilder.build()).build();
         }
 
         switch (healthInsuranceType) {
@@ -138,7 +147,7 @@ public class KpaPatientDataMapper implements DataMapper<Patient> {
 
         healthInsuranceCodingBuilder.display(healthInsurancePropertyEntry.getDescription());
 
-        return HealthInsurance.builder().type(healthInsuranceCodingBuilder.build()).build();
+        return resultBuilder.type(healthInsuranceCodingBuilder.build()).build();
     }
 
 }

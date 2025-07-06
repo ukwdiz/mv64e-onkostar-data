@@ -70,6 +70,7 @@ class KpaPatientDataMapperTest {
                 "geschlecht", "m",
                 "geburtsdatum", new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
                 "todesdatum", new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
+                "krankenkasse", "12345678",
                 "artderkrankenkasse", "GKV"
         );
 
@@ -98,13 +99,15 @@ class KpaPatientDataMapperTest {
         assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
         assertThat(actual.getDateOfDeath()).isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
         assertThat(actual.getHealthInsurance()).isEqualTo(
-                HealthInsurance.builder().type(
-                        HealthInsuranceCoding.builder()
-                                .code(HealthInsuranceCodingCode.GKV)
-                                .display("Gesetzliche Krankenversicherung")
-                                .system("http://fhir.de/CodeSystem/versicherungsart-de-basis")
-                                .build()
-                ).build()
+                HealthInsurance.builder()
+                        .reference(Reference.builder().id("12345678").system("https://www.dguv.de/arge-ik").type("HealthInsurance").build())
+                        .type(
+                                HealthInsuranceCoding.builder()
+                                        .code(HealthInsuranceCodingCode.GKV)
+                                        .display("Gesetzliche Krankenversicherung")
+                                        .system("http://fhir.de/CodeSystem/versicherungsart-de-basis")
+                                        .build()
+                        ).build()
         );
     }
 
@@ -114,6 +117,7 @@ class KpaPatientDataMapperTest {
                 "patient_id", "1",
                 "geschlecht", "w",
                 "geburtsdatum", new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
+                "krankenkasse", "12345678",
                 "artderkrankenkasse", "PKV"
         );
 
@@ -142,13 +146,15 @@ class KpaPatientDataMapperTest {
         assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
         assertThat(actual.getDateOfDeath()).isNull();
         assertThat(actual.getHealthInsurance()).isEqualTo(
-                HealthInsurance.builder().type(
-                        HealthInsuranceCoding.builder()
-                                .code(HealthInsuranceCodingCode.PKV)
-                                .display("Private Krankenversicherung")
-                                .system("http://fhir.de/CodeSystem/versicherungsart-de-basis")
-                                .build()
-                ).build()
+                HealthInsurance.builder()
+                        .reference(Reference.builder().id("12345678").system("https://www.dguv.de/arge-ik").type("HealthInsurance").build())
+                        .type(
+                                HealthInsuranceCoding.builder()
+                                        .code(HealthInsuranceCodingCode.PKV)
+                                        .display("Private Krankenversicherung")
+                                        .system("http://fhir.de/CodeSystem/versicherungsart-de-basis")
+                                        .build()
+                        ).build()
         );
     }
 
