@@ -21,7 +21,6 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Mtb;
-import dev.pcvolkmer.mv64e.mtb.PriorDiagnosticReport;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
@@ -121,13 +120,20 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(RebiopsieCatalogue.class),
                 catalogueFactory.catalogue(ReevaluationCatalogue.class),
                 einzelempfehlungCatalogue,
-                catalogueFactory.catalogue(VorbefundeCatalogue.class)
+                catalogueFactory.catalogue(VorbefundeCatalogue.class),
+                catalogueFactory.catalogue(HistologieCatalogue.class)
         );
 
         var kpaMolekulargenetikDataMapper = new KpaMolekulargenetikDataMapper(molekulargenetikCatalogue, catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class), propertyCatalogue);
 
         var kpaVorbefundeDataMapper = new KpaVorbefundeDataMapper(
                 catalogueFactory.catalogue(VorbefundeCatalogue.class),
+                molekulargenetikCatalogue,
+                propertyCatalogue
+        );
+
+        var kpaHistologieDataMapper = new KpaHistologieDataMapper(
+                catalogueFactory.catalogue(HistologieCatalogue.class),
                 molekulargenetikCatalogue,
                 propertyCatalogue
         );
@@ -152,6 +158,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .familyMemberHistories(verwandteDataMapper.getByParentId(kpaId))
                     // Vorbefunde
                     .priorDiagnosticReports(kpaVorbefundeDataMapper.getByParentId(kpaId))
+                    // Histologie-Berichte
+                    .histologyReports(kpaHistologieDataMapper.getByParentId(kpaId))
                     // DNPM Therapieplan
                     .carePlans(
                             therapieplanCatalogue
@@ -161,14 +169,14 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     )
                     // Tumorproben
                     .specimens(
-                        molekulargenetikToSpecimenDataMapper.getAllByKpaId(
-                                kpaId,
-                                Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()
-                        )
+                            molekulargenetikToSpecimenDataMapper.getAllByKpaId(
+                                    kpaId,
+                                    Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()
+                            )
                     )
                     // NGS Berichte
                     .ngsReports(
-                        kpaMolekulargenetikDataMapper.getAllByKpaId(kpaId)
+                            kpaMolekulargenetikDataMapper.getAllByKpaId(kpaId)
                     )
 
             ;
@@ -195,7 +203,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
      * Loads and maps a Mtb file using the patient id and tumor id
      *
      * @param patientId The patients id (not database id)
-     * @param tumorId The tumor identification
+     * @param tumorId   The tumor identification
      * @return The loaded Mtb file
      */
     public Mtb getLatestByPatientIdAndTumorId(String patientId, int tumorId) {

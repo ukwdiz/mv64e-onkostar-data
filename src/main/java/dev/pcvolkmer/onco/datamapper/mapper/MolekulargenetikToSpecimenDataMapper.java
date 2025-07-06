@@ -21,7 +21,6 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.*;
-import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 
@@ -43,6 +42,7 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
     private final ReevaluationCatalogue reevaluationCatalogue;
     private final EinzelempfehlungCatalogue einzelempfehlungCatalogue;
     private final VorbefundeCatalogue vorbefundeCatalogue;
+    private final HistologieCatalogue histologieCatalogue;
 
     public MolekulargenetikToSpecimenDataMapper(
             final MolekulargenetikCatalogue molekulargenetikCatalogue,
@@ -50,7 +50,8 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
             final RebiopsieCatalogue rebiopsieCatalogue,
             final ReevaluationCatalogue reevaluationCatalogue,
             final EinzelempfehlungCatalogue einzelempfehlungCatalogue,
-            final VorbefundeCatalogue vorbefundeCatalogue
+            final VorbefundeCatalogue vorbefundeCatalogue,
+            final HistologieCatalogue histologieCatalogue
     ) {
         this.molekulargenetikCatalogue = molekulargenetikCatalogue;
         this.therapieplanCatalogue = therapieplanCatalogue;
@@ -58,6 +59,7 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
         this.reevaluationCatalogue = reevaluationCatalogue;
         this.einzelempfehlungCatalogue = einzelempfehlungCatalogue;
         this.vorbefundeCatalogue = vorbefundeCatalogue;
+        this.histologieCatalogue = histologieCatalogue;
     }
 
     /**
@@ -132,6 +134,15 @@ public class MolekulargenetikToSpecimenDataMapper implements DataMapper<TumorSpe
                 vorbefundeCatalogue.getAllByParentId(kpaId).stream()
                         .map(rs -> rs.getString("befundnummer"))
                         .map(molekulargenetikCatalogue::getByEinsendenummer)
+                        .map(ResultSet::getId)
+                        .collect(Collectors.toList())
+        );
+
+        // Histologie
+        osMolGen.addAll(
+                histologieCatalogue.getAllByParentId(kpaId).stream()
+                        .map(rs -> rs.getInteger("histologie"))
+                        .map(molekulargenetikCatalogue::getById)
                         .map(ResultSet::getId)
                         .collect(Collectors.toList())
         );
