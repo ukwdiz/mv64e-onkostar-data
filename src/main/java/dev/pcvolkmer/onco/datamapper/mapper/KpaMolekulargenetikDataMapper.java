@@ -105,8 +105,8 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
                             .patient(resultSet.getPatientReference())
                             .specimen(Reference.builder().id(resultSet.getString("id")).type("Specimen").build())
                             .value(resultSet.getLong("tumorzellgehalt") / 100.0)
-                            // TODO: Missing in OS.Molekulargenetik
-                            .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.HISTOLOGIC).build())
+                            // TODO: Nicht in OS.Molekulargenetik and Bioinformatic is required!
+                            .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.BIOINFORMATIC).build())
                             .build()
             );
         }
