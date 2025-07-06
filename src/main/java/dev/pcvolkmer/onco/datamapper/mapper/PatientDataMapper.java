@@ -53,7 +53,7 @@ public class PatientDataMapper implements DataMapper<Patient> {
 
         var builder = Patient.builder();
         builder
-                .id(patientData.getString("id"))
+                .id(patientData.getString("patienten_id"))
                 .gender(getGenderCoding(patientData))
                 .birthDate(patientData.getDate("geburtsdatum"))
                 .dateOfDeath(patientData.getDate("sterbedatum"))

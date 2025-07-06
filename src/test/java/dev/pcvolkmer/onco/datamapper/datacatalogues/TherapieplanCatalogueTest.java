@@ -62,7 +62,7 @@ class TherapieplanCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_therapieplan.*, prozedur.* FROM dk_dnpm_therapieplan JOIN prozedur ON (prozedur.id = dk_dnpm_therapieplan.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_therapieplan.*, prozedur.patient_id, prozedur.hauptprozedur_id FROM dk_dnpm_therapieplan JOIN prozedur ON (prozedur.id = dk_dnpm_therapieplan.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
     }
 
     @Test

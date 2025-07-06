@@ -72,7 +72,7 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                 )
                 .reason(
                         Reference.builder()
-                                .id(diseases.get(0).getString("id"))
+                                .id(resultSet.getString("hauptprozedur_id"))
                                 .type("MTBDiagnosis")
                                 .build()
                 )

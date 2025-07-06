@@ -63,6 +63,7 @@ class PatientDataMapperTest {
     void shouldCreatePatientAlive(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "id", "1",
+                "patienten_id", "20001234",
                 "geschlecht", "M",
                 "geburtsdatum", new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
                 "sterbedatum", new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
@@ -85,7 +86,7 @@ class PatientDataMapperTest {
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
-        assertThat(actual.getId()).isEqualTo("1");
+        assertThat(actual.getId()).isEqualTo("20001234");
         assertThat(actual.getGender().getCode()).isEqualTo(GenderCodingCode.MALE);
         assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
         assertThat(actual.getDateOfDeath()).isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
@@ -96,6 +97,7 @@ class PatientDataMapperTest {
     void shouldCreatePatientDead(@Mock ResultSet resultSet) {
         var testData = Map.of(
                 "id", "1",
+                "patienten_id", "20001234",
                 "geschlecht", "M",
                 "geburtsdatum", new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
                 "GKZ", "06634022"
@@ -117,7 +119,7 @@ class PatientDataMapperTest {
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(Patient.class);
-        assertThat(actual.getId()).isEqualTo("1");
+        assertThat(actual.getId()).isEqualTo("20001234");
         assertThat(actual.getGender().getCode()).isEqualTo(GenderCodingCode.MALE);
         assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
         assertThat(actual.getDateOfDeath()).isNull();

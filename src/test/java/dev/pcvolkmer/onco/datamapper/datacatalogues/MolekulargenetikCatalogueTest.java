@@ -62,7 +62,7 @@ class MolekulargenetikCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT patient.patienten_id, dk_molekulargenetik.*, prozedur.* FROM dk_molekulargenetik JOIN prozedur ON (prozedur.id = dk_molekulargenetik.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_molekulargenetik.*, prozedur.patient_id, prozedur.hauptprozedur_id FROM dk_molekulargenetik JOIN prozedur ON (prozedur.id = dk_molekulargenetik.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
     }
 
     @Test

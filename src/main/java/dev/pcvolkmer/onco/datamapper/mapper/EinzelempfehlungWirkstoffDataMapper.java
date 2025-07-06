@@ -55,7 +55,7 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
                 .patient(resultSet.getPatientReference())
                 .priority(getRecommendationPriorityCoding(resultSet.getInteger("prio")))
                 // TODO Fix id?
-                .reason(Reference.builder().id(resultSet.getString("id")).build())
+                //.reason(Reference.builder().id(resultSet.getString("id")).build())
                 .issuedOn(resultSet.getDate("datum"))
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
                 .levelOfEvidence(getLevelOfEvidence(resultSet));

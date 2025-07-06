@@ -143,6 +143,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
         try {
             var kpaPatient = kpaPatientDataMapper.getById(kpaId);
             var patient = patientDataMapper.getById(Integer.parseInt(kpaPatient.getId()));
+            kpaPatient.setId(patient.getId());
             kpaPatient.setAddress(patient.getAddress());
 
             var diagnosis = diagnosisDataMapper.getById(kpaId);
