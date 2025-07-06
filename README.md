@@ -47,11 +47,11 @@ var jsonResult = Converter.toJsonString(
 | ECOG-Verlauf                     | ✅      |                                                                                |
 | Tumor-Proben                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (1) |
 | vorherige Molekular-Diagnostik   | ✅      |                                                                                |
-| Histologie-Berichte              | ✅      | Hinweis (2)                                                                    |
+| Histologie-Berichte              | ✅      |                                                                                |
 | IHC-Berichte                     | ⌛      | Aktuell in Arbeit                                                              |
 | MSI-Befunde                      | ⌛      | Aktuell in Arbeit                                                              |
-| NGS-Berichte                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (3) |
-| MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV (4)          |
+| NGS-Berichte                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2) |
+| MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV (3)          |
 | Follow-Up Verlauf                |        |                                                                                |
 | Antrag Kostenübernahme           |        |                                                                                |
 | Antwort Kostenübernahme          |        |                                                                                |
@@ -61,10 +61,9 @@ var jsonResult = Converter.toJsonString(
 ### Hinweise
 
 1. Nicht alle möglichen Ausprägungen in `OS.Molekulargenetik` vorhanden.
-2. Aktuell wird die Version der Morphologie nicht mit exportiert, nur der Wert.
-3. Aktuell nicht alle Angaben effektiv im Formular `OS.Molekulargenetik` wie gefordert angebbar.
+2. Aktuell nicht alle Angaben effektiv im Formular `OS.Molekulargenetik` wie gefordert angebbar.
    Hinweis: Tumorzellgehalt-Methode problematisch, wenn auch im NGS-Bericht histologisch festgestellt.
-4. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
+3. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
 
 ## Enthaltene Liste mit Genen
 

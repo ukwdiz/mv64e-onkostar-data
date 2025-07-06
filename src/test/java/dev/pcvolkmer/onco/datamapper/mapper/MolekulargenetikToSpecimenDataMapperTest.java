@@ -50,6 +50,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
     ReevaluationCatalogue reevaluationCatalogue;
     EinzelempfehlungCatalogue einzelempfehlungCatalogue;
     VorbefundeCatalogue vorbefundeCatalogue;
+    HistologieCatalogue histologieCatalogue;
 
     MolekulargenetikToSpecimenDataMapper mapper;
 
@@ -60,7 +61,8 @@ class MolekulargenetikToSpecimenDataMapperTest {
             @Mock RebiopsieCatalogue rebiopsieCatalogue,
             @Mock ReevaluationCatalogue reevaluationCatalogue,
             @Mock EinzelempfehlungCatalogue einzelempfehlungCatalogue,
-            @Mock VorbefundeCatalogue vorbefundeCatalogue
+            @Mock VorbefundeCatalogue vorbefundeCatalogue,
+            @Mock HistologieCatalogue histologieCatalogue
     ) {
         this.molekulargenetikCatalogue = molekulargenetikCatalogue;
         this.therapieplanCatalogue = therapieplanCatalogue;
@@ -68,6 +70,7 @@ class MolekulargenetikToSpecimenDataMapperTest {
         this.reevaluationCatalogue = reevaluationCatalogue;
         this.einzelempfehlungCatalogue = einzelempfehlungCatalogue;
         this.vorbefundeCatalogue = vorbefundeCatalogue;
+        this.histologieCatalogue = histologieCatalogue;
 
         this.mapper = new MolekulargenetikToSpecimenDataMapper(
                 molekulargenetikCatalogue,
@@ -75,7 +78,8 @@ class MolekulargenetikToSpecimenDataMapperTest {
                 rebiopsieCatalogue,
                 reevaluationCatalogue,
                 einzelempfehlungCatalogue,
-                vorbefundeCatalogue
+                vorbefundeCatalogue,
+                histologieCatalogue
         );
     }
 

@@ -102,7 +102,7 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
                                                     .id(resultSet.getId().toString())
                                                     .patient(resultSet.getPatientReference())
                                                     .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
-                                                    .value(Coding.builder().code(resultSet.getString("morphologie")).build())
+                                                    .value(getTumorMorphologyCoding(resultSet))
                                                     .build()
                                     )
                                     .build()
@@ -113,6 +113,19 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
         }
 
         return null;
+    }
+
+    private Coding getTumorMorphologyCoding(ResultSet resultSet) {
+        var propertyCatalogueEntry =  propertyCatalogue.getByCodeAndVersion(
+                resultSet.getString("morphologie"),
+                resultSet.getInteger("morphologie_propcat_version")
+        );
+
+        return Coding.builder()
+                .code(propertyCatalogueEntry.getCode())
+                .display(propertyCatalogueEntry.getShortdesc())
+                .version(propertyCatalogueEntry.getVersionDescription())
+                .build();
     }
 
 }
