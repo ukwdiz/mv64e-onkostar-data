@@ -92,7 +92,7 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
                                                     .id(resultSet.getId().toString())
                                                     .patient(resultSet.getPatientReference())
                                                     .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
-                                                    .value(resultSet.getLong("tumorzellgehalt"))
+                                                    .value(resultSet.getLong("tumorzellgehalt") / 100.0)
                                                     // TODO: Nicht in OS.Molekulargenetik
                                                     .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.HISTOLOGIC).build())
                                                     .build()
