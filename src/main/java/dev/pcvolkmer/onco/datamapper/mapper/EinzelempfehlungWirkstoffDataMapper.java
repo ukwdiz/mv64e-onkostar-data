@@ -65,12 +65,13 @@ public class EinzelempfehlungWirkstoffDataMapper extends AbstractEinzelempfehlun
                 .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
                 .levelOfEvidence(getLevelOfEvidence(resultSet));
 
-        if (null != resultSet.getString("art_der_therapie")) {
+        if (!resultSet.getMerkmalList("art_der_therapie").isEmpty()) {
             resultBuilder.category(
-                    getMtbMedicationRecommendationCategoryCoding(
-                            resultSet.getString("art_der_therapie"),
-                            resultSet.getInteger("art_der_therapie_propcat_version")
-                    )
+                    resultSet.getMerkmalList("art_der_therapie").stream()
+                            .map(value ->
+                                    getMtbMedicationRecommendationCategoryCoding(value, resultSet.getInteger("art_der_therapie_propcat_version"))
+                            )
+                            .collect(Collectors.toList())
             );
         }
 

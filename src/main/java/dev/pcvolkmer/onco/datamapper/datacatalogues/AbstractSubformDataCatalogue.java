@@ -21,9 +21,11 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -56,8 +58,45 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
                         ),
                         id)
                 .stream()
+                .filter(resultSet -> resultSet.containsKey("id"))
                 .map(ResultSet::from)
+                .peek(resultSet -> {
+                    var merkmale = getMerkmaleById(resultSet.getId());
+                    if (merkmale.isEmpty()) {
+                        return;
+                    }
+                    merkmale.forEach((key, value) ->
+                            resultSet.getRawData().put(key, value)
+                    );
+                })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get procedure "Merkmale" result by procedure id and form field name
+     *
+     * @param id The parents procedure id
+     * @return The sub procedures
+     */
+    Map<String, List<String>> getMerkmaleById(int id) {
+        try {
+            var resultSet = this.jdbcTemplate.queryForList(
+                    String.format(
+                            "SELECT feldname, feldwert FROM %s_merkmale WHERE eintrag_id = ?",
+                            getTableName()
+                    ),
+                    id);
+
+            return resultSet.stream()
+                    .collect(
+                            Collectors.groupingBy(
+                                    m -> m.get("feldname").toString(),
+                                    Collectors.mapping(stringObjectMap -> stringObjectMap.get("feldwert").toString(), Collectors.toList())
+                            )
+                    );
+        } catch (DataAccessException e) {
+            return Map.of();
+        }
     }
 
 }

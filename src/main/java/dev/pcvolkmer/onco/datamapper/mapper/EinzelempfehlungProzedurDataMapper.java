@@ -63,10 +63,11 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractEinzelempfehlung
             );
         }
 
-        if (null != resultSet.getString("art_der_therapie")) {
+        // Nur der erste Eintrag!
+        if (!resultSet.getMerkmalList("art_der_therapie").isEmpty()) {
             resultBuilder.code(
                     getMtbProcedureRecommendationCategoryCoding(
-                            resultSet.getString("art_der_therapie"),
+                            resultSet.getMerkmalList("art_der_therapie").get(0),
                             resultSet.getInteger("art_der_therapie_propcat_version")
                     )
             );
@@ -92,7 +93,6 @@ public class EinzelempfehlungProzedurDataMapper extends AbstractEinzelempfehlung
         return catalogue.getAllByParentId(parentId)
                 .stream()
                 // Filter Prozedurempfehlung (Weitere Empfehlungen)
-                .filter(it -> it.getString("art_der_therapie") != null && !it.getString("art_der_therapie").isBlank())
                 .filter(it -> "sonstige".equals(it.getString("empfehlungskategorie")))
                 .map(this::map)
                 .collect(Collectors.toList());

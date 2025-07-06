@@ -26,6 +26,7 @@ import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -181,6 +182,25 @@ public class ResultSet {
         }
 
         throw new IllegalArgumentException("Cannot convert " + raw.getClass() + " to Boolean");
+    }
+
+    /**
+     * Get Merkmal values as List of Strings
+     *
+     * @param columnName The name of the column
+     * @return The related Merkmal value(s) as List of Strings
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> getMerkmalList(String columnName) {
+        var raw = this.rawData.get(columnName);
+
+        if (raw == null) {
+            return List.of();
+        } else if (raw instanceof List) {
+            return (List<String>) raw;
+        }
+
+        throw new IllegalArgumentException("Cannot get " + columnName + " as List of Strings");
     }
 
 }
