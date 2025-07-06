@@ -67,7 +67,7 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
                 .id(data.getString("id"))
                 .patient(data.getPatientReference())
                 .issuedOn(data.getDate("datum"))
-                .specimen(Reference.builder().id(data.getString("einsendenummer")).type("Specimen").build())
+                .specimen(Reference.builder().id(data.getString("id")).type("Specimen").build())
                 // TODO: OS.MolDiagSequenzierung kennt keine Unterscheidung zwischen 'genome-long-read' und 'genome-short-read'! -> OTHER
                 .type(getNgsReportCoding(data.getString("artdersequenzierung")))
                 .metadata(List.of(getNgsReportMetadata(data.getString("artdersequenzierung"))))
@@ -103,7 +103,7 @@ public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsRepor
                     TumorCellContent.builder()
                             .id(resultSet.getId().toString())
                             .patient(resultSet.getPatientReference())
-                            .specimen(Reference.builder().id(resultSet.getString("einsendenummer")).type("Specimen").build())
+                            .specimen(Reference.builder().id(resultSet.getString("id")).type("Specimen").build())
                             .value(resultSet.getLong("tumorzellgehalt") / 100.0)
                             // TODO: Missing in OS.Molekulargenetik
                             .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.HISTOLOGIC).build())
