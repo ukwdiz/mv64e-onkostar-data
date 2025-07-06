@@ -72,31 +72,4 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get procedure "Merkmale" result by procedure id and form field name
-     *
-     * @param id The parents procedure id
-     * @return The sub procedures
-     */
-    Map<String, List<String>> getMerkmaleById(int id) {
-        try {
-            var resultSet = this.jdbcTemplate.queryForList(
-                    String.format(
-                            "SELECT feldname, feldwert FROM %s_merkmale WHERE eintrag_id = ?",
-                            getTableName()
-                    ),
-                    id);
-
-            return resultSet.stream()
-                    .collect(
-                            Collectors.groupingBy(
-                                    m -> m.get("feldname").toString(),
-                                    Collectors.mapping(stringObjectMap -> stringObjectMap.get("feldwert").toString(), Collectors.toList())
-                            )
-                    );
-        } catch (DataAccessException e) {
-            return Map.of();
-        }
-    }
-
 }

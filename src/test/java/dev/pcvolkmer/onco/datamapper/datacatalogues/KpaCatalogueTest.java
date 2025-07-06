@@ -30,14 +30,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class KpaCatalogueTest {
@@ -73,6 +74,49 @@ class KpaCatalogueTest {
 
         var ex = assertThrows(DataAccessException.class, () -> catalogue.getProcedureIdByCaseId("16000123"));
         assertThat(ex).hasMessage("No record found for case: 16000123");
+    }
+
+    @Test
+    void shouldUseCorrectMerkmalQuery(@Mock Map<String, Object> resultSet) {
+        when(resultSet.get(anyString()))
+                .thenReturn(Map.of("feldname", "name", "feldwert", "wert"));
+
+        doAnswer(invocationOnMock -> List.of(resultSet))
+                .when(jdbcTemplate)
+                .queryForList(anyString(), anyInt());
+
+        this.catalogue.getMerkmaleById(1);
+
+        var captor = ArgumentCaptor.forClass(String.class);
+        verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
+
+        assertThat(captor.getValue())
+                .isEqualTo("SELECT feldname, feldwert FROM dk_dnpm_kpa_merkmale WHERE eintrag_id = ?");
+    }
+
+    @Test
+    void shouldUseMerkmalList() {
+        doAnswer(invocationOnMock -> {
+            var sql = invocationOnMock.getArgument(0, String.class);
+            ArrayList<Map<String, Object>> result = new ArrayList<>();
+            if (sql.startsWith("SELECT feldname")) {
+                result.add(Map.of("feldname", "name", "feldwert", "wert1"));
+                result.add(Map.of("feldname", "name", "feldwert", "wert2"));
+            } else {
+                var map = new HashMap<String, Object>();
+                map.put("id", 1);
+                map.put("name", "x");
+                result.add(map);
+            }
+            return result;
+        })
+                .when(jdbcTemplate)
+                .queryForList(anyString(), anyInt());
+
+        var result = this.catalogue.getById(1);
+
+        assertThat(result.getInteger("id")).isEqualTo(1);
+        assertThat(result.getMerkmalList("name")).isEqualTo(List.of("wert1", "wert2"));
     }
 
 }

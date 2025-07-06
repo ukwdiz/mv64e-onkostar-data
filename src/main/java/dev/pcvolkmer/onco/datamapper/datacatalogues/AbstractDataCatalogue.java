@@ -25,6 +25,7 @@ import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -66,11 +67,24 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
             throw new DataAccessException("Multiple records found for id: " + id);
         }
 
-        return ResultSet.from(result.get(0));
+        var resultSet = ResultSet.from(result.get(0));
+
+        if (resultSet.getRawData().containsKey("id")) {
+            var merkmale = getMerkmaleById(resultSet.getId());
+            if (merkmale.isEmpty()) {
+                return resultSet;
+            }
+            merkmale.forEach((key, value) ->
+                    resultSet.getRawData().put(key, value)
+            );
+        }
+
+        return resultSet;
     }
 
     /**
      * Returns related diseases
+     *
      * @param procedureId The procedure id
      * @return the diseases
      */
@@ -86,4 +100,32 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
                 .map(ResultSet::from)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Get procedure "Merkmale" result by procedure id and form field name
+     *
+     * @param id The parents procedure id
+     * @return The sub procedures
+     */
+    Map<String, List<String>> getMerkmaleById(int id) {
+        try {
+            var resultSet = this.jdbcTemplate.queryForList(
+                    String.format(
+                            "SELECT feldname, feldwert FROM %s_merkmale WHERE eintrag_id = ?",
+                            getTableName()
+                    ),
+                    id);
+
+            return resultSet.stream()
+                    .collect(
+                            Collectors.groupingBy(
+                                    m -> m.get("feldname").toString(),
+                                    Collectors.mapping(stringObjectMap -> stringObjectMap.get("feldwert").toString(), Collectors.toList())
+                            )
+                    );
+        } catch (org.springframework.dao.DataAccessException e) {
+            return Map.of();
+        }
+    }
+
 }
