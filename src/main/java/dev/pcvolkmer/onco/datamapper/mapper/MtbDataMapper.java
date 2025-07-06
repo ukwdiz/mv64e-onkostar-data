@@ -22,6 +22,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Mtb;
 import dev.pcvolkmer.mv64e.mtb.Reference;
+import dev.pcvolkmer.mv64e.mtb.TumorSpecimen;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
@@ -148,6 +149,11 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
             var diagnosis = diagnosisDataMapper.getById(kpaId);
 
+            var specimens = molekulargenetikToSpecimenDataMapper.getAllByKpaId(
+                    kpaId,
+                    Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()
+            );
+
             resultBuilder
                     .patient(kpaPatient)
                     .episodesOfCare(List.of(mtbEpisodeDataMapper.getById(kpaId)))
@@ -161,19 +167,28 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .priorDiagnosticReports(kpaVorbefundeDataMapper.getByParentId(kpaId))
                     // Histologie-Berichte
                     .histologyReports(kpaHistologieDataMapper.getByParentId(kpaId))
+                    // Tumorproben
+                    .specimens(specimens)
                     // DNPM Therapieplan
                     .carePlans(
                             therapieplanCatalogue
                                     .getByKpaId(kpaId).stream()
                                     .map(therapieplanDataMapper::getById)
+                                    // Remove references to alterations not present in specimens
+                                    .peek(therapieplan -> therapieplan.setMedicationRecommendations(
+                                                    therapieplan.getMedicationRecommendations().stream()
+                                                            .peek(mtbMedicationRecommendation ->
+                                                                    mtbMedicationRecommendation.setSupportingVariants(
+                                                                            mtbMedicationRecommendation.getSupportingVariants().stream()
+                                                                                    .filter(geneAlterationReference -> specimens.stream()
+                                                                                            .map(TumorSpecimen::getId)
+                                                                                            .collect(Collectors.toList()).contains(geneAlterationReference.getVariant().getId()))
+                                                                                    .collect(Collectors.toList())
+                                                                    )
+                                                            ).collect(Collectors.toList())
+                                            )
+                                    )
                                     .collect(Collectors.toList())
-                    )
-                    // Tumorproben
-                    .specimens(
-                            molekulargenetikToSpecimenDataMapper.getAllByKpaId(
-                                    kpaId,
-                                    Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()
-                            )
                     )
                     // NGS Berichte
                     .ngsReports(
