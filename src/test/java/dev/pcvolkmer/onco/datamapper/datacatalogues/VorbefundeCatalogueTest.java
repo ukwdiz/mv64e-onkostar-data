@@ -62,7 +62,7 @@ class VorbefundeCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_uf_vorbefunde.*, prozedur.* FROM dk_dnpm_uf_vorbefunde JOIN prozedur ON (prozedur.id = dk_dnpm_uf_vorbefunde.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_vorbefunde.*, prozedur.* FROM dk_dnpm_vorbefunde JOIN prozedur ON (prozedur.id = dk_dnpm_vorbefunde.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND prozedur.id = ?");
     }
 
     @Test
@@ -77,7 +77,7 @@ class VorbefundeCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_uf_vorbefunde.*, prozedur.* FROM dk_dnpm_uf_vorbefunde JOIN prozedur ON (prozedur.id = dk_dnpm_uf_vorbefunde.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND hauptprozedur_id = ?");
+                .isEqualTo("SELECT patient.patienten_id, dk_dnpm_vorbefunde.*, prozedur.* FROM dk_dnpm_vorbefunde JOIN prozedur ON (prozedur.id = dk_dnpm_vorbefunde.id) JOIN patient ON (patient.id = prozedur.patient_id) WHERE geloescht = 0 AND hauptprozedur_id = ?");
     }
 
     @Test
@@ -95,7 +95,7 @@ class VorbefundeCatalogueTest {
         verify(this.jdbcTemplate).queryForList(captor.capture(), anyInt());
 
         assertThat(captor.getValue())
-                .isEqualTo("SELECT feldname, feldwert FROM dk_dnpm_uf_vorbefunde_merkmale WHERE eintrag_id = ?");
+                .isEqualTo("SELECT feldname, feldwert FROM dk_dnpm_vorbefunde_merkmale WHERE eintrag_id = ?");
     }
 
     @Test

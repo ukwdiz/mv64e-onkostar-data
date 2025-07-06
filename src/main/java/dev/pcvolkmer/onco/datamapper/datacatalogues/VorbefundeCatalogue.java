@@ -23,7 +23,7 @@ package dev.pcvolkmer.onco.datamapper.datacatalogues;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Load raw result sets from database table 'dk_dnpm_uf_vorbefunde'
+ * Load raw result sets from database table 'dk_dnpm_vorbefunde'
  *
  * @author Paul-Christian Volkmer
  * @since 0.1
@@ -36,7 +36,7 @@ public class VorbefundeCatalogue extends AbstractSubformDataCatalogue {
 
     @Override
     protected String getTableName() {
-        return "dk_dnpm_uf_vorbefunde";
+        return "dk_dnpm_vorbefunde";
     }
 
     public static VorbefundeCatalogue create(JdbcTemplate jdbcTemplate) {

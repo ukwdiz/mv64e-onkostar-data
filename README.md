@@ -46,10 +46,10 @@ var jsonResult = Converter.toJsonString(
 | Leitlinien-Prozeduren            | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                     |
 | ECOG-Verlauf                     | ✅      |                                                                                |
 | Tumor-Proben                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (1) |
-| vorherige Molekular-Diagnostik   | ⌛      | Aktuell in Arbeit                                                              |
+| vorherige Molekular-Diagnostik   | ✅      |                                                                                |
 | Histologie-Berichte              | ⌛      | Aktuell in Arbeit                                                              |
-| IHC-Berichte                     |        |                                                                                |
-| MSI-Befunde                      |        |                                                                                |
+| IHC-Berichte                     | ⌛      | Aktuell in Arbeit                                                              |
+| MSI-Befunde                      | ⌛      | Aktuell in Arbeit                                                              |
 | NGS-Berichte                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2) |
 | MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV (3)          |
 | Follow-Up Verlauf                |        |                                                                                |

@@ -20,10 +20,14 @@
 
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.PriorDiagnosticReport;
+import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EcogCatalogue;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.VorbefundeCatalogue;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,8 +39,11 @@ import java.util.stream.Collectors;
  */
 public class KpaVorbefundeDataMapper extends AbstractSubformDataMapper<PriorDiagnosticReport> {
 
-    public KpaVorbefundeDataMapper(final EcogCatalogue catalogue) {
+    private final PropertyCatalogue propertyCatalogue;
+
+    public KpaVorbefundeDataMapper(final VorbefundeCatalogue catalogue, PropertyCatalogue propertyCatalogue) {
         super(catalogue);
+        this.propertyCatalogue = propertyCatalogue;
     }
 
     /**
@@ -65,11 +72,36 @@ public class KpaVorbefundeDataMapper extends AbstractSubformDataMapper<PriorDiag
         builder
                 .id(resultSet.getId().toString())
                 .patient(resultSet.getPatientReference())
-                .issuedOn(resultSet.getDate("datum"))
-                .results(List.of(resultSet.getString("ecog")))
+                .issuedOn(resultSet.getDate("erstellungsdatum"))
+                .specimen(Reference.builder().id(resultSet.getString("befundnummer")).type("Specimen").build())
+                .type(
+                        getMolecularDiagnosticReportCoding(
+                                resultSet.getString("artderdiagnostik"),
+                                resultSet.getInteger("artderdiagnostik_propcat_version")
+                        )
+                )
+                .results(List.of(
+                        resultSet.getString("ergebnisse")
+                ))
         ;
 
         return builder.build();
+    }
+
+    private MolecularDiagnosticReportCoding getMolecularDiagnosticReportCoding(String value, int version) {
+        if (value == null || !Arrays.stream(MolecularDiagnosticReportCodingCode.values()).map(MolecularDiagnosticReportCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
+            return null;
+        }
+
+        var resultBuilder = MolecularDiagnosticReportCoding.builder()
+                .display(propertyCatalogue.getByCodeAndVersion(value, version).getShortdesc());
+        try {
+            resultBuilder.code(MolecularDiagnosticReportCodingCode.forValue(value));
+        } catch (IOException e) {
+            return null;
+        }
+
+        return resultBuilder.build();
     }
 
 }

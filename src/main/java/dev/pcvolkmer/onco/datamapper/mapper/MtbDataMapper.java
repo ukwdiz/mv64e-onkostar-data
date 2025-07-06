@@ -126,6 +126,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
         var kpaMolekulargenetikDataMapper = new KpaMolekulargenetikDataMapper(molekulargenetikCatalogue, catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class), propertyCatalogue);
 
+        var kpaVorbefundeDataMapper = new KpaVorbefundeDataMapper(catalogueFactory.catalogue(VorbefundeCatalogue.class), propertyCatalogue);
+
         var resultBuilder = Mtb.builder();
 
         try {
@@ -144,6 +146,8 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .guidelineTherapies(therapielinieMapper.getByParentId(kpaId))
                     .performanceStatus(ecogMapper.getByParentId(kpaId))
                     .familyMemberHistories(verwandteDataMapper.getByParentId(kpaId))
+                    // Vorbefunde
+                    .priorDiagnosticReports(kpaVorbefundeDataMapper.getByParentId(kpaId))
                     // DNPM Therapieplan
                     .carePlans(
                             therapieplanCatalogue
