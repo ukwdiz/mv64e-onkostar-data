@@ -42,6 +42,7 @@ Um Mithilfe wird gebeten.
 
 | DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                                             |
 |----------------------------------|--------|---------------------------------------------------------------------------------------|
+ | MV Metadaten                     | ⛅       | MV Consent anhand DNPM-Formular. Kein Broad Consent
 | Patient                          | ✅      | Verwendet Patienten-ID, nicht Datenbank-ID. Keine Managing Site                       |
 | Episoden                         | ✅      |                                                                                       |
 | Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode                        |
