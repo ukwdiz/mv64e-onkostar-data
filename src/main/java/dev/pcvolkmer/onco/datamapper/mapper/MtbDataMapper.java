@@ -20,9 +20,7 @@
 
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.Mtb;
-import dev.pcvolkmer.mv64e.mtb.Reference;
-import dev.pcvolkmer.mv64e.mtb.TumorSpecimen;
+import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
@@ -139,6 +137,11 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 propertyCatalogue
         );
 
+        var consentMvDataMapper = new ConsentMvDataMapper(
+                catalogueFactory.catalogue(ConsentMvCatalogue.class),
+                catalogueFactory.catalogue(ConsentMvVerlaufCatalogue.class)
+        );
+
         var resultBuilder = Mtb.builder();
 
         try {
@@ -194,8 +197,19 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .ngsReports(
                             kpaMolekulargenetikDataMapper.getAllByKpaId(kpaId)
                     )
-
             ;
+
+            // Consent - as far as present
+            var consentId = kpaCatalogue.getById(kpaId).getString("consentmv64e");
+            if (null != consentId) {
+                resultBuilder.metadata(
+                        MvhMetadata.builder()
+                                .modelProjectConsent(
+                                        consentMvDataMapper.getById(kpaCatalogue.getById(kpaId).getInteger("consentmv64e"))
+                                )
+                                .build()
+                );
+            }
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);
         }

@@ -60,15 +60,18 @@ public class ConsentMvDataMapper implements DataMapper<ModelProjectConsent> {
      */
     @Override
     public ModelProjectConsent getById(int id) {
-        var data = catalogue.getById(id);
+        try {
+            var data = catalogue.getById(id);
 
-        var builder = ModelProjectConsent.builder();
-        builder
-                .date(data.getDate("date"))
-                .version(getLatestVersion(id))
-                .provisions(getProvisions(data))
-        ;
-        return builder.build();
+            var builder = ModelProjectConsent.builder();
+            builder
+                    .version(getLatestVersion(id))
+                    .provisions(getProvisions(data))
+            ;
+            return builder.build();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String getLatestVersion(int id) {

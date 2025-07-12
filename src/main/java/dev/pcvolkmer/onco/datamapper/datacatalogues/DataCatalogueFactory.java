@@ -99,6 +99,10 @@ public class DataCatalogueFactory {
                 return RebiopsieCatalogue.create(jdbcTemplate);
             } else if (c == ReevaluationCatalogue.class) {
                 return ReevaluationCatalogue.create(jdbcTemplate);
+            } else if (c == ConsentMvCatalogue.class) {
+                return ConsentMvCatalogue.create(jdbcTemplate);
+            } else if (c == ConsentMvVerlaufCatalogue.class) {
+                return ConsentMvVerlaufCatalogue.create(jdbcTemplate);
             }
             throw new DataCatalogueCreationException(clazz);
         });

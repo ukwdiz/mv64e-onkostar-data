@@ -104,7 +104,8 @@ class ConsentMvDataMapperTest {
 
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(ModelProjectConsent.class);
-        assertThat(actual.getDate()).isEqualTo(Date.from(Instant.parse("2025-07-12T00:00:00Z")));
+        // Intentionally left blank/null
+        assertThat(actual.getDate()).isNull();
         assertThat(actual.getVersion()).isEqualTo("02");
         assertThat(actual.getProvisions()).hasSize(3);
         assertThat(actual.getProvisions()).containsAll(
