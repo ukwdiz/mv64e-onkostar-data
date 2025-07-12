@@ -86,8 +86,15 @@ class ConsentMvDataMapperTest {
                         ResultSet.from(
                                 Map.of(
                                         "id", "1",
-                                        "date", new java.sql.Date(Date.from(Instant.parse("2025-07-12T12:00:00Z")).getTime()),
+                                        "date", new java.sql.Date(Date.from(Instant.parse("2025-07-11T12:00:00Z")).getTime()),
                                         "version", "01"
+                                )
+                        ),
+                        ResultSet.from(
+                                Map.of(
+                                        "id", "1",
+                                        "date", new java.sql.Date(Date.from(Instant.parse("2025-07-12T12:00:00Z")).getTime()),
+                                        "version", "02"
                                 )
                         )
                 )
@@ -98,7 +105,7 @@ class ConsentMvDataMapperTest {
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(ModelProjectConsent.class);
         assertThat(actual.getDate()).isEqualTo(Date.from(Instant.parse("2025-07-12T00:00:00Z")));
-        assertThat(actual.getVersion()).isEqualTo("01");
+        assertThat(actual.getVersion()).isEqualTo("02");
         assertThat(actual.getProvisions()).hasSize(3);
         assertThat(actual.getProvisions()).containsAll(
                 List.of(
