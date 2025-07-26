@@ -23,6 +23,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.KeimbahndiagnoseCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorausbreitungCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorgradingCatalogue;
@@ -44,17 +45,20 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
     private final KpaCatalogue kpaCatalogue;
     private final TumorausbreitungCatalogue tumorausbreitungCatalogue;
     private final TumorgradingCatalogue tumorgradingCatalogue;
+    private final KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue;
     private final PropertyCatalogue propertyCatalogue;
 
     public KpaDiagnosisDataMapper(
             final KpaCatalogue kpaCatalogue,
             final TumorausbreitungCatalogue tumorausbreitungCatalogue,
             final TumorgradingCatalogue tumorgradingCatalogue,
+            final KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue,
             final PropertyCatalogue propertyCatalogue
     ) {
         this.kpaCatalogue = kpaCatalogue;
         this.tumorausbreitungCatalogue = tumorausbreitungCatalogue;
         this.tumorgradingCatalogue = tumorgradingCatalogue;
+        this.keimbahndiagnoseCatalogue = keimbahndiagnoseCatalogue;
         this.propertyCatalogue = propertyCatalogue;
     }
 
@@ -83,13 +87,12 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
                 .recordedOn(data.getDate("datumerstdiagnose"))
                 .topography(Coding.builder().code(data.getString("icdo3lokalisation")).build())
                 .type(getType(data))
-                // Nicht in Onkostar erfasst
-                //.germlineCodes()
                 .guidelineTreatmentStatus(
                         getMtbDiagnosisGuidelineTreatmentStatusCoding(data.getString("leitlinienstatus"), data.getInteger("leitlinienstatus_propcat_version"))
                 )
                 .grading(getGrading(id))
                 .staging(getStaging(id))
+                .germlineCodes(getGermlineCodes(id))
         ;
         return builder.build();
     }
@@ -170,6 +173,19 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
         }
 
         return Staging.builder().history(all).build();
+    }
+
+    private List<Coding> getGermlineCodes(final int id) {
+        return keimbahndiagnoseCatalogue.getAllByParentId(id).stream()
+                .map(it ->
+                        Coding.builder()
+                                .code(it.getString("icd10"))
+                                .system("http://fhir.de/CodeSystem/bfarm/icd-10-gm")
+                                .display(propertyCatalogue.getByCodeAndVersion(it.getString("icd10"), it.getInteger("icd10_propcat_version")).getShortdesc())
+                                .version(propertyCatalogue.getByCodeAndVersion(it.getString("icd10"), it.getInteger("icd10_propcat_version")).getVersionDescription())
+                                .build()
+                )
+                .collect(Collectors.toList());
     }
 
     private Type getType(final ResultSet resultSet) {

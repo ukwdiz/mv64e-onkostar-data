@@ -24,6 +24,7 @@ import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.KeimbahndiagnoseCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorausbreitungCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorgradingCatalogue;
@@ -34,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.sql.DataSource;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +49,7 @@ class KpaDiagnosisDataMapperTest {
     KpaCatalogue kpaCatalogue;
     TumorausbreitungCatalogue tumorausbreitungCatalogue;
     TumorgradingCatalogue tumorgradingCatalogue;
+    KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue;
     PropertyCatalogue propertyCatalogue;
 
     KpaDiagnosisDataMapper dataMapper;
@@ -56,13 +59,21 @@ class KpaDiagnosisDataMapperTest {
             @Mock KpaCatalogue kpaCatalogue,
             @Mock TumorausbreitungCatalogue tumorausbreitungCatalogue,
             @Mock TumorgradingCatalogue tumorgradingCatalogue,
+            @Mock KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue,
             @Mock PropertyCatalogue propertyCatalogue
     ) {
         this.kpaCatalogue = kpaCatalogue;
         this.tumorausbreitungCatalogue = tumorausbreitungCatalogue;
         this.tumorgradingCatalogue = tumorgradingCatalogue;
+        this.keimbahndiagnoseCatalogue = keimbahndiagnoseCatalogue;
         this.propertyCatalogue = propertyCatalogue;
-        this.dataMapper = new KpaDiagnosisDataMapper(kpaCatalogue, tumorausbreitungCatalogue, tumorgradingCatalogue, propertyCatalogue);
+        this.dataMapper = new KpaDiagnosisDataMapper(
+                kpaCatalogue,
+                tumorausbreitungCatalogue,
+                tumorgradingCatalogue,
+                keimbahndiagnoseCatalogue,
+                propertyCatalogue
+        );
     }
 
     @Test
@@ -88,12 +99,27 @@ class KpaDiagnosisDataMapperTest {
                 new PropertyCatalogue.Entry("C00.0", "Bösartige Neubildung: Äußere Oberlippe", "Bösartige Neubildung: Äußere Oberlippe")
         ).when(propertyCatalogue).getByCodeAndVersion(anyString(), anyInt());
 
+        doAnswer(invocationOnMock ->
+                List.of(
+                        ResultSet.from(
+                                Map.of(
+                                        "id", 1,
+                                        "icd10", "C00.0",
+                                        "icd10_propcat_version", 42
+                                )
+                        )
+                )
+        ).when(keimbahndiagnoseCatalogue).getAllByParentId(anyInt());
+
         var actual = this.dataMapper.getById(1);
         assertThat(actual).isInstanceOf(MtbDiagnosis.class);
         assertThat(actual.getId()).isEqualTo("1");
         assertThat(actual.getPatient())
                 .isEqualTo(Reference.builder().id("42").type("Patient").build());
         assertThat(actual.getCode().getCode()).isEqualTo("F79.9");
+
+        assertThat(actual.getGermlineCodes()).hasSize(1);
+        assertThat(actual.getGermlineCodes().get(0).getCode()).isEqualTo("C00.0");
     }
 
     private static Map<String, Object> testData() {

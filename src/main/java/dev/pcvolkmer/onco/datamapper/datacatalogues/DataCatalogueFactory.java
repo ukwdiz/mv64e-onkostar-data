@@ -103,6 +103,8 @@ public class DataCatalogueFactory {
                 return ConsentMvCatalogue.create(jdbcTemplate);
             } else if (c == ConsentMvVerlaufCatalogue.class) {
                 return ConsentMvVerlaufCatalogue.create(jdbcTemplate);
+            } else if (c == KeimbahndiagnoseCatalogue.class) {
+                return KeimbahndiagnoseCatalogue.create(jdbcTemplate);
             }
             throw new DataCatalogueCreationException(clazz);
         });
