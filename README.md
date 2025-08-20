@@ -78,3 +78,20 @@ enthalten.
 
 Diese Liste der Gene unterliegt der folgenden Lizenz und ist frei
 verfügbar: [Creative Commons Public Domain (CC0) License](https://creativecommons.org/public-domain/cc0/).
+
+## Zusätzliche Informationen
+
+Weitere benötigte Informationen können ebenfalls abgerufen werden.
+
+```java
+var customMetadataMapper = new CustomMetadataDataMapper(
+        KpaCatalogue.create(new JdbcTemplate(datasource)),
+        PatientCatalogue.create(new JdbcTemplate(datasource))
+);
+
+var additional1 = customMetadataMapper.getByCaseId("16000123");
+// oder
+var additional2 = customMetadataMapper.getLatestByPatientIdAndTumorId("2000123456", 1);
+```
+
+Aktuell wird hier die Fallnummer und Krankenversicherungsnummer abgerufen.
