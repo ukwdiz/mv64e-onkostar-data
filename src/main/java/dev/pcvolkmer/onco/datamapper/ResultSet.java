@@ -141,6 +141,28 @@ public class ResultSet {
     }
 
     /**
+     * Get column value as Double and cast value if possible
+     *
+     * @param columnName The name of the column
+     * @return The column value as Integer
+     */
+    public Double getDouble(String columnName) {
+        var raw = this.rawData.get(columnName);
+
+        if (raw == null) {
+            return null;
+        } else if (raw instanceof Integer) {
+            return ((Integer) raw).doubleValue();
+        } else if (raw instanceof Long) {
+            return ((Long) raw).doubleValue();
+        } else if (raw instanceof Double) {
+            return ((Double) raw);
+        }
+
+        throw new IllegalArgumentException("Cannot convert " + raw.getClass() + " to Integer");
+    }
+
+    /**
      * Get column value as Date and cast value if possible
      *
      * @param columnName The name of the column

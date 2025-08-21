@@ -124,7 +124,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(HistologieCatalogue.class)
         );
 
-        var kpaMolekulargenetikDataMapper = new KpaMolekulargenetikDataMapper(molekulargenetikCatalogue, catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class), propertyCatalogue);
+        var kpaMolekulargenetikNgsDataMapper = new KpaMolekulargenetikNgsDataMapper(molekulargenetikCatalogue, catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class), propertyCatalogue);
+        var kpaMolekulargenetikMsiDataMapper = new KpaMolekulargenetikMsiDataMapper(catalogueFactory.catalogue(MolekulargenMsiCatalogue.class));
+
 
         var kpaVorbefundeDataMapper = new KpaVorbefundeDataMapper(
                 catalogueFactory.catalogue(VorbefundeCatalogue.class),
@@ -196,7 +198,16 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     )
                     // NGS Berichte
                     .ngsReports(
-                            kpaMolekulargenetikDataMapper.getAllByKpaId(kpaId)
+                            kpaMolekulargenetikNgsDataMapper.getAllByKpaId(kpaId)
+                    )
+                    // MSI Befunde
+                    .msiFindings(
+                            kpaMolekulargenetikNgsDataMapper.getAllByKpaId(kpaId).stream()
+                                    .map(ngs -> Integer.parseInt(ngs.getId()))
+                                    .flatMap(ngsId -> kpaMolekulargenetikMsiDataMapper.getByParentId(ngsId).stream())
+                                    // Filtere alle MSI: Nur mit Angabe Interpretation!
+                                    .filter(msi -> msi.getInterpretation() != null)
+                                    .collect(Collectors.toList())
                     )
             ;
 

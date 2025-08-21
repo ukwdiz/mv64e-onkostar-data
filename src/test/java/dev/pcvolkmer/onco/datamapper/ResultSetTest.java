@@ -56,6 +56,13 @@ class ResultSetTest {
     }
 
     @Test
+    void shouldReturnDoubleValues() {
+        var data = getTestData();
+
+        assertThat(data.getDouble("int")).isEqualTo(42);
+    }
+
+    @Test
     void shouldReturnDateValues() {
         var data = getTestData();
 

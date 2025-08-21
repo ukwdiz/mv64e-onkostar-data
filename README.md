@@ -54,7 +54,7 @@ Um Mithilfe wird gebeten.
 | vorherige Molekular-Diagnostik   | ✅      |                                                                                |
 | Histologie-Berichte              | ✅      |                                                                                |
 | IHC-Berichte                     | -      | Aktuell nicht vorgesehen                                                       |
-| MSI-Befunde                      | ⌛      | Aktuell in Arbeit, https://github.com/dnpm-dip/mtb-model/issues/10 ist behoben |
+| MSI-Befunde                      | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2) |
 | NGS-Berichte                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2) |
 | MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante und CNV (3)          |
 | Follow-Up Verlauf                | -      | Späterer Zeitpunkt                                                             |
@@ -67,7 +67,10 @@ Um Mithilfe wird gebeten.
 
 1. Nicht alle möglichen Ausprägungen in `OS.Molekulargenetik` vorhanden.
 2. Aktuell nicht alle Angaben effektiv im Formular `OS.Molekulargenetik` wie gefordert angebbar.
-   Hinweis: Tumorzellgehalt-Methode problematisch, wenn auch im NGS-Bericht histologisch festgestellt.
+   Hinweise:
+   * Tumorzellgehalt-Methode problematisch, wenn auch im NGS-Bericht histologisch festgestellt.
+   * Angabe zu MSI-Interpretation fehlt in Formular, ist aber Pflichtangabe - Wird gefiltert.
+   * Datenbanktabelle für MSI lautet tatsächlich `dk_molekluargenmsi` [sic!]
 3. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
 
 ## Enthaltene Liste mit Genen

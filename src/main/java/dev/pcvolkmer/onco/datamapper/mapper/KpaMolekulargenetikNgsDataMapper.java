@@ -38,12 +38,12 @@ import java.util.stream.Collectors;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaMolekulargenetikDataMapper implements DataMapper<SomaticNgsReport> {
+public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsReport> {
 
     private final MolekulargenetikCatalogue catalogue;
     private final MolekulargenuntersuchungCatalogue untersuchungCatalogue;
 
-    public KpaMolekulargenetikDataMapper(
+    public KpaMolekulargenetikNgsDataMapper(
             final MolekulargenetikCatalogue catalogue,
             final MolekulargenuntersuchungCatalogue untersuchungCatalogue,
             final PropertyCatalogue propertyCatalogue
