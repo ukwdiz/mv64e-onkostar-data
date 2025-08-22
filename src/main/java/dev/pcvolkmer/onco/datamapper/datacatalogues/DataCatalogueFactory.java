@@ -97,6 +97,10 @@ public class DataCatalogueFactory {
                 return MolekulargenuntersuchungCatalogue.create(jdbcTemplate);
             } else if (c == MolekulargenMsiCatalogue.class) {
                 return MolekulargenMsiCatalogue.create(jdbcTemplate);
+            } else if (c == MolekularImmunhistoCatalogue.class) {
+                return MolekularImmunhistoCatalogue.create(jdbcTemplate);
+            } else if (c == MolekularPcrCatalogue.class) {
+                return MolekularPcrCatalogue.create(jdbcTemplate);
             } else if (c == RebiopsieCatalogue.class) {
                 return RebiopsieCatalogue.create(jdbcTemplate);
             } else if (c == ReevaluationCatalogue.class) {
