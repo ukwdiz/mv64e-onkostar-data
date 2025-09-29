@@ -101,6 +101,10 @@ enthalten.
 Diese Liste der Gene unterliegt der folgenden Lizenz und ist frei
 verfügbar: [Creative Commons Public Domain (CC0) License](https://creativecommons.org/public-domain/cc0/).
 
+## Beispielanwendung
+
+Im Verzeichnis [`application`](/application) ist eine Beispielanwendung zum Export enthalten
+
 ## Zusätzliche Informationen
 
 Weitere benötigte Informationen können ebenfalls abgerufen werden.
