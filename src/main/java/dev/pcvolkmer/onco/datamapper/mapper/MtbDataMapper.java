@@ -45,9 +45,16 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     private final DataCatalogueFactory catalogueFactory;
     private final PropertyCatalogue propertyCatalogue;
 
+    private boolean filterIncomplete;
+
     MtbDataMapper(final JdbcTemplate jdbcTemplate) {
+        this(jdbcTemplate, false);
+    }
+
+    MtbDataMapper(final JdbcTemplate jdbcTemplate, final boolean filterIncomplete) {
         this.catalogueFactory = DataCatalogueFactory.initialize(jdbcTemplate);
         this.propertyCatalogue = PropertyCatalogue.initialize(jdbcTemplate);
+        this.filterIncomplete = filterIncomplete;
     }
 
     /**
@@ -68,6 +75,38 @@ public class MtbDataMapper implements DataMapper<Mtb> {
      */
     public static MtbDataMapper create(final JdbcTemplate jdbcTemplate) {
         return new MtbDataMapper(jdbcTemplate);
+    }
+
+    /**
+     * Create instance of the mapper class
+     *
+     * @param dataSource     The datasource to be used
+     * @param filterIncomplete Filter incomplete items
+     * @return The initialized mapper
+     */
+    public static MtbDataMapper create(final DataSource dataSource, final boolean filterIncomplete) {
+        return new MtbDataMapper(new JdbcTemplate(dataSource), filterIncomplete);
+    }
+
+    /**
+     * Create instance of the mapper class
+     *
+     * @param jdbcTemplate     The Spring JdbcTemplate to be used
+     * @param filterIncomplete Filter incomplete items
+     * @return The initialized mapper
+     */
+    public static MtbDataMapper create(final JdbcTemplate jdbcTemplate, final boolean filterIncomplete) {
+        return new MtbDataMapper(jdbcTemplate, filterIncomplete);
+    }
+
+    /**
+     * Filter incomplete items when using mapper
+     *
+     * @return Instance of MtbDataMapper with enabled filter.
+     */
+    public MtbDataMapper filterIncomplete() {
+        this.filterIncomplete = true;
+        return this;
     }
 
     /**
@@ -160,6 +199,33 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()
             );
 
+            var carePlans = therapieplanCatalogue
+                    .getByKpaId(kpaId).stream()
+                    .map(therapieplanDataMapper::getById);
+
+            var msiFindings = kpaMolekulargenetikNgsDataMapper.getAllByKpaId(kpaId).stream()
+                    .map(ngs -> Integer.parseInt(ngs.getId()))
+                    .flatMap(ngsId -> kpaMolekulargenetikMsiDataMapper.getByParentId(ngsId).stream());
+
+            if (this.filterIncomplete) {
+                carePlans = carePlans
+                        .peek(therapieplan -> therapieplan.setMedicationRecommendations(
+                                        therapieplan.getMedicationRecommendations().stream()
+                                                .peek(mtbMedicationRecommendation ->
+                                                        mtbMedicationRecommendation.setSupportingVariants(
+                                                                mtbMedicationRecommendation.getSupportingVariants().stream()
+                                                                        .filter(geneAlterationReference -> specimens.stream()
+                                                                                .map(TumorSpecimen::getId)
+                                                                                .collect(Collectors.toList()).contains(geneAlterationReference.getVariant().getId()))
+                                                                        .collect(Collectors.toList())
+                                                        )
+                                                ).collect(Collectors.toList())
+                                )
+                        );
+
+                msiFindings = msiFindings.filter(msi -> msi.getInterpretation() != null);
+            }
+
             resultBuilder
                     .patient(kpaPatient)
                     .episodesOfCare(List.of(mtbEpisodeDataMapper.getById(kpaId)))
@@ -177,24 +243,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .specimens(specimens)
                     // DNPM Therapieplan
                     .carePlans(
-                            therapieplanCatalogue
-                                    .getByKpaId(kpaId).stream()
-                                    .map(therapieplanDataMapper::getById)
-                                    // Remove references to alterations not present in specimens
-                                    .peek(therapieplan -> therapieplan.setMedicationRecommendations(
-                                                    therapieplan.getMedicationRecommendations().stream()
-                                                            .peek(mtbMedicationRecommendation ->
-                                                                    mtbMedicationRecommendation.setSupportingVariants(
-                                                                            mtbMedicationRecommendation.getSupportingVariants().stream()
-                                                                                    .filter(geneAlterationReference -> specimens.stream()
-                                                                                            .map(TumorSpecimen::getId)
-                                                                                            .collect(Collectors.toList()).contains(geneAlterationReference.getVariant().getId()))
-                                                                                    .collect(Collectors.toList())
-                                                                    )
-                                                            ).collect(Collectors.toList())
-                                            )
-                                    )
-                                    .collect(Collectors.toList())
+                            carePlans.collect(Collectors.toList())
                     )
                     // NGS Berichte
                     .ngsReports(
@@ -202,12 +251,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     )
                     // MSI Befunde
                     .msiFindings(
-                            kpaMolekulargenetikNgsDataMapper.getAllByKpaId(kpaId).stream()
-                                    .map(ngs -> Integer.parseInt(ngs.getId()))
-                                    .flatMap(ngsId -> kpaMolekulargenetikMsiDataMapper.getByParentId(ngsId).stream())
-                                    // Filtere alle MSI: Nur mit Angabe Interpretation!
-                                    .filter(msi -> msi.getInterpretation() != null)
-                                    .collect(Collectors.toList())
+                            msiFindings.collect(Collectors.toList())
                     )
             ;
 

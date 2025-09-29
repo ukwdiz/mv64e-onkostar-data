@@ -15,11 +15,20 @@ datasource.setUrl("jdbc:mariadb://localhost:3306/onkostar");
 datasource.setUser("onkostar");
 datasource.setPassword("devpass");
 
-var mtbMapper = MtbDataMapper.create(datasource);
+var mtbMapper = MtbDataMapper.create(datasource).filterIncomplete();
 
 var jsonResult = Converter.toJsonString(
   mtbMapper.getByCaseId("16000123")
 );
+```
+
+Die Verwendung von `filterIncomplete()` sorgt dafür, dass unvollständige oder nicht referenzierbare Einträge aus
+den Therapieplänen oder MSI-Findings entfernt werden und somit Validierungsfehler in DNPM:DIP vermieden werden.
+
+Alternative Initialisierung:
+
+```
+var mtbMapper = MtbDataMapper.create(datasource, true);
 ```
 
 Es ist auch möglich, die Daten anhand der Patienten-ID und dem Tumoridentifikator zu ermitteln.
