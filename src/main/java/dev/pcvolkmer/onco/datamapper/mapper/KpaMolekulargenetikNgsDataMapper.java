@@ -42,14 +42,17 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
 
     private final MolekulargenetikCatalogue catalogue;
     private final MolekulargenuntersuchungCatalogue untersuchungCatalogue;
+    private final TumorCellContentMethodCodingCode tumorCellContentMethod;
 
     public KpaMolekulargenetikNgsDataMapper(
             final MolekulargenetikCatalogue catalogue,
             final MolekulargenuntersuchungCatalogue untersuchungCatalogue,
-            final PropertyCatalogue propertyCatalogue
+            final PropertyCatalogue propertyCatalogue,
+            final TumorCellContentMethodCodingCode tumorCellContentMethod
     ) {
         this.catalogue = catalogue;
         this.untersuchungCatalogue = untersuchungCatalogue;
+        this.tumorCellContentMethod = tumorCellContentMethod;
     }
 
     /**
@@ -96,19 +99,18 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
 
         var resultBuilder = NgsReportResults.builder();
 
-        // TODO: Aktuell problematisch, wenn nicht bioinformatisch gemäß: https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144!
-        //  In Würzburg immer histologisch!
         if (null != resultSet.getLong("tumorzellgehalt")) {
-            resultBuilder.tumorCellContent(
-                    TumorCellContent.builder()
-                            .id(resultSet.getId().toString())
-                            .patient(resultSet.getPatientReference())
-                            .specimen(Reference.builder().id(resultSet.getString("id")).type("Specimen").build())
-                            .value(resultSet.getLong("tumorzellgehalt") / 100.0)
-                            // TODO: Nicht in OS.Molekulargenetik and Bioinformatic is required!
-                            .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.BIOINFORMATIC).build())
-                            .build()
-            );
+            var tumorcellContentBuilder = TumorCellContent.builder()
+                    .id(resultSet.getId().toString())
+                    .patient(resultSet.getPatientReference())
+                    .specimen(Reference.builder().id(resultSet.getString("id")).type("Specimen").build())
+                    .value(resultSet.getLong("tumorzellgehalt") / 100.0);
+
+            if (tumorCellContentMethod == TumorCellContentMethodCodingCode.BIOINFORMATIC) {
+                tumorcellContentBuilder.method(TumorCellContentMethodCoding.builder().code(tumorCellContentMethod).build());
+            }
+
+            resultBuilder.tumorCellContent(tumorcellContentBuilder.build());
         }
 
         resultBuilder.simpleVariants(
@@ -219,7 +221,7 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
     private NgsReportMetadata getNgsReportMetadata(final String artdersequenzierung) {
         var resultBuilder = NgsReportMetadata.builder();
 
-        switch(artdersequenzierung) {
+        switch (artdersequenzierung) {
             // TODO: Replace with real data in properties file
             default:
                 resultBuilder

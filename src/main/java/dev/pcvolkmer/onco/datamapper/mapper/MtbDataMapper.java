@@ -46,19 +46,27 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     private final PropertyCatalogue propertyCatalogue;
 
     private boolean filterIncomplete;
+    private TumorCellContentMethodCodingCode tumorCellContentMethod;
 
+    // TODO: Aktuell problematisch, wenn nicht bioinformatisch gemäß: https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144!
+    //  In Würzburg immer histologisch!
     MtbDataMapper(final JdbcTemplate jdbcTemplate) {
-        this(jdbcTemplate, false);
+        this(jdbcTemplate, false, TumorCellContentMethodCodingCode.BIOINFORMATIC);
     }
 
-    MtbDataMapper(final JdbcTemplate jdbcTemplate, final boolean filterIncomplete) {
+    MtbDataMapper(
+            final JdbcTemplate jdbcTemplate,
+            final boolean filterIncomplete,
+            final TumorCellContentMethodCodingCode tumorCellContentMethod
+    ) {
         this.catalogueFactory = DataCatalogueFactory.initialize(jdbcTemplate);
         this.propertyCatalogue = PropertyCatalogue.initialize(jdbcTemplate);
         this.filterIncomplete = filterIncomplete;
+        this.tumorCellContentMethod = tumorCellContentMethod;
     }
 
     /**
-     * Create instance of the mapper class
+     * Create instance of the mapper class using default configuration
      *
      * @param dataSource The datasource to be used
      * @return The initialized mapper
@@ -68,7 +76,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     }
 
     /**
-     * Create instance of the mapper class
+     * Create instance of the mapper class using default configuration
      *
      * @param jdbcTemplate The Spring JdbcTemplate to be used
      * @return The initialized mapper
@@ -80,23 +88,33 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     /**
      * Create instance of the mapper class
      *
-     * @param dataSource     The datasource to be used
-     * @param filterIncomplete Filter incomplete items
+     * @param dataSource             The datasource to be used
+     * @param filterIncomplete       Filter incomplete items
+     * @param tumorCellContentMethod Tumor cell count method
      * @return The initialized mapper
      */
-    public static MtbDataMapper create(final DataSource dataSource, final boolean filterIncomplete) {
-        return new MtbDataMapper(new JdbcTemplate(dataSource), filterIncomplete);
+    public static MtbDataMapper create(
+            final DataSource dataSource,
+            final boolean filterIncomplete,
+            final TumorCellContentMethodCodingCode tumorCellContentMethod
+    ) {
+        return new MtbDataMapper(new JdbcTemplate(dataSource), filterIncomplete, tumorCellContentMethod);
     }
 
     /**
      * Create instance of the mapper class
      *
-     * @param jdbcTemplate     The Spring JdbcTemplate to be used
-     * @param filterIncomplete Filter incomplete items
+     * @param jdbcTemplate           The Spring JdbcTemplate to be used
+     * @param filterIncomplete       Filter incomplete items
+     * @param tumorCellContentMethod Tumor cell count method
      * @return The initialized mapper
      */
-    public static MtbDataMapper create(final JdbcTemplate jdbcTemplate, final boolean filterIncomplete) {
-        return new MtbDataMapper(jdbcTemplate, filterIncomplete);
+    public static MtbDataMapper create(
+            final JdbcTemplate jdbcTemplate,
+            final boolean filterIncomplete,
+            final TumorCellContentMethodCodingCode tumorCellContentMethod
+    ) {
+        return new MtbDataMapper(jdbcTemplate, filterIncomplete, tumorCellContentMethod);
     }
 
     /**
@@ -106,6 +124,16 @@ public class MtbDataMapper implements DataMapper<Mtb> {
      */
     public MtbDataMapper filterIncomplete() {
         this.filterIncomplete = true;
+        return this;
+    }
+
+    /**
+     * Sets tumor cell content method to be used. If not set, HISTOLOGIC will be used.
+     *
+     * @return Instance of MtbDataMapper with enabled filter.
+     */
+    public MtbDataMapper tumorCellContentMethod(TumorCellContentMethodCodingCode tumorCellContentMethod) {
+        this.tumorCellContentMethod = tumorCellContentMethod;
         return this;
     }
 
@@ -163,7 +191,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 catalogueFactory.catalogue(HistologieCatalogue.class)
         );
 
-        var kpaMolekulargenetikNgsDataMapper = new KpaMolekulargenetikNgsDataMapper(molekulargenetikCatalogue, catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class), propertyCatalogue);
+        var kpaMolekulargenetikNgsDataMapper = new KpaMolekulargenetikNgsDataMapper(
+                molekulargenetikCatalogue,
+                catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class),
+                propertyCatalogue,
+                tumorCellContentMethod
+        );
         var kpaMolekulargenetikMsiDataMapper = new KpaMolekulargenetikMsiDataMapper(catalogueFactory.catalogue(MolekulargenMsiCatalogue.class));
 
 

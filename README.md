@@ -15,7 +15,9 @@ datasource.setUrl("jdbc:mariadb://localhost:3306/onkostar");
 datasource.setUser("onkostar");
 datasource.setPassword("devpass");
 
-var mtbMapper = MtbDataMapper.create(datasource).filterIncomplete();
+var mtbMapper = MtbDataMapper.create(datasource)
+  .filterIncomplete()
+  .tumorCellContentMethod(TumorCellContentMethodCodingCode.HISTOLOGIC);
 
 var jsonResult = Converter.toJsonString(
   mtbMapper.getByCaseId("16000123")
@@ -25,10 +27,18 @@ var jsonResult = Converter.toJsonString(
 Die Verwendung von `filterIncomplete()` sorgt dafür, dass unvollständige oder nicht referenzierbare Einträge aus
 den Therapieplänen oder MSI-Findings entfernt werden und somit Validierungsfehler in DNPM:DIP vermieden werden.
 
+Mit `tumorCellContentMethod(TumorCellContentMethodCodingCode.HISTOLOGIC)` kann die verwendete Methode zur Feststellung
+des Tumorzellgehalts angegeben werden.
+
+**Achtung!** Die Methode ist standardmäßig auf `BIOINFORMATIC` gesetzt, wie in
+https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144 gefordert.
+Eine Änderung auf eine abweichend tatsächlich verwendete Methode `HISTOLOGIC` würde zu *Fehlern* bei der Validierung
+in DNPM:DIP führen, daher wird die Angabe in diesem Fall für den Export ignoriert und resultiert nur in einer *Warnung*.
+
 Alternative Initialisierung:
 
 ```
-var mtbMapper = MtbDataMapper.create(datasource, true);
+var mtbMapper = MtbDataMapper.create(datasource, true, TumorCellContentMethodCodingCode.HISTOLOGIC);
 ```
 
 Es ist auch möglich, die Daten anhand der Patienten-ID und dem Tumoridentifikator zu ermitteln.
