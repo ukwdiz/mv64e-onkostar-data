@@ -68,33 +68,25 @@ class ConsentMvDataMapperTest {
     @Test
     void shouldCreateConsent() {
         doAnswer(invocationOnMock ->
-                ResultSet.from(
-                    Map.of(
-                    "id", "1",
-                    "date", new java.sql.Date(Date.from(Instant.parse("2025-07-12T12:00:00Z")).getTime()),
-                    "sequencing", "permit",
-                    "caseidentification", "deny",
-                    "reidentification", "deny"
-                    )
-                )
-        )
-                .when(catalogue)
-                .getById(anyInt());
-
-        doAnswer(invocationOnMock ->
                 List.of(
                         ResultSet.from(
                                 Map.of(
                                         "id", "1",
                                         "date", new java.sql.Date(Date.from(Instant.parse("2025-07-11T12:00:00Z")).getTime()),
-                                        "version", "01"
+                                        "version", "01",
+                                        "sequencing", "permit",
+                                        "caseidentification", "deny",
+                                        "reidentification", "deny"
                                 )
                         ),
                         ResultSet.from(
                                 Map.of(
                                         "id", "1",
                                         "date", new java.sql.Date(Date.from(Instant.parse("2025-07-12T12:00:00Z")).getTime()),
-                                        "version", "02"
+                                        "version", "02",
+                                        "sequencing", "permit",
+                                        "caseidentification", "permit"
+                                        // no new value for reidentification!
                                 )
                         )
                 )
@@ -118,10 +110,10 @@ class ConsentMvDataMapperTest {
                         Provision.builder()
                                 .date(Date.from(Instant.parse("2025-07-12T00:00:00Z")))
                                 .purpose(ModelProjectConsentPurpose.CASE_IDENTIFICATION)
-                                .type(ConsentProvision.DENY)
+                                .type(ConsentProvision.PERMIT)
                                 .build(),
                         Provision.builder()
-                                .date(Date.from(Instant.parse("2025-07-12T00:00:00Z")))
+                                .date(Date.from(Instant.parse("2025-07-11T00:00:00Z")))
                                 .purpose(ModelProjectConsentPurpose.REIDENTIFICATION)
                                 .type(ConsentProvision.DENY)
                                 .build()

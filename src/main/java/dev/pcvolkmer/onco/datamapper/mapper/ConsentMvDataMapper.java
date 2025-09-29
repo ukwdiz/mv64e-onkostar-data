@@ -24,12 +24,10 @@ import dev.pcvolkmer.mv64e.mtb.ConsentProvision;
 import dev.pcvolkmer.mv64e.mtb.ModelProjectConsent;
 import dev.pcvolkmer.mv64e.mtb.ModelProjectConsentPurpose;
 import dev.pcvolkmer.mv64e.mtb.Provision;
-import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ConsentMvCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ConsentMvVerlaufCatalogue;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,12 +59,10 @@ public class ConsentMvDataMapper implements DataMapper<ModelProjectConsent> {
     @Override
     public ModelProjectConsent getById(int id) {
         try {
-            var data = catalogue.getById(id);
-
             var builder = ModelProjectConsent.builder();
             builder
                     .version(getLatestVersion(id))
-                    .provisions(getProvisions(data))
+                    .provisions(getProvisions(id))
             ;
             return builder.build();
         } catch (Exception e) {
@@ -82,60 +78,61 @@ public class ConsentMvDataMapper implements DataMapper<ModelProjectConsent> {
                 .orElse("");
     }
 
-    private List<Provision> getProvisions(final ResultSet resultSet) {
+    private List<Provision> getProvisions(final int id) {
         var result = new ArrayList<Provision>();
-        var date = resultSet.getDate("date");
 
-        if (ConsentProvision.PERMIT.toValue().equals(resultSet.getString("sequencing"))) {
-            result.add(
-                    Provision.builder()
-                            .date(date)
-                            .purpose(ModelProjectConsentPurpose.SEQUENCING).type(ConsentProvision.PERMIT)
-                            .build()
-            );
-        } else {
-            result.add(
-                    Provision.builder()
-                            .date(date)
-                            .purpose(ModelProjectConsentPurpose.SEQUENCING).type(ConsentProvision.DENY)
-                            .build()
-            );
+        var all = consentMvVerlaufCatalogue.getAllByParentId(id).stream()
+                .sorted((rs1, rs2) -> rs2.getDate("date").compareTo(rs1.getDate("date")))
+                .collect(Collectors.toList());
+
+        var latest = all.stream().findFirst();
+        if (latest.isEmpty()) {
+            return result;
         }
 
-        if (ConsentProvision.PERMIT.toValue().equals(resultSet.getString("caseidentification"))) {
-            result.add(
-                    Provision.builder()
-                            .date(date)
-                            .purpose(ModelProjectConsentPurpose.CASE_IDENTIFICATION).type(ConsentProvision.PERMIT)
-                            .build()
-            );
-        } else {
-            result.add(
-                    Provision.builder()
-                            .date(date)
-                            .purpose(ModelProjectConsentPurpose.CASE_IDENTIFICATION).type(ConsentProvision.DENY)
-                            .build()
-            );
-        }
+        all.stream()
+                .filter(rs -> rs.getString("sequencing") != null && !rs.getString("sequencing").isBlank())
+                .findFirst().ifPresent(rs -> result.add(
+                        Provision.builder()
+                                .date(rs.getDate("date"))
+                                .purpose(ModelProjectConsentPurpose.SEQUENCING)
+                                .type(
+                                        ConsentProvision.PERMIT.toValue().equals(rs.getString("sequencing"))
+                                                ? ConsentProvision.PERMIT
+                                                : ConsentProvision.DENY
+                                )
+                                .build()
+                ));
 
-        if (ConsentProvision.PERMIT.toValue().equals(resultSet.getString("reidentification"))) {
-            result.add(
-                    Provision.builder()
-                            .date(date)
-                            .purpose(ModelProjectConsentPurpose.REIDENTIFICATION).type(ConsentProvision.PERMIT)
-                            .build()
-            );
-        } else {
-            result.add(
-                    Provision.builder()
-                            .date(date)
-                            .purpose(ModelProjectConsentPurpose.REIDENTIFICATION).type(ConsentProvision.DENY)
-                            .build()
-            );
-        }
+        all.stream()
+                .filter(rs -> rs.getString("caseidentification") != null && !rs.getString("caseidentification").isBlank())
+                .findFirst().ifPresent(rs -> result.add(
+                        Provision.builder()
+                                .date(rs.getDate("date"))
+                                .purpose(ModelProjectConsentPurpose.CASE_IDENTIFICATION)
+                                .type(
+                                        ConsentProvision.PERMIT.toValue().equals(rs.getString("caseidentification"))
+                                                ? ConsentProvision.PERMIT
+                                                : ConsentProvision.DENY
+                                )
+                                .build()
+                ));
+
+        all.stream()
+                .filter(rs -> rs.getString("reidentification") != null && !rs.getString("reidentification").isBlank())
+                .findFirst().ifPresent(rs -> result.add(
+                        Provision.builder()
+                                .date(rs.getDate("date"))
+                                .purpose(ModelProjectConsentPurpose.REIDENTIFICATION)
+                                .type(
+                                        ConsentProvision.PERMIT.toValue().equals(rs.getString("reidentification"))
+                                                ? ConsentProvision.PERMIT
+                                                : ConsentProvision.DENY
+                                )
+                                .build()
+                ));
 
         return result;
-
     }
 
 }
