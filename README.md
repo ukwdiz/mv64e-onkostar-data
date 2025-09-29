@@ -6,6 +6,10 @@ und dem Mapping in das DNPM-Datenmodell 2.1.
 
 ## Beispiel
 
+Im Verzeichnis [`application`](/application) ist eine Beispielanwendung für den Export anhand der Fallnummer enthalten
+
+### Nutzung in einer eigenen Anwendung
+
 Beispiel zur Konfiguration der Datenbankanbindung, Abruf über eine Fallnummer im Formular DNPM Klinik/Anamnese und
 Serialisierung als JSON-String.
 
@@ -100,10 +104,6 @@ enthalten.
 
 Diese Liste der Gene unterliegt der folgenden Lizenz und ist frei
 verfügbar: [Creative Commons Public Domain (CC0) License](https://creativecommons.org/public-domain/cc0/).
-
-## Beispielanwendung
-
-Im Verzeichnis [`application`](/application) ist eine Beispielanwendung zum Export enthalten
 
 ## Zusätzliche Informationen
 
