@@ -160,4 +160,17 @@ public class MolekulargenetikCatalogue extends AbstractDataCatalogue {
         return resultSet;
     }
 
+    public String getSampleConservationFromMgc(int molekulargenetikCatalogueId) {
+
+        return this.jdbcTemplate.queryForObject(
+                "SELECT DISTINCT prop_materialfixierung.shortdesc "
+                        + "FROM dk_molekulargenetik mg "
+                        + "LEFT JOIN property_catalogue_version_entry AS prop_materialfixierung "
+                        + "ON ( prop_materialfixierung.property_version_id = mg.materialfixierung_propcat_version "
+                        + "AND prop_materialfixierung.code = mg.materialfixierung) "
+                        + "WHERE mg.id = ? "
+                        + "LIMIT 1",
+                String.class,
+                molekulargenetikCatalogueId);
+    }
 }
