@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +81,19 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
         }
 
         return resultSet;
+    }
+
+    /**
+     * Get list of ResultSet by list of procedure ids
+     * Filters our null objects
+     *
+     * @param ids List of procedure id
+     * @return List of result set
+     */
+    public List<ResultSet> getByIdList(List<Integer> ids) {
+        return ids.stream().map(this::getById)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**
