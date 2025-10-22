@@ -24,6 +24,7 @@ import dev.pcvolkmer.mv64e.mtb.MtbDiagnosis;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.HistologieCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KeimbahndiagnoseCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorausbreitungCatalogue;
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.doAnswer;
 class KpaDiagnosisDataMapperTest {
 
     KpaCatalogue kpaCatalogue;
+    HistologieCatalogue histologieCatalogue;
     TumorausbreitungCatalogue tumorausbreitungCatalogue;
     TumorgradingCatalogue tumorgradingCatalogue;
     KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue;
@@ -57,18 +59,21 @@ class KpaDiagnosisDataMapperTest {
     @BeforeEach
     void setUp(
             @Mock KpaCatalogue kpaCatalogue,
+            @Mock HistologieCatalogue histologieCatalogue,
             @Mock TumorausbreitungCatalogue tumorausbreitungCatalogue,
             @Mock TumorgradingCatalogue tumorgradingCatalogue,
             @Mock KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue,
             @Mock PropertyCatalogue propertyCatalogue
     ) {
         this.kpaCatalogue = kpaCatalogue;
+        this.histologieCatalogue = histologieCatalogue;
         this.tumorausbreitungCatalogue = tumorausbreitungCatalogue;
         this.tumorgradingCatalogue = tumorgradingCatalogue;
         this.keimbahndiagnoseCatalogue = keimbahndiagnoseCatalogue;
         this.propertyCatalogue = propertyCatalogue;
         this.dataMapper = new KpaDiagnosisDataMapper(
                 kpaCatalogue,
+                histologieCatalogue,
                 tumorausbreitungCatalogue,
                 tumorgradingCatalogue,
                 keimbahndiagnoseCatalogue,
