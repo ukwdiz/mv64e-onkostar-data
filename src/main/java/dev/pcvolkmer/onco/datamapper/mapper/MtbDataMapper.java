@@ -302,6 +302,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
             }
         } catch (DataAccessException e) {
             logger.error("Error while getting Mtb.", e);
+            throw e;
         }
 
         return resultBuilder.build();
