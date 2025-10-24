@@ -86,7 +86,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                         getRebiopsyRequest(
                                 id,
                                 Reference.builder()
-                                        .id(therapieplanData.getString("ref_dnpm_klinikanamnese"))
+                                        .id(therapieplanData.getString("refdnpmklinikanamnese"))
                                         .type("MTBDiagnosis")
                                         .build()
                         )

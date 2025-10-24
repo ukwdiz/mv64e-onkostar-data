@@ -48,6 +48,29 @@ public class MolekulargenetikCatalogue extends AbstractDataCatalogue {
         return new MolekulargenetikCatalogue(jdbcTemplate);
     }
 
+    
+    /**
+     * Retrieves a list of distinct molecular genetics record IDs associated with a
+     * given patient ID. The query ensures uniqueness via DISTINCT and maps the
+     * result set to a list of Integer IDs representing a mg record each.
+     *
+     * @param patientId the internal database ID of the patient
+     * @return a list of unique molecular genetics record IDs related to the patient
+     */
+    public List<Integer> getByPatientId(int patientId) {
+        return this.jdbcTemplate.queryForList(
+                "SELECT DISTINCT mg.id "
+                        + "FROM dk_molekulargenetik mg "
+                        + "JOIN prozedur molprozedur ON molprozedur.id = mg.id "
+                        + "JOIN patient pat ON pat.id = molprozedur.patient_id "
+                        + "WHERE  pat.id = ?",
+                patientId)
+                .stream()
+                .map(ResultSet::from)
+                .map(rs -> rs.getInteger("id"))
+                .collect(Collectors.toList());
+    }
+
     /**
      * Get procedure IDs by related Therapieplan procedure id
      * Related form references in Einzelempfehlung, Rebiopsie, Reevaluation
@@ -137,4 +160,17 @@ public class MolekulargenetikCatalogue extends AbstractDataCatalogue {
         return resultSet;
     }
 
+    public String getSampleConservationFromMgc(int molekulargenetikCatalogueId) {
+
+        return this.jdbcTemplate.queryForObject(
+                "SELECT DISTINCT prop_materialfixierung.shortdesc "
+                        + "FROM dk_molekulargenetik mg "
+                        + "LEFT JOIN property_catalogue_version_entry AS prop_materialfixierung "
+                        + "ON ( prop_materialfixierung.property_version_id = mg.materialfixierung_propcat_version "
+                        + "AND prop_materialfixierung.code = mg.materialfixierung) "
+                        + "WHERE mg.id = ? "
+                        + "LIMIT 1",
+                String.class,
+                molekulargenetikCatalogueId);
+    }
 }

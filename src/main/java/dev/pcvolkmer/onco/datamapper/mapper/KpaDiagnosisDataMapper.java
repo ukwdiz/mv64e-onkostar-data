@@ -23,6 +23,7 @@ package dev.pcvolkmer.onco.datamapper.mapper;
 import dev.pcvolkmer.mv64e.mtb.*;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.datacatalogues.HistologieCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KeimbahndiagnoseCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.KpaCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TumorausbreitungCatalogue;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
 
     private final KpaCatalogue kpaCatalogue;
+    private  final HistologieCatalogue histologieCatalogue;
     private final TumorausbreitungCatalogue tumorausbreitungCatalogue;
     private final TumorgradingCatalogue tumorgradingCatalogue;
     private final KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue;
@@ -50,12 +52,14 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
 
     public KpaDiagnosisDataMapper(
             final KpaCatalogue kpaCatalogue,
+            final HistologieCatalogue histologieCatalogue, 
             final TumorausbreitungCatalogue tumorausbreitungCatalogue,
             final TumorgradingCatalogue tumorgradingCatalogue,
             final KeimbahndiagnoseCatalogue keimbahndiagnoseCatalogue,
             final PropertyCatalogue propertyCatalogue
     ) {
         this.kpaCatalogue = kpaCatalogue;
+        this.histologieCatalogue = histologieCatalogue;
         this.tumorausbreitungCatalogue = tumorausbreitungCatalogue;
         this.tumorgradingCatalogue = tumorgradingCatalogue;
         this.keimbahndiagnoseCatalogue = keimbahndiagnoseCatalogue;
@@ -93,8 +97,19 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
                 .grading(getGrading(id))
                 .staging(getStaging(id))
                 .germlineCodes(getGermlineCodes(id))
+                .histology(getHistologyReferences(id)                       
+                )
         ;
         return builder.build();
+    }
+
+    private List<Reference> getHistologyReferences (final int id)
+    {
+        return  histologieCatalogue.getAllByParentId(id).stream().map(resultSet -> Reference.builder()
+                                        .id(resultSet.getString("id"))
+                                        .type("HistologyReport")
+                                        .build()
+                ).filter(Objects::nonNull).collect(Collectors.toList());       
     }
 
     private MtbDiagnosisGuidelineTreatmentStatusCoding getMtbDiagnosisGuidelineTreatmentStatusCoding(final String code, final int version) {
