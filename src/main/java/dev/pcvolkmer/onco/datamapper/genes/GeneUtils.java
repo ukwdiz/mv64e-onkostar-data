@@ -23,6 +23,9 @@ package dev.pcvolkmer.onco.datamapper.genes;
 import dev.pcvolkmer.mv64e.mtb.Coding;
 import org.apache.commons.csv.CSVFormat;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ import java.util.Optional;
  * @since 0.1
  */
 public class GeneUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
 
     private GeneUtils() {
         // Empty
@@ -62,12 +67,24 @@ public class GeneUtils {
 
         try {
             var inputStream = GeneUtils.class.getClassLoader().getResourceAsStream("genes.csv");
-            var parser = CSVFormat.RFC4180.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .setDelimiter('\t')
-                    .get()
-                    .parse(new InputStreamReader(inputStream));
+            CSVFormat format;
+
+            // Fallback for local build dependencie issues: check csv package version.
+            String csvVersion = CSVFormat.class.getPackage().getImplementationVersion();
+            if (csvVersion == null || csvVersion.startsWith("1.10.")) {
+                        format = CSVFormat.RFC4180
+                        .withHeader()
+                        .withSkipHeaderRecord()
+                        .withDelimiter('\t');
+            } else {
+                format = CSVFormat.RFC4180.builder()
+                        .setHeader()
+                        .setSkipHeaderRecord(true)
+                        .setDelimiter('\t')
+                        .get();
+            }
+            var parser = format.parse(new InputStreamReader(inputStream));
+
             for (var row : parser) {
                 result.add(
                         new Gene(
@@ -83,6 +100,12 @@ public class GeneUtils {
             return result;
         } catch (IOException e) {
             return List.of();
+        } catch (NoSuchMethodError e) {
+            logger.error(
+                    "CSVFormat.get() not found! VERSION: " +
+                            org.apache.commons.csv.CSVFormat.class.getPackage().getImplementationVersion(),
+                    e);
+            throw e;
         }
     }
 
