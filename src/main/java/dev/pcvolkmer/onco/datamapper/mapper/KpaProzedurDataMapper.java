@@ -26,97 +26,123 @@ import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
+import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_prozedur'
+ * Mapper class to load and map prozedur data from database table
+ * 'dk_dnpm_uf_prozedur'
  *
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
 public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<OncoProcedure> {
 
-    public KpaProzedurDataMapper(final ProzedurCatalogue catalogue, final PropertyCatalogue propertyCatalogue) {
-        super(catalogue, propertyCatalogue);
-    }
-
-    /**
-     * Loads and maps Prozedur related by database id
-     *
-     * @param id The database id of the procedure data set
-     * @return The loaded MtbDiagnosis file
-     */
-    @Override
-    public OncoProcedure getById(final int id) {
-        var data = catalogue.getById(id);
-        return this.map(data);
-    }
-
-    // TODO: Fix for DNPM:DIP verification that does not accept procedures without reason.id
-    @Override
-    public List<OncoProcedure> getByParentId(final int id) {
-        return super.getByParentId(id).stream().filter(p -> p.getReason() != null && p.getReason().getId() != null).collect(Collectors.toList());
-    }
-
-    @Override
-    protected OncoProcedure map(final ResultSet resultSet) {
-        var diseases = catalogue.getDiseases(resultSet.getId());
-
-        if (diseases.size() != 1) {
-            throw new IllegalStateException(String.format("No unique disease for procedure %s", resultSet.getId()));
+        public KpaProzedurDataMapper(final ProzedurCatalogue catalogue, final PropertyCatalogue propertyCatalogue) {
+                super(catalogue, propertyCatalogue);
         }
 
-        var builder = OncoProcedure.builder();
-        builder
-                .id(resultSet.getString("id"))
-                .patient(resultSet.getPatientReference())
-                .basedOn(Reference.builder().id(diseases.get(0).getString("id")).build())
-                .recordedOn(resultSet.getDate("erfassungsdatum"))
-                .therapyLine(resultSet.getLong("therapielinie"))
-                .intent(
-                        getMtbTherapyIntentCoding(
-                                resultSet.getString("intention"),
-                                resultSet.getInteger("intention_propcat_version")
-                        )
-                )
-                .status(
-                        getTherapyStatusCoding(
-                                resultSet.getString("status"),
-                                resultSet.getInteger("status_propcat_version")
-                        )
-                )
-                .statusReason(
-                        getMtbTherapyStatusReasonCoding(
-                                resultSet.getString("statusgrund"),
-                                resultSet.getInteger("statusgrund_propcat_version")
-                        )
-                )
-                .period(
-                        PeriodDate.builder()
-                                .start(resultSet.getDate("beginn"))
-                                .end(resultSet.getDate("ende"))
-                                .build()
-                )
-                .code(
-                        getOncoProcedureCoding(
-                                resultSet.getString("typ"),
-                                resultSet.getInteger("typ_propcat_version")
-                        )
-                )
-                .reason(
-                        Reference.builder()
-                                .id(resultSet.getString("ref_einzelempfehlung"))
-                                .build()
-                )
-        ;
-
-        if (resultSet.getString("anmerkungen") != null) {
-            builder.notes(List.of(resultSet.getString("anmerkungen")));
+        /**
+         * Loads and maps Prozedur related by database id
+         *
+         * @param id The database id of the procedure data set
+         * @return The loaded MtbDiagnosis file
+         */
+        @Override
+        public OncoProcedure getById(final int id) {
+                var data = catalogue.getById(id);
+                return this.map(data);
         }
 
-        return builder.build();
-    }
+        // TODO: Fix for DNPM:DIP verification that does not accept procedures without
+        // reason.id
+        @Override
+        public List<OncoProcedure> getByParentId(final int id) {
+                return super.getByParentId(id).stream()
+                                .filter(p -> p.getReason() != null && p.getReason().getId() != null)
+                                .collect(Collectors.toList());
+        }
+
+        @Override
+        protected OncoProcedure map(final ResultSet resultSet) {
+                var diseases = catalogue.getDiseases(resultSet.getId());
+
+                if (diseases == null || diseases.size() != 1) {
+                        throw new IllegalStateException(
+                                        String.format("No unique disease for procedure %s", resultSet.getId()));
+                }
+
+                var builder = OncoProcedure.builder();
+
+                try {
+                        builder
+                                        .id(resultSet.getString("id"))
+                                        .patient(resultSet.getPatientReference())
+                                        .basedOn(Reference.builder().id(diseases.get(0).getString("id")).build())
+                                        .recordedOn(resultSet.getDate("erfassungsdatum"))
+                                        .therapyLine(resultSet.getLong("therapielinie"));
+
+                        // --- Period Date with null checks ---
+                        if (resultSet.getDate("beginn") == null)
+                                throw new DataAccessException(
+                                                "Cannot map OncoProcedure period date as 'beginn' date is missing");
+                        var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
+
+                        if (resultSet.getDate("ende") != null)
+                                pdb.end(resultSet.getDate("ende"));
+
+                        builder.period(pdb.build());
+
+                        // --- Codings with null checks ---
+                        if (resultSet.getInteger("intention_propcat_version") != null) {
+                                builder.intent(getMtbTherapyIntentCoding(
+                                                resultSet.getString("intention"),
+                                                resultSet.getInteger("intention_propcat_version")));
+
+                        }
+
+                        if (resultSet.getInteger("status_propcat_version") != null) {
+                                builder.status(getTherapyStatusCoding(
+                                                resultSet.getString("status"),
+                                                resultSet.getInteger("status_propcat_version")));
+
+                        }
+
+                        if (resultSet.getInteger("statusgrund_propcat_version") != null) {
+
+                                builder.statusReason(getMtbTherapyStatusReasonCoding(
+                                                resultSet.getString("statusgrund"),
+                                                resultSet.getInteger("statusgrund_propcat_version")));
+                        }
+
+                        if (resultSet.getInteger("typ_propcat_version") != null) {
+                                builder.code(getOncoProcedureCoding(
+                                                resultSet.getString("typ"),
+                                                resultSet.getInteger("typ_propcat_version")));
+                        }
+
+                        // Build reason ref with null check
+                        if (resultSet.getString("ref_einzelempfehlung") != null) {
+                                builder.reason(Reference.builder()
+                                                .id(resultSet.getString("ref_einzelempfehlung"))
+                                                .build());
+                        }
+
+                        // Anmerkung with null check
+                        if (resultSet.getString("anmerkungen") != null) {
+                                builder.notes(List.of(resultSet.getString("anmerkungen")));
+                        }
+
+                        return builder.build();
+
+                } catch (Throwable e) {
+                        throw new DataAccessException(
+                                        String.format("Cannot map OncoProcedure! Somthing is wrong up the line!!"
+                                                        + e));
+                }
+
+        }
 
 }
