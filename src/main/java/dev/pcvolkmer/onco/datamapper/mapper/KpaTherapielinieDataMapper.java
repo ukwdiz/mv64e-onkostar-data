@@ -28,6 +28,9 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 /**
@@ -43,6 +46,8 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                         final PropertyCatalogue propertyCatalogue) {
                 super(catalogue, propertyCatalogue);
         }
+
+        private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
         /**
          * Loads and maps Prozedur related by database id
@@ -67,6 +72,16 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
 
                 var builder = MtbSystemicTherapy.builder();
                 try {
+                        // Determine if the therapy line is empty.
+                        // A therapy line is considered empty if both 'beginn' (start date) and
+                        // 'erfassungsdatum' (recorded date) are missing.
+                        // If so, log a warning and skip mapping for this record withouth breaking the whole data mapping.
+                        if (resultSet.getDate("beginn") == null && resultSet.getDate("erfassungsdatum") == null) {
+                                logger.warn(String.format(
+                                                "Cannot map therapyline period date as 'beginn' date and erfassungsdatum are missing"));
+                                return null;
+                        }
+
                         builder
                                         .id(resultSet.getString("id"))
                                         .patient(resultSet.getPatientReference())
@@ -84,14 +99,9 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                                         .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")));
 
                         // --- Period Date with null checks ---
-                        if (resultSet.getDate("beginn") == null)
-                                throw new DataAccessException(String.format(
-                                                "Cannot map therapyline period date as 'beginn' date is missing"));
                         var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
-
                         if (resultSet.getDate("ende") != null)
                                 pdb.end(resultSet.getDate("ende"));
-
                         builder.period(pdb.build());
 
                         // --- Codings with null checks ---
