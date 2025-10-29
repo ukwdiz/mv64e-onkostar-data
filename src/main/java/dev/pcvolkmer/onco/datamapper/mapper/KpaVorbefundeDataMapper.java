@@ -83,29 +83,27 @@ public class KpaVorbefundeDataMapper extends AbstractSubformDataMapper<PriorDiag
         var builder = PriorDiagnosticReport.builder();
         var einsendenummer = resultSet.getString("befundnummer");
 
+        if (einsendenummer == null || einsendenummer.equalsIgnoreCase("unbekannt"))
+            return null;
+
         var osMolGen = molekulargenetikCatalogue.getByEinsendenummer(einsendenummer);
+        if (osMolGen == null)
+            return null;
 
-        if (null != osMolGen) {
-            builder
-                    .id(resultSet.getId().toString())
-                    .patient(resultSet.getPatientReference())
-                    .issuedOn(resultSet.getDate("erstellungsdatum"))
-                    .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
-                    .type(
-                            getMolecularDiagnosticReportCoding(
-                                    resultSet.getString("artderdiagnostik"),
-                                    resultSet.getInteger("artderdiagnostik_propcat_version")
-                            )
-                    )
-                    .results(List.of(
-                            resultSet.getString("ergebnisse")
-                    ))
-            ;
+        builder
+                .id(resultSet.getId().toString())
+                .patient(resultSet.getPatientReference())
+                .issuedOn(resultSet.getDate("erstellungsdatum"))
+                .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
+                .type(
+                        getMolecularDiagnosticReportCoding(
+                                resultSet.getString("artderdiagnostik"),
+                                resultSet.getInteger("artderdiagnostik_propcat_version")))
+                .results(List.of(
+                        resultSet.getString("ergebnisse")));
 
-            return builder.build();
-        }
+        return builder.build();
 
-        return null;
     }
 
     private MolecularDiagnosticReportCoding getMolecularDiagnosticReportCoding(String value, int version) {
