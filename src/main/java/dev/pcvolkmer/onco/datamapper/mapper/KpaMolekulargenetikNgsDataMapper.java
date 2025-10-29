@@ -29,6 +29,7 @@ import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -118,20 +119,45 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
                         // P => Einfache Variante
                         .filter(subform -> "P".equals(subform.getString("ergebnis")))
                         .map(subform -> {
+
+                            if (subform.getString("untersucht") == null)
+                                return null;
+
                             final var geneOptional = GeneUtils.findBySymbol(subform.getString("untersucht"));
                             if (geneOptional.isEmpty()) {
                                 return null;
                             }
 
+                            var gene = geneOptional.get();
+
                             final var snvBuilder = Snv.builder()
                                     .id(subform.getString("id"))
-                                    .patient(subform.getPatientReference())
-                                    .gene(GeneUtils.toCoding(geneOptional.get()))
-                                    .transcriptId(TranscriptId.builder().value(geneOptional.get().getEnsemblId()).system(TranscriptIdSystem.ENSEMBL_ORG).build())
-                                    .exonId(subform.getString("exon"))
-                                    .dnaChange(subform.getString("cdnanomenklatur"))
-                                    .proteinChange(subform.getString("proteinebenenomenklatur"));
+                                    .patient(subform.getPatientReference());
 
+                            // Check conversion
+                            var coding = GeneUtils.toCoding(gene);
+                            if (coding != null)
+                                snvBuilder.gene(coding);
+
+                            // Only add transcriptId if Ensembl ID is available
+                            var ensemblId = gene.getEnsemblId();
+                            if (ensemblId != null) {
+                                snvBuilder.transcriptId(
+                                        TranscriptId.builder()
+                                                .value(ensemblId)
+                                                .system(TranscriptIdSystem.ENSEMBL_ORG)
+                                                .build());
+                            }
+
+                            if (subform.getString("exon") != null) {
+                                snvBuilder.exonId(subform.getString("exon"));
+                            }
+                            if (subform.getString("cdnanomenklatur") != null) {
+                                snvBuilder.dnaChange(subform.getString("cdnanomenklatur"));
+                            }
+                            if (subform.getString("proteinebenenomenklatur") != null) {
+                                snvBuilder.proteinChange(subform.getString("proteinebenenomenklatur"));
+                            }
                             if (null != subform.getLong("allelfrequenz")) {
                                 snvBuilder.allelicFrequency(subform.getLong("allelfrequenz"));
                             }
@@ -142,17 +168,18 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
                                 snvBuilder.altAllele(subform.getString("evaltnucleotide"));
                             }
                             if (null != subform.getString("evrefnucleotide")) {
-                                snvBuilder.altAllele(subform.getString("evrefnucleotide"));
+                                snvBuilder.refAllele(subform.getString("evrefnucleotide"));
                             }
 
-                            geneOptional.get().getSingleChromosomeInPropertyForm().ifPresent(snvBuilder::chromosome);
+                            gene.getSingleChromosomeInPropertyForm().ifPresent(snvBuilder::chromosome);
 
                             return snvBuilder.build();
                         })
+                        .filter(Objects::nonNull)
                         // TODO: Filter missing position, altAllele, refAllele
-                        .filter(snv -> snv.getPosition() != null && snv.getAltAllele() != null && snv.getRefAllele() != null)
-                        .collect(Collectors.toList())
-        );
+                        .filter(snv -> snv.getPosition() != null && snv.getAltAllele() != null
+                                && snv.getRefAllele() != null)
+                        .collect(Collectors.toList()));
 
         resultBuilder.copyNumberVariants(
                 subforms.stream()
@@ -190,8 +217,8 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
 
                             return cnvBuilder.build();
                         })
-                        .collect(Collectors.toList())
-        );
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()));
         return resultBuilder.build();
     }
 
