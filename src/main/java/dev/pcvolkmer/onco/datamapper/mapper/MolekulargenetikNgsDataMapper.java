@@ -27,6 +27,9 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_molekulargenetik'
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
  */
 public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsReport> {
 
+  private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
   private final MolekulargenetikCatalogue catalogue;
   private final MolekulargenuntersuchungCatalogue untersuchungCatalogue;
   private final TumorCellContentMethodCodingCode tumorCellContentMethod;
@@ -66,7 +70,8 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
         .patient(data.getPatientReference())
         .issuedOn(data.getDate("datum"))
         .specimen(Reference.builder().id(data.getString("id")).type("Specimen").build())
-        // TODO: OS.MolDiagSequenzierung kennt keine Unterscheidung zwischen 'genome-long-read' und
+        // TODO: OS.MolDiagSequenzierung kennt keine Unterscheidung zwischen
+        // 'genome-long-read' und
         // 'genome-short-read'! -> OTHER
         .type(getNgsReportCoding(data.getString("artdersequenzierung")))
         .metadata(List.of(getNgsReportMetadata(data.getString("artdersequenzierung"))))
@@ -83,6 +88,37 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
    */
   public List<SomaticNgsReport> getAllByKpaId(final int kpaId) {
     return this.catalogue.getIdsByKpaId(kpaId).stream()
+        .distinct()
+        .map(this::getById)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Loads and maps all Prozedur related by KPA database id
+   *
+   * @param kpaId The database id of the KPA procedure data set
+   * @return The loaded Procedures
+   */
+  public List<SomaticNgsReport> getAllByKpaIdWithHisto(
+      final int kpaId, final List<Integer> molgenIdsFromHisto) {
+
+    var molgenIdsFromTherapyPlan = this.catalogue.getIdsByKpaId(kpaId);
+
+    // Merge both lists, remove duplicates
+    var allMolgenIds =
+        Stream.concat(
+                molgenIdsFromTherapyPlan.stream(),
+                molgenIdsFromHisto != null ? molgenIdsFromHisto.stream() : Stream.empty())
+            .distinct()
+            .collect(Collectors.toList());
+
+    logger.info(
+        "Therapy plan MolGen IDs: {}, from histo: {}, merged unique total: {}",
+        molgenIdsFromTherapyPlan.size(),
+        molgenIdsFromHisto != null ? molgenIdsFromHisto.size() : 0,
+        allMolgenIds.size());
+
+    return molgenIdsFromTherapyPlan.stream()
         .distinct()
         .map(this::getById)
         .collect(Collectors.toList());
@@ -115,25 +151,43 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             .filter(subform -> "P".equals(subform.getString("ergebnis")))
             .map(
                 subform -> {
+                  if (subform.getString("untersucht") == null) return null;
+
                   final var geneOptional = GeneUtils.findBySymbol(subform.getString("untersucht"));
                   if (geneOptional.isEmpty()) {
                     return null;
                   }
 
+                  var gene = geneOptional.get();
+
                   final var snvBuilder =
                       Snv.builder()
                           .id(subform.getString("id"))
-                          .patient(subform.getPatientReference())
-                          .gene(GeneUtils.toCoding(geneOptional.get()))
-                          .transcriptId(
-                              TranscriptId.builder()
-                                  .value(geneOptional.get().getEnsemblId())
-                                  .system(TranscriptIdSystem.ENSEMBL_ORG)
-                                  .build())
-                          .exonId(subform.getString("exon"))
-                          .dnaChange(subform.getString("cdnanomenklatur"))
-                          .proteinChange(subform.getString("proteinebenenomenklatur"));
+                          .patient(subform.getPatientReference());
 
+                  // Check conversion
+                  var coding = GeneUtils.toCoding(gene);
+                  if (coding != null) snvBuilder.gene(coding);
+
+                  // Only add transcriptId if Ensembl ID is available
+                  var ensemblId = gene.getEnsemblId();
+                  if (ensemblId != null) {
+                    snvBuilder.transcriptId(
+                        TranscriptId.builder()
+                            .value(ensemblId)
+                            .system(TranscriptIdSystem.ENSEMBL_ORG)
+                            .build());
+                  }
+
+                  if (subform.getString("exon") != null) {
+                    snvBuilder.exonId(subform.getString("exon"));
+                  }
+                  if (subform.getString("cdnanomenklatur") != null) {
+                    snvBuilder.dnaChange(subform.getString("cdnanomenklatur"));
+                  }
+                  if (subform.getString("proteinebenenomenklatur") != null) {
+                    snvBuilder.proteinChange(subform.getString("proteinebenenomenklatur"));
+                  }
                   if (null != subform.getLong("allelfrequenz")) {
                     snvBuilder.allelicFrequency(subform.getLong("allelfrequenz"));
                   }
@@ -144,16 +198,14 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
                     snvBuilder.altAllele(subform.getString("evaltnucleotide"));
                   }
                   if (null != subform.getString("evrefnucleotide")) {
-                    snvBuilder.altAllele(subform.getString("evrefnucleotide"));
+                    snvBuilder.refAllele(subform.getString("evrefnucleotide"));
                   }
 
-                  geneOptional
-                      .get()
-                      .getSingleChromosomeInPropertyForm()
-                      .ifPresent(snvBuilder::chromosome);
+                  gene.getSingleChromosomeInPropertyForm().ifPresent(snvBuilder::chromosome);
 
                   return snvBuilder.build();
                 })
+            .filter(Objects::nonNull)
             // TODO: Filter missing position, altAllele, refAllele
             .filter(
                 snv ->

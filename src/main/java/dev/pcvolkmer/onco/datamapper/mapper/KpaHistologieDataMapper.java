@@ -25,9 +25,12 @@ import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.HistologieCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenetikCatalogue;
+import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_vorbefunde'
@@ -37,6 +40,7 @@ import java.util.stream.Collectors;
  */
 public class KpaHistologieDataMapper extends AbstractSubformDataMapper<HistologyReport> {
 
+  private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
   private final MolekulargenetikCatalogue molekulargenetikCatalogue;
   private final PropertyCatalogue propertyCatalogue;
 
@@ -68,6 +72,35 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
         .filter(Objects::nonNull)
         .distinct()
         .collect(Collectors.toList());
+  }
+
+  public List<Integer> getMolGenIdsFromHistoOfTypeSequence(final int parentId) {
+
+    var allHistos = catalogue.getAllByParentId(parentId);
+
+    var seqHistos =
+        allHistos.stream()
+            .filter(Objects::nonNull)
+            .filter(this::isSeq)
+            .collect(Collectors.toList());
+
+    var molGenIds =
+        seqHistos.stream()
+            .map(histo -> histo.getInteger("histologie"))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    logger.info("Returning {} MolGen IDs from histologies of type sequence", molGenIds.size());
+
+    return molGenIds;
+  }
+
+  private boolean isSeq(final ResultSet resultSet) {
+
+    var osMolGen = molekulargenetikCatalogue.getById(resultSet.getInteger("histologie"));
+    if (osMolGen == null) return false;
+
+    var analysemethoden = resultSet.getMerkmalList("analysemethoden");
+    return analysemethoden != null && analysemethoden.contains("S");
   }
 
   @Override
