@@ -281,7 +281,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     )
                     // NGS Berichte
                     .ngsReports(
-                            kpaMolekulargenetikNgsDataMapper.getAllByKpaId(kpaId)
+                            kpaMolekulargenetikNgsDataMapper.getAllByKpaIdWithHisto(kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId))
                     )
                     // MSI Befunde
                     .msiFindings(

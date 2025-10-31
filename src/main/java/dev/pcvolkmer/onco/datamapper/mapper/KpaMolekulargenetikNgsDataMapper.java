@@ -26,12 +26,16 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_molekulargenetik'
@@ -41,6 +45,7 @@ import java.util.stream.Collectors;
  */
 public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsReport> {
 
+    private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
     private final MolekulargenetikCatalogue catalogue;
     private final MolekulargenuntersuchungCatalogue untersuchungCatalogue;
     private final TumorCellContentMethodCodingCode tumorCellContentMethod;
@@ -94,6 +99,37 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
                 .map(this::getById)
                 .collect(Collectors.toList());
     }
+
+ /**
+     * Loads and maps all Prozedur related by KPA database id
+     *
+     * @param kpaId The database id of the KPA procedure data set
+     * @return The loaded Procedures
+     */
+    public List<SomaticNgsReport> getAllByKpaIdWithHisto(final int kpaId, final List<Integer> molgenIdsFromHisto) {
+        
+        var molgenIdsFromTherapyPlan = this.catalogue.getIdsByKpaId(kpaId);  
+
+        // Merge both lists, remove duplicates
+        var allMolgenIds = Stream.concat(
+            molgenIdsFromTherapyPlan.stream(),
+            molgenIdsFromHisto != null ? molgenIdsFromHisto.stream() : Stream.empty()
+        )
+        .distinct()
+        .collect(Collectors.toList());
+
+        logger.info("Therapy plan MolGen IDs: {}, from histo: {}, merged unique total: {}",
+            molgenIdsFromTherapyPlan.size(),
+            molgenIdsFromHisto != null ? molgenIdsFromHisto.size() : 0,
+            allMolgenIds.size());
+        
+        return molgenIdsFromTherapyPlan.stream()
+                .distinct()
+                .map(this::getById)
+                .collect(Collectors.toList());
+    }
+
+
 
     private NgsReportResults getNgsReportResults(ResultSet resultSet) {
         var subforms = this.untersuchungCatalogue.getAllByParentId(resultSet.getId());
