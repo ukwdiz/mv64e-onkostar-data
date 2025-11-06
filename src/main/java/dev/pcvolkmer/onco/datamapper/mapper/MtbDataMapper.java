@@ -30,6 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -48,10 +49,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     private boolean filterIncomplete;
     private TumorCellContentMethodCodingCode tumorCellContentMethod;
 
-    // TODO: Aktuell problematisch, wenn nicht bioinformatisch gemäß: https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144!
     //  In Würzburg immer histologisch!
     MtbDataMapper(final JdbcTemplate jdbcTemplate) {
-        this(jdbcTemplate, false, TumorCellContentMethodCodingCode.BIOINFORMATIC);
+        this(jdbcTemplate, false, TumorCellContentMethodCodingCode.HISTOLOGIC);
     }
 
     MtbDataMapper(
@@ -237,10 +237,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                     .getByKpaId(kpaId).stream()
                     .map(therapieplanDataMapper::getById);
 
-            var msiFindings = kpaMolekulargenetikNgsDataMapper.getAllByKpaId(kpaId).stream()
+            var msiFindings = kpaMolekulargenetikNgsDataMapper.getAllByKpaIdWithHisto(kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId)).stream()
                     .map(ngs -> Integer.parseInt(ngs.getId()))
-                    .flatMap(ngsId -> kpaMolekulargenetikMsiDataMapper.getByParentId(ngsId).stream());
-
+                    .flatMap(ngsId -> kpaMolekulargenetikMsiDataMapper.getByParentId(ngsId).stream())
+                    .filter(Objects::nonNull)
+                    .filter(msi -> msi.getInterpretation() != null); // always filter incomplete MSI as not needed for MVH and interpretation not implemented
+        
             if (this.filterIncomplete) {
                 carePlans = carePlans
                         .peek(therapieplan -> therapieplan.setMedicationRecommendations(
@@ -256,9 +258,10 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                                                 ).collect(Collectors.toList())
                                 )
                         );
-
-                msiFindings = msiFindings.filter(msi -> msi.getInterpretation() != null);
+                
+                msiFindings = msiFindings.filter(msi -> msi.getInterpretation() != null);               
             }
+            
 
             resultBuilder
                     .patient(kpaPatient)
@@ -296,7 +299,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                         MvhMetadata.builder()
                                 .modelProjectConsent(
                                         consentMvDataMapper.getById(kpaCatalogue.getById(kpaId).getInteger("consentmv64e"))
-                                )
+                                ).type(MvhSubmissionType.INITIAL)
                                 .build()
                 );
             }

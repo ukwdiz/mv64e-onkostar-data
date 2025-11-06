@@ -118,12 +118,8 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
         .distinct()
         .collect(Collectors.toList());
 
-        logger.info("Therapy plan MolGen IDs: {}, from histo: {}, merged unique total: {}",
-            molgenIdsFromTherapyPlan.size(),
-            molgenIdsFromHisto != null ? molgenIdsFromHisto.size() : 0,
-            allMolgenIds.size());
         
-        return molgenIdsFromTherapyPlan.stream()
+        return allMolgenIds.stream()
                 .distinct()
                 .map(this::getById)
                 .collect(Collectors.toList());
@@ -249,13 +245,44 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
                                     )
                                     .totalCopyNumber(subform.getLong("cnvtotalcn"));
 
-                            geneOptional.get().getSingleChromosomeInPropertyForm().ifPresent(cnvBuilder::chromosome);
+                            if (getCnvTypeCoding(subform) != null)
+                                cnvBuilder.type(getCnvTypeCoding(subform));
+
+                            geneOptional.get().getSingleChromosomeInPropertyForm().ifPresent(cnvBuilder::chromosome);                            
 
                             return cnvBuilder.build();
                         })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()));
         return resultBuilder.build();
+    }
+
+    private CnvCoding getCnvTypeCoding(ResultSet osMolResultSet) {
+                
+        var cnvFromString = osMolResultSet.getString("CopyNumberVariation");   
+        if (cnvFromString == null || cnvFromString.trim().isEmpty())
+            return null;
+
+        CnvCodingCode cnvCode = getCodeFromString(cnvFromString.trim().toUpperCase());
+        if (cnvCode == null) 
+            return null;
+
+        return CnvCoding.builder().code(cnvCode).build(); 
+    }
+
+    
+    private CnvCodingCode getCodeFromString(String value)
+    {
+        if (value.equals("G")) {
+            return CnvCodingCode.HIGH_LEVEL_GAIN;
+        } else if (value.equals("L")) {
+            return CnvCodingCode.LOSS;
+        } else if (value.equals("LLG")) {
+            return CnvCodingCode.LOW_LEVEL_GAIN;
+        } else {
+            logger.error("No supported CNV Code for " + value + "found.");
+            return null;
+        }
     }
 
     private NgsReportCoding getNgsReportCoding(final String artdersequenzierung) {

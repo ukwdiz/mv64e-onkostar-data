@@ -80,37 +80,32 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
     }
 
     public List<Integer> getMolGenIdsFromHistoOfTypeSequence(final int parentId)
-    {
-        logger.info("I GET CALLED!!");
-
-        var allHistos = catalogue.getAllByParentId(parentId);
-        logger.info("Found {} histologies for parentId={}", allHistos.size(), parentId);
-
-        var seqHistos = allHistos.stream()
+    {        
+        var seqHistos = catalogue.getAllByParentId(parentId).stream()
             .filter(Objects::nonNull)
-            .filter(this::isSeq)
+            .filter(this::isOfTypeSeqencing)
             .collect(Collectors.toList());
         logger.info("Found {} histologies of type sequence", seqHistos.size());
 
         var molGenIds = seqHistos.stream()
             .map(histo -> histo.getInteger("histologie"))
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-        logger.info("Returning {} MolGen IDs from histologies of type sequence", molGenIds.size());
+            .collect(Collectors.toList());        
 
         return molGenIds;
     }
 
 
-   private boolean isSeq(final ResultSet resultSet) {
+    private boolean isOfTypeSeqencing(final ResultSet resultSet) {
 
-         var osMolGen = molekulargenetikCatalogue.getById(resultSet.getInteger("histologie"));
-         if (osMolGen == null) return false; 
+        var osMolGen = molekulargenetikCatalogue.getById(resultSet.getInteger("histologie"));
+        if (osMolGen == null) return false; 
 
-        var analysemethoden = resultSet.getMerkmalList("analysemethoden");
-        logger.info("Found merkmalliste analysemethoden for histo: " + (analysemethoden != null ? analysemethoden : "null"));
-        return analysemethoden != null && analysemethoden.contains("S"); 
-}
+        var analyseMethodenMerkmalliste = osMolGen.getMerkmalList("AnalyseMethoden");
+        logger.info("Found merkmalliste AnalyseMethoden for histo: " + (analyseMethodenMerkmalliste != null ? analyseMethodenMerkmalliste : "null"));
+            
+        return analyseMethodenMerkmalliste != null && analyseMethodenMerkmalliste.contains("S"); 
+    }
 
 
     @Override
