@@ -75,32 +75,29 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
   }
 
   public List<Integer> getMolGenIdsFromHistoOfTypeSequence(final int parentId) {
-
-    var allHistos = catalogue.getAllByParentId(parentId);
-
     var seqHistos =
-        allHistos.stream()
+        catalogue.getAllByParentId(parentId).stream()
             .filter(Objects::nonNull)
-            .filter(this::isSeq)
+            .filter(this::isOfTypeSeqencing)
             .collect(Collectors.toList());
+    logger.info("Found {} histologies of type sequence", seqHistos.size());
 
     var molGenIds =
         seqHistos.stream()
             .map(histo -> histo.getInteger("histologie"))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-    logger.info("Returning {} MolGen IDs from histologies of type sequence", molGenIds.size());
 
     return molGenIds;
   }
 
-  private boolean isSeq(final ResultSet resultSet) {
+  private boolean isOfTypeSeqencing(final ResultSet resultSet) {
 
     var osMolGen = molekulargenetikCatalogue.getById(resultSet.getInteger("histologie"));
     if (osMolGen == null) return false;
 
-    var analysemethoden = resultSet.getMerkmalList("analysemethoden");
-    return analysemethoden != null && analysemethoden.contains("S");
+    var analyseMethodenMerkmalliste = osMolGen.getMerkmalList("AnalyseMethoden");
+    return analyseMethodenMerkmalliste != null && analyseMethodenMerkmalliste.contains("S");
   }
 
   @Override

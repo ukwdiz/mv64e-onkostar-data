@@ -25,7 +25,11 @@ import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -70,8 +74,7 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
         .patient(data.getPatientReference())
         .issuedOn(data.getDate("datum"))
         .specimen(Reference.builder().id(data.getString("id")).type("Specimen").build())
-        // TODO: OS.MolDiagSequenzierung kennt keine Unterscheidung zwischen
-        // 'genome-long-read' und
+        // TODO: OS.MolDiagSequenzierung kennt keine Unterscheidung zwischen 'genome-long-read' und
         // 'genome-short-read'! -> OTHER
         .type(getNgsReportCoding(data.getString("artdersequenzierung")))
         .metadata(List.of(getNgsReportMetadata(data.getString("artdersequenzierung"))))
@@ -112,16 +115,7 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             .distinct()
             .collect(Collectors.toList());
 
-    logger.info(
-        "Therapy plan MolGen IDs: {}, from histo: {}, merged unique total: {}",
-        molgenIdsFromTherapyPlan.size(),
-        molgenIdsFromHisto != null ? molgenIdsFromHisto.size() : 0,
-        allMolgenIds.size());
-
-    return molgenIdsFromTherapyPlan.stream()
-        .distinct()
-        .map(this::getById)
-        .collect(Collectors.toList());
+    return allMolgenIds.stream().distinct().map(this::getById).collect(Collectors.toList());
   }
 
   private NgsReportResults getNgsReportResults(ResultSet resultSet) {
@@ -247,6 +241,8 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
                                   .collect(Collectors.toList()))
                           .totalCopyNumber(subform.getLong("cnvtotalcn"));
 
+                  if (getCnvTypeCoding(subform) != null) cnvBuilder.type(getCnvTypeCoding(subform));
+
                   geneOptional
                       .get()
                       .getSingleChromosomeInPropertyForm()
@@ -257,6 +253,30 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             .filter(Objects::nonNull)
             .collect(Collectors.toList()));
     return resultBuilder.build();
+  }
+
+  private CnvCoding getCnvTypeCoding(ResultSet osMolResultSet) {
+
+    var cnvFromString = osMolResultSet.getString("CopyNumberVariation");
+    if (cnvFromString == null || cnvFromString.trim().isEmpty()) return null;
+
+    CnvCodingCode cnvCode = getCodeFromString(cnvFromString.trim().toUpperCase());
+    if (cnvCode == null) return null;
+
+    return CnvCoding.builder().code(cnvCode).build();
+  }
+
+  private CnvCodingCode getCodeFromString(String value) {
+    if (value.equals("G")) {
+      return CnvCodingCode.HIGH_LEVEL_GAIN;
+    } else if (value.equals("L")) {
+      return CnvCodingCode.LOSS;
+    } else if (value.equals("LLG")) {
+      return CnvCodingCode.LOW_LEVEL_GAIN;
+    } else {
+      logger.error("No supported CNV Code for " + value + "found.");
+      return null;
+    }
   }
 
   private NgsReportCoding getNgsReportCoding(final String artdersequenzierung) {
