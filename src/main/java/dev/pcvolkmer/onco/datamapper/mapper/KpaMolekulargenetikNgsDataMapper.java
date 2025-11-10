@@ -137,13 +137,17 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
                     .id(resultSet.getId().toString())
                     .patient(resultSet.getPatientReference())
                     .specimen(Reference.builder().id(resultSet.getString("id")).type("Specimen").build())
-                    .value(resultSet.getLong("tumorzellgehalt") / 100.0);
+                    .value(resultSet.getLong("tumorzellgehalt") / 100.0);                  
 
+            // Der Tumorcellcontent kann für NGS-Reports ausschließlich bioinformatisch
+            // ermittelt werden.
+            // Entsprechend wird er nur für diese Methode gemeldet.
+            // Erfolgt eine histologische Ermittlung des Tumorcellcounts kann dieser über
+            // einen histologischen Report gemeldet werden.
             if (tumorCellContentMethod == TumorCellContentMethodCodingCode.BIOINFORMATIC) {
                 tumorcellContentBuilder.method(TumorCellContentMethodCoding.builder().code(tumorCellContentMethod).build());
+                resultBuilder.tumorCellContent(tumorcellContentBuilder.build());
             }
-
-            resultBuilder.tumorCellContent(tumorcellContentBuilder.build());
         }
 
         resultBuilder.simpleVariants(
