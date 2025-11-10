@@ -98,8 +98,7 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
         if (tnmt != null && !tnmt.isBlank()) {
             tnpmClassificationBuilder.tumor(
                     Coding.builder()
-                            // TODO With or withour prefix?
-                            .code(String.format("%s%s", resultSet.getString("tnmtprefix"), tnmt))
+                            .code(String.format("%s%s", "T", tnmt))
                             .system("UICC")
                             .build()
             );
@@ -110,8 +109,7 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
         if (tnmn != null && !tnmn.isBlank()) {
             tnpmClassificationBuilder.nodes(
                     Coding.builder()
-                            // TODO With or withour prefix?
-                            .code(String.format("%s%s", resultSet.getString("tnmnprefix"), tnmn))
+                            .code(String.format("%s%s","N", tnmn))
                             .system("UICC")
                             .build()
             );
@@ -122,8 +120,7 @@ public class KpaTumorausbreitungDataMapper extends AbstractSubformDataMapper<Tum
         if (tnmm != null && !tnmm.isBlank()) {
             tnpmClassificationBuilder.metastasis(
                     Coding.builder()
-                            // TODO With or withour prefix?
-                            .code(String.format("%s%s", resultSet.getString("tnmmprefix"), tnmm))
+                            .code(String.format("%s%s", "M", tnmm))
                             .system("UICC")
                             .build()
             );
