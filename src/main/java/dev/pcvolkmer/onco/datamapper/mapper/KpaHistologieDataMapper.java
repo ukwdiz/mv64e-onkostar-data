@@ -122,16 +122,7 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
                     .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
                     .results(
                             HistologyReportResults.builder()
-                                    .tumorCellContent(
-                                            TumorCellContent.builder()
-                                                    .id(resultSet.getId().toString())
-                                                    .patient(resultSet.getPatientReference())
-                                                    .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
-                                                    .value(resultSet.getLong("tumorzellgehalt") / 100.0)
-                                                    // TODO: Nicht in OS.Molekulargenetik
-                                                    .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.HISTOLOGIC).build())
-                                                    .build()
-                                    )
+                                    .tumorCellContent(getTumorCellContent(resultSet, osMolGen))
                                     .tumorMorphology(
                                             TumorMorphology.builder()
                                                     .id(resultSet.getId().toString())
@@ -150,7 +141,28 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
         return null;
     }
 
+
+    private TumorCellContent getTumorCellContent (ResultSet resultSet, ResultSet osMolGen) 
+    {
+            if(resultSet == null || osMolGen == null) return null;
+
+            var result = TumorCellContent.builder()
+                            .id(resultSet.getId().toString())
+                            .patient(resultSet.getPatientReference())
+                            .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())                           
+                            .method(TumorCellContentMethodCoding.builder().code(TumorCellContentMethodCodingCode.HISTOLOGIC).build());
+
+            if (resultSet.getLong("tumorzellgehalt") != null)
+                result.value(resultSet.getLong("tumorzellgehalt") / 100.0);                        
+                                                    
+            return result.build();
+    }
+
+
     private Coding getTumorMorphologyCoding(ResultSet resultSet) {
+        if(resultSet.getString("morphologie") == null
+            || resultSet.getInteger("morphologie_propcat_version") == null) return null;
+       
         var propertyCatalogueEntry =  propertyCatalogue.getByCodeAndVersion(
                 resultSet.getString("morphologie"),
                 resultSet.getInteger("morphologie_propcat_version")
