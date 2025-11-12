@@ -128,8 +128,7 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
                             .id(therapieplanData.getString("id"))
                             .patient(therapieplanData.getPatientReference())
                             .issuedOn(therapieplanData.getDate("datum_tk_humangenber"))
-                            .reason(
-                                    getGeneticCounselingRecommendationReasonCoding(
+                            .reason(getGeneticCounselingRecommendationReasonCoding(
                                             therapieplanData.getString("humangen_ber_grund"),
                                             therapieplanData.getInteger("humangen_ber_grund_propcat_version")
                                     )
@@ -156,8 +155,8 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
         return resultBuilder.build();
     }
 
-    private GeneticCounselingRecommendationReasonCoding getGeneticCounselingRecommendationReasonCoding(String value, int version) {
-        if (value == null || !Arrays.stream(GeneticCounselingRecommendationReasonCodingCode.values()).map(GeneticCounselingRecommendationReasonCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
+    private GeneticCounselingRecommendationReasonCoding getGeneticCounselingRecommendationReasonCoding(String value, Integer version) {
+        if (value == null || version == null || !Arrays.stream(GeneticCounselingRecommendationReasonCodingCode.values()).map(GeneticCounselingRecommendationReasonCodingCode::toValue).collect(Collectors.toSet()).contains(value)) {
             return null;
         }
 

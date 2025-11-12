@@ -124,19 +124,19 @@ public class KpaTherapielinieDataMapper extends AbstractKpaTherapieverlaufDataMa
                                                 resultSet.getInteger("statusgrund_propcat_version")));
                         }
 
-                        if (resultSet.getString("stellung_propcat_version") != null) {
+                        if (resultSet.getInteger("stellung_propcat_version") != null) {
                                 builder.category(getMtbSystemicTherapyCategoryCoding(
                                                 resultSet.getString("stellung"),
                                                 resultSet.getInteger("stellung_propcat_version")));
                         }
 
-                        if (resultSet.getString("dosisdichte_propcat_version") != null) {
+                        if (resultSet.getInteger("dosisdichte_propcat_version") != null) {
                                 builder.dosage(getMtbSystemicTherapyDosageDensityCoding(
                                                 resultSet.getString("dosisdichte"),
                                                 resultSet.getInteger("dosisdichte_propcat_version")));
                         }
-
-                        if (resultSet.getString("umsetzung_propcat_version") != null) {
+                        
+                        if (resultSet.getInteger("umsetzung_propcat_version") != null) {
                                 builder.recommendationFulfillmentStatus(
                                                 getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(
                                                                 resultSet.getString("umsetzung"),
