@@ -156,8 +156,9 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
   }
 
   private GeneticCounselingRecommendationReasonCoding
-      getGeneticCounselingRecommendationReasonCoding(String value, int version) {
+      getGeneticCounselingRecommendationReasonCoding(String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(GeneticCounselingRecommendationReasonCodingCode.values())
             .map(GeneticCounselingRecommendationReasonCodingCode::toValue)
             .collect(Collectors.toSet())
