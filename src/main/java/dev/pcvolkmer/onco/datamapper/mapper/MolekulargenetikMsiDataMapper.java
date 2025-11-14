@@ -21,11 +21,13 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Msi;
+import dev.pcvolkmer.mv64e.mtb.MsiInterpretationCoding;
 import dev.pcvolkmer.mv64e.mtb.MsiMethodCoding;
 import dev.pcvolkmer.mv64e.mtb.MsiMethodCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenMsiCatalogue;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_molekluargenetik'
@@ -50,11 +52,12 @@ public class MolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<Msi
     return this.map(catalogue.getById(id));
   }
 
+  @Nullable
   @Override
   protected Msi map(ResultSet resultSet) {
     var builder = Msi.builder();
 
-    if (!resultSet.getString("komplexerbiomarker").equals("MSI")) {
+    if (!"MSI".equals(resultSet.getString("komplexerbiomarker"))) {
       return null;
     }
 
@@ -67,13 +70,18 @@ public class MolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<Msi
                 .id(resultSet.getString("hauptprozedur_id"))
                 .type("Specimen")
                 .build())
-        // Aktuell nicht in Onkostar vorhanden!
-        // .interpretation()
         // In Onkostar nur für "Sequenzierung" bzw "BIOINFORMATIC" als Prozentwert angegeben => "0"
         // als Fallback?
         .value(getSeqProzentwert(resultSet));
 
     return builder.build();
+  }
+
+  @Nullable
+  private MsiInterpretationCoding gInterpretationCoding(final ResultSet resultSet) {
+    // ToDo. Aktuell nicht dokumentierbar für bioinformatischen MSI-Bestimmung (hier
+    // nur Wert, aber keine Interpretation möglich)
+    return null;
   }
 
   private MsiMethodCoding getMethodCode(final ResultSet resultSet) {
@@ -106,8 +114,9 @@ public class MolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<Msi
 
     // Achtung: Immer nur eine Methode wird betrachtet! In Onkostar sind gleichzeitig mehrere
     // Angaben möglich!
-    if (analysemethoden != null && analysemethoden.contains("S")) {
-      return resultSet.getDouble("seqprozentwert");
+    var seqprozentwert = resultSet.getDouble("seqprozentwert");
+    if (null != seqprozentwert && null != analysemethoden && analysemethoden.contains("S")) {
+      return seqprozentwert;
     }
 
     return 0;

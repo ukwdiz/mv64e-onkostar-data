@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Mapper class to load and map patient data from database table 'dk_dnpm_therapieplan'
@@ -98,16 +99,17 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
     }
 
     // Formularfeld "protokollauszug"
-    if (therapieplanData.getString("protokollauszug") != null) {
+    var protokollauszug = therapieplanData.getString("protokollauszug");
+    if (null != protokollauszug) {
       // TODO see https://github.com/dnpm-dip/mtb-model/issues/8
-      builder.notes(List.of(therapieplanData.getString("protokollauszug")));
+      builder.notes(List.of(protokollauszug));
     }
 
     // Formularfeld "status_begruendung"
-    if (null != therapieplanData.getString("status_begruendung")
-        && therapieplanData
-            .getString("status_begruendung")
-            .equals(MtbCarePlanRecommendationsMissingReasonCodingCode.NO_TARGET.toValue())) {
+    var statusBegruendung = therapieplanData.getString("status_begruendung");
+    if (null != statusBegruendung
+        && statusBegruendung.equals(
+            MtbCarePlanRecommendationsMissingReasonCodingCode.NO_TARGET.toValue())) {
       builder.recommendationsMissingReason(
           MtbCarePlanRecommendationsMissingReasonCoding.builder()
               .code(MtbCarePlanRecommendationsMissingReasonCodingCode.NO_TARGET)
@@ -155,9 +157,12 @@ public class TherapieplanDataMapper implements DataMapper<MtbCarePlan> {
     return resultBuilder.build();
   }
 
+  @Nullable
   private GeneticCounselingRecommendationReasonCoding
-      getGeneticCounselingRecommendationReasonCoding(String value, int version) {
+      getGeneticCounselingRecommendationReasonCoding(
+          @Nullable String value, @Nullable Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(GeneticCounselingRecommendationReasonCodingCode.values())
             .map(GeneticCounselingRecommendationReasonCodingCode::toValue)
             .collect(Collectors.toSet())

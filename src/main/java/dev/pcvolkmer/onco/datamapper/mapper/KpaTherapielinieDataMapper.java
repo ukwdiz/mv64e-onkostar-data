@@ -26,7 +26,11 @@ import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
+import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_therapielinie'
@@ -42,6 +46,8 @@ public class KpaTherapielinieDataMapper
     super(catalogue, propertyCatalogue);
   }
 
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
   /**
    * Loads and maps Prozedur related by database id
    *
@@ -54,6 +60,7 @@ public class KpaTherapielinieDataMapper
     return this.map(data);
   }
 
+  @Nullable
   @Override
   protected MtbSystemicTherapy map(final ResultSet resultSet) {
     var diseases = catalogue.getDiseases(resultSet.getId());
@@ -64,64 +71,93 @@ public class KpaTherapielinieDataMapper
     }
 
     var builder = MtbSystemicTherapy.builder();
-    builder
-        .id(resultSet.getString("id"))
-        .patient(resultSet.getPatientReference())
-        .reason(
-            Reference.builder()
-                .id(resultSet.getString("hauptprozedur_id"))
-                .type("MTBDiagnosis")
-                .build())
-        .recordedOn(resultSet.getDate("erfassungsdatum"))
-        .intent(
-            getMtbTherapyIntentCoding(
-                resultSet.getString("intention"),
-                resultSet.getInteger("intention_propcat_version")))
-        .status(
-            getTherapyStatusCoding(
-                resultSet.getString("status"), resultSet.getInteger("status_propcat_version")))
-        .statusReason(
+    try {
+      // Determine if the therapy line is empty.
+      // A therapy line is considered empty if both 'beginn' (start date) and
+      // 'erfassungsdatum' (recorded date) are missing.
+      // If so, log a warning and skip mapping for this record withouth breaking the
+      // whole data
+      // mapping.
+      if (resultSet.getDate("beginn") == null && resultSet.getDate("erfassungsdatum") == null) {
+        logger.warn(
+            "Cannot map therapyline period date as 'beginn' date and erfassungsdatum are missing");
+        return null;
+      }
+
+      builder
+          .id(resultSet.getString("id"))
+          .patient(resultSet.getPatientReference())
+          .reason(
+              Reference.builder()
+                  .id(resultSet.getString("hauptprozedur_id"))
+                  .type("MTBDiagnosis")
+                  .build())
+          .recordedOn(resultSet.getDate("erfassungsdatum"))
+          .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")));
+
+      // --- Codings with null checks ---
+      var intentionPropcatVersion = resultSet.getInteger("intention_propcat_version");
+      if (null != intentionPropcatVersion) {
+        builder.intent(
+            getMtbTherapyIntentCoding(resultSet.getString("intention"), intentionPropcatVersion));
+      }
+
+      var statusPropcatVersion = resultSet.getInteger("status_propcat_version");
+      if (null != statusPropcatVersion) {
+        builder.status(getTherapyStatusCoding(resultSet.getString("status"), statusPropcatVersion));
+      }
+
+      var statusgrundPropcatVersion = resultSet.getInteger("statusgrund_propcat_version");
+      if (null != statusgrundPropcatVersion) {
+        builder.statusReason(
             getMtbTherapyStatusReasonCoding(
-                resultSet.getString("statusgrund"),
-                resultSet.getInteger("statusgrund_propcat_version")))
-        .period(
-            PeriodDate.builder()
-                .start(resultSet.getDate("beginn"))
-                .end(resultSet.getDate("ende"))
-                .build())
-        .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")));
+                resultSet.getString("statusgrund"), statusgrundPropcatVersion));
+      }
 
-    if (!resultSet.isNull("nummer")) {
-      builder.therapyLine(resultSet.getLong("nummer"));
+      // --- Period Date with null checks ---
+      var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
+      if (resultSet.getDate("ende") != null) pdb.end(resultSet.getDate("ende"));
+      builder.period(pdb.build());
+
+      if (!resultSet.isNull("nummer")) {
+        builder.therapyLine(resultSet.getLong("nummer"));
+      }
+
+      if (!resultSet.isNull("ref_einzelempfehlung")) {
+        builder.basedOn(
+            Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
+      }
+
+      var stellungPropcatVersion = resultSet.getInteger("stellung_propcat_version");
+      if (null != stellungPropcatVersion) {
+        builder.category(
+            getMtbSystemicTherapyCategoryCoding(
+                resultSet.getString("stellung"), stellungPropcatVersion));
+      }
+
+      var dosisdichtePropcatVersion = resultSet.getInteger("dosisdichte_propcat_version");
+      if (null != dosisdichtePropcatVersion) {
+        builder.dosage(
+            getMtbSystemicTherapyDosageDensityCoding(
+                resultSet.getString("dosisdichte"), dosisdichtePropcatVersion));
+      }
+
+      var umsetzungPropcatVersion = resultSet.getInteger("umsetzung_propcat_version");
+      if (null != umsetzungPropcatVersion) {
+        builder.recommendationFulfillmentStatus(
+            getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(
+                resultSet.getString("umsetzung"), umsetzungPropcatVersion));
+      }
+
+      var anmerkung = resultSet.getString("anmerkung");
+      if (null != anmerkung) {
+        builder.notes(List.of(anmerkung));
+      }
+
+      return builder.build();
+    } catch (Exception e) {
+      throw new DataAccessException(
+          String.format("Cannot map MtbSystemicTherapy! %s", e.getMessage()));
     }
-
-    if (!resultSet.isNull("ref_einzelempfehlung")) {
-      builder.basedOn(Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
-    }
-
-    if (resultSet.getString("stellung_propcat_version") != null) {
-      builder.category(
-          getMtbSystemicTherapyCategoryCoding(
-              resultSet.getString("stellung"), resultSet.getInteger("stellung_propcat_version")));
-    }
-
-    if (resultSet.getString("dosisdichte_propcat_version") != null) {
-      builder.dosage(
-          getMtbSystemicTherapyDosageDensityCoding(
-              resultSet.getString("dosisdichte"),
-              resultSet.getInteger("dosisdichte_propcat_version")));
-    }
-
-    if (resultSet.getString("umsetzung_propcat_version") != null) {
-      builder.recommendationFulfillmentStatus(
-          getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(
-              resultSet.getString("umsetzung"), resultSet.getInteger("umsetzung_propcat_version")));
-    }
-
-    if (resultSet.getString("anmerkungen") != null) {
-      builder.notes(List.of(resultSet.getString("anmerkungen")));
-    }
-
-    return builder.build();
   }
 }

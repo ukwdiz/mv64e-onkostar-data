@@ -25,6 +25,7 @@ import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.*;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.jspecify.annotations.NullMarked;
@@ -49,11 +50,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
   private boolean filterIncomplete;
   private TumorCellContentMethodCodingCode tumorCellContentMethod;
 
-  // TODO: Aktuell problematisch, wenn nicht bioinformatisch gemäß:
-  // https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783/ Zeile 144!
-  //  In Würzburg immer histologisch!
+  // In Würzburg immer histologisch!
   MtbDataMapper(final JdbcTemplate jdbcTemplate) {
-    this(jdbcTemplate, false, TumorCellContentMethodCodingCode.BIOINFORMATIC);
+    this(jdbcTemplate, false, TumorCellContentMethodCodingCode.HISTOLOGIC);
   }
 
   MtbDataMapper(
@@ -243,9 +242,17 @@ public class MtbDataMapper implements DataMapper<Mtb> {
           therapieplanCatalogue.getByKpaId(kpaId).stream().map(therapieplanDataMapper::getById);
 
       var msiFindings =
-          molekulargenetikNgsDataMapper.getAllByKpaId(kpaId).stream()
+          molekulargenetikNgsDataMapper
+              .getAllByKpaIdWithHisto(
+                  kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId))
+              .stream()
               .map(ngs -> Integer.parseInt(ngs.getId()))
-              .flatMap(ngsId -> molekulargenetikMsiDataMapper.getByParentId(ngsId).stream());
+              .flatMap(ngsId -> molekulargenetikMsiDataMapper.getByParentId(ngsId).stream())
+              .filter(Objects::nonNull)
+              .filter(msi -> msi.getInterpretation() != null); // always filter incomplete MSI
+      // as not needed for MVH and
+      // interpretation not
+      // implemented
 
       if (this.filterIncomplete) {
         carePlans =
@@ -290,7 +297,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
           // DNPM Therapieplan
           .carePlans(carePlans.collect(Collectors.toList()))
           // NGS Berichte
-          .ngsReports(molekulargenetikNgsDataMapper.getAllByKpaId(kpaId))
+          .ngsReports(
+              molekulargenetikNgsDataMapper.getAllByKpaIdWithHisto(
+                  kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId)))
           // MSI Befunde
           .msiFindings(msiFindings.collect(Collectors.toList()));
 
@@ -302,10 +311,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                 .modelProjectConsent(
                     consentMvDataMapper.getById(
                         kpaCatalogue.getById(kpaId).getInteger("consentmv64e")))
+                .type(MvhSubmissionType.INITIAL)
                 .build());
       }
     } catch (DataAccessException e) {
       logger.error("Error while getting Mtb.", e);
+      throw e;
     }
 
     return resultBuilder.build();
