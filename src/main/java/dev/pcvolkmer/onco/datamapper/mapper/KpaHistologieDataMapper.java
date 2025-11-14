@@ -25,9 +25,12 @@ import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.HistologieCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenetikCatalogue;
+import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_vorbefunde'
@@ -37,6 +40,7 @@ import java.util.stream.Collectors;
  */
 public class KpaHistologieDataMapper extends AbstractSubformDataMapper<HistologyReport> {
 
+  private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
   private final MolekulargenetikCatalogue molekulargenetikCatalogue;
   private final PropertyCatalogue propertyCatalogue;
 
@@ -68,6 +72,32 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
         .filter(Objects::nonNull)
         .distinct()
         .collect(Collectors.toList());
+  }
+
+  public List<Integer> getMolGenIdsFromHistoOfTypeSequence(final int parentId) {
+    var seqHistos =
+        catalogue.getAllByParentId(parentId).stream()
+            .filter(Objects::nonNull)
+            .filter(this::isOfTypeSeqencing)
+            .collect(Collectors.toList());
+    logger.info("Found {} histologies of type sequence", seqHistos.size());
+
+    var molGenIds =
+        seqHistos.stream()
+            .map(histo -> histo.getInteger("histologie"))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    return molGenIds;
+  }
+
+  private boolean isOfTypeSeqencing(final ResultSet resultSet) {
+
+    var osMolGen = molekulargenetikCatalogue.getById(resultSet.getInteger("histologie"));
+    if (osMolGen == null) return false;
+
+    var analyseMethodenMerkmalliste = osMolGen.getMerkmalList("AnalyseMethoden");
+    return analyseMethodenMerkmalliste != null && analyseMethodenMerkmalliste.contains("S");
   }
 
   @Override

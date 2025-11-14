@@ -28,7 +28,6 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_prozedur'
@@ -55,15 +54,6 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
     return this.map(data);
   }
 
-  // TODO: Fix for DNPM:DIP verification that does not accept procedures without
-  // reason.id
-  @Override
-  public List<OncoProcedure> getByParentId(final int id) {
-    return super.getByParentId(id).stream()
-        .filter(p -> p.getReason() != null && p.getReason().getId() != null)
-        .collect(Collectors.toList());
-  }
-
   @Override
   protected OncoProcedure map(final ResultSet resultSet) {
     var diseases = catalogue.getDiseases(resultSet.getId());
@@ -74,16 +64,18 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
     }
 
     var builder = OncoProcedure.builder();
-
+   
     try {
-      builder
-          .id(resultSet.getString("id"))
-          .patient(resultSet.getPatientReference())
-          .basedOn(Reference.builder().id(diseases.get(0).getString("id")).build())
-          .recordedOn(resultSet.getDate("erfassungsdatum"))
-          .therapyLine(resultSet.getLong("therapielinie"));
-
-      // --- Period Date with null checks ---
+    builder
+        .id(resultSet.getString("id"))
+        .patient(resultSet.getPatientReference())
+        .reason(
+            Reference.builder()
+                .id(resultSet.getString("hauptprozedur_id"))
+                .type("MTBDiagnosis")
+                .build())
+        .recordedOn(resultSet.getDate("erfassungsdatum"));      
+	// --- Period Date with null checks ---
       if (resultSet.getDate("beginn") == null)
         throw new DataAccessException(
             "Cannot map OncoProcedure period date as 'beginn' date is missing");
@@ -121,10 +113,13 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
                 resultSet.getString("typ"), resultSet.getInteger("typ_propcat_version")));
       }
 
-      // Build reason ref with null check
-      if (resultSet.getString("ref_einzelempfehlung") != null) {
-        builder.reason(Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
-      }
+    if (!resultSet.isNull("therapielinie")) {
+      builder.therapyLine(resultSet.getLong("therapielinie"));
+    }
+
+    if (resultSet.getString("ref_einzelempfehlung") != null) {
+      builder.basedOn(Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
+    }
 
       // Anmerkung with null check
       if (resultSet.getString("anmerkungen") != null) {

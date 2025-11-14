@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_molekulargenetik'
@@ -38,13 +41,14 @@ import java.util.stream.Collectors;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsReport> {
+public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsReport> {
 
+  private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
   private final MolekulargenetikCatalogue catalogue;
   private final MolekulargenuntersuchungCatalogue untersuchungCatalogue;
   private final TumorCellContentMethodCodingCode tumorCellContentMethod;
 
-  public KpaMolekulargenetikNgsDataMapper(
+  public MolekulargenetikNgsDataMapper(
       final MolekulargenetikCatalogue catalogue,
       final MolekulargenuntersuchungCatalogue untersuchungCatalogue,
       final PropertyCatalogue propertyCatalogue,
@@ -92,6 +96,28 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
         .collect(Collectors.toList());
   }
 
+  /**
+   * Loads and maps all Prozedur related by KPA database id
+   *
+   * @param kpaId The database id of the KPA procedure data set
+   * @return The loaded Procedures
+   */
+  public List<SomaticNgsReport> getAllByKpaIdWithHisto(
+      final int kpaId, final List<Integer> molgenIdsFromHisto) {
+
+    var molgenIdsFromTherapyPlan = this.catalogue.getIdsByKpaId(kpaId);
+
+    // Merge both lists, remove duplicates
+    var allMolgenIds =
+        Stream.concat(
+                molgenIdsFromTherapyPlan.stream(),
+                molgenIdsFromHisto != null ? molgenIdsFromHisto.stream() : Stream.empty())
+            .distinct()
+            .collect(Collectors.toList());
+
+    return allMolgenIds.stream().distinct().map(this::getById).collect(Collectors.toList());
+  }
+
   private NgsReportResults getNgsReportResults(ResultSet resultSet) {
     var subforms = this.untersuchungCatalogue.getAllByParentId(resultSet.getId());
 
@@ -105,12 +131,16 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
               .specimen(Reference.builder().id(resultSet.getString("id")).type("Specimen").build())
               .value(resultSet.getLong("tumorzellgehalt") / 100.0);
 
+      // Der Tumorcellcontent kann für NGS-Reports ausschließlich bioinformatisch
+      // ermittelt werden.
+      // Entsprechend wird er nur für diese Methode gemeldet.
+      // Erfolgt eine histologische Ermittlung des Tumorcellcounts kann dieser über
+      // einen histologischen Report gemeldet werden.
       if (tumorCellContentMethod == TumorCellContentMethodCodingCode.BIOINFORMATIC) {
         tumorcellContentBuilder.method(
             TumorCellContentMethodCoding.builder().code(tumorCellContentMethod).build());
+        resultBuilder.tumorCellContent(tumorcellContentBuilder.build());
       }
-
-      resultBuilder.tumorCellContent(tumorcellContentBuilder.build());
     }
 
     resultBuilder.simpleVariants(
@@ -215,6 +245,8 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
                                   .collect(Collectors.toList()))
                           .totalCopyNumber(subform.getLong("cnvtotalcn"));
 
+                  if (getCnvTypeCoding(subform) != null) cnvBuilder.type(getCnvTypeCoding(subform));
+
                   geneOptional
                       .get()
                       .getSingleChromosomeInPropertyForm()
@@ -225,6 +257,30 @@ public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRe
             .filter(Objects::nonNull)
             .collect(Collectors.toList()));
     return resultBuilder.build();
+  }
+
+  private CnvCoding getCnvTypeCoding(ResultSet osMolResultSet) {
+
+    var cnvFromString = osMolResultSet.getString("CopyNumberVariation");
+    if (cnvFromString == null || cnvFromString.trim().isEmpty()) return null;
+
+    CnvCodingCode cnvCode = getCodeFromString(cnvFromString.trim().toUpperCase());
+    if (cnvCode == null) return null;
+
+    return CnvCoding.builder().code(cnvCode).build();
+  }
+
+  private CnvCodingCode getCodeFromString(String value) {
+    if (value.equals("G")) {
+      return CnvCodingCode.HIGH_LEVEL_GAIN;
+    } else if (value.equals("L")) {
+      return CnvCodingCode.LOSS;
+    } else if (value.equals("LLG")) {
+      return CnvCodingCode.LOW_LEVEL_GAIN;
+    } else {
+      logger.error("No supported CNV Code for " + value + "found.");
+      return null;
+    }
   }
 
   private NgsReportCoding getNgsReportCoding(final String artdersequenzierung) {

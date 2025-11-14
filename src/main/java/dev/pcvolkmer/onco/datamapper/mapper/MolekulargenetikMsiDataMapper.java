@@ -21,6 +21,7 @@
 package dev.pcvolkmer.onco.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.mtb.Msi;
+import dev.pcvolkmer.mv64e.mtb.MsiInterpretationCoding;
 import dev.pcvolkmer.mv64e.mtb.MsiMethodCoding;
 import dev.pcvolkmer.mv64e.mtb.MsiMethodCodingCode;
 import dev.pcvolkmer.mv64e.mtb.Reference;
@@ -33,9 +34,9 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenMsiCatalogue;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaMolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<Msi> {
+public class MolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<Msi> {
 
-  public KpaMolekulargenetikMsiDataMapper(final MolekulargenMsiCatalogue molekulargenMsiCatalogue) {
+  public MolekulargenetikMsiDataMapper(final MolekulargenMsiCatalogue molekulargenMsiCatalogue) {
     super(molekulargenMsiCatalogue);
   }
 
@@ -67,13 +68,18 @@ public class KpaMolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<
                 .id(resultSet.getString("hauptprozedur_id"))
                 .type("Specimen")
                 .build())
-        // Aktuell nicht in Onkostar vorhanden!
-        // .interpretation()
+        .interpretation(gInterpretationCoding(resultSet))
         // In Onkostar nur für "Sequenzierung" bzw "BIOINFORMATIC" als Prozentwert angegeben => "0"
         // als Fallback?
         .value(getSeqProzentwert(resultSet));
 
     return builder.build();
+  }
+
+  private MsiInterpretationCoding gInterpretationCoding(final ResultSet resultSet) {
+    // ToDo. Aktuell nicht dokumentierbar für bioinformatischen MSI-Bestimmung (hier
+    // nur Wert, aber keine Interpretation möglich)
+    return null;
   }
 
   private MsiMethodCoding getMethodCode(final ResultSet resultSet) {
