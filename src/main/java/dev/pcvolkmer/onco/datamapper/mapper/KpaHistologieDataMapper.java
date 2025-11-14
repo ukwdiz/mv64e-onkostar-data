@@ -29,6 +29,7 @@ import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
     return this.map(data);
   }
 
+  @NullMarked
   @Override
   public List<HistologyReport> getByParentId(final int parentId) {
     return catalogue.getAllByParentId(parentId).stream()

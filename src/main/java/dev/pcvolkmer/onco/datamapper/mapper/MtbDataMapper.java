@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -69,6 +71,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    * @param dataSource The datasource to be used
    * @return The initialized mapper
    */
+  @NullMarked
   public static MtbDataMapper create(final DataSource dataSource) {
     return new MtbDataMapper(new JdbcTemplate(dataSource));
   }
@@ -79,6 +82,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    * @param jdbcTemplate The Spring JdbcTemplate to be used
    * @return The initialized mapper
    */
+  @NullMarked
   public static MtbDataMapper create(final JdbcTemplate jdbcTemplate) {
     return new MtbDataMapper(jdbcTemplate);
   }
@@ -91,6 +95,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    * @param tumorCellContentMethod Tumor cell count method
    * @return The initialized mapper
    */
+  @NullMarked
   public static MtbDataMapper create(
       final DataSource dataSource,
       final boolean filterIncomplete,
@@ -107,6 +112,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    * @param tumorCellContentMethod Tumor cell count method
    * @return The initialized mapper
    */
+  @NullMarked
   public static MtbDataMapper create(
       final JdbcTemplate jdbcTemplate,
       final boolean filterIncomplete,
@@ -119,6 +125,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    *
    * @return Instance of MtbDataMapper with enabled filter.
    */
+  @NullMarked
   public MtbDataMapper filterIncomplete() {
     this.filterIncomplete = true;
     return this;
@@ -129,6 +136,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    *
    * @return Instance of MtbDataMapper with enabled filter.
    */
+  @NullMarked
   public MtbDataMapper tumorCellContentMethod(
       TumorCellContentMethodCodingCode tumorCellContentMethod) {
     this.tumorCellContentMethod = tumorCellContentMethod;
@@ -142,6 +150,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    * @return The loaded Mtb file
    */
   @Override
+  @NullMarked
   public Mtb getById(int kpaId) {
     var kpaCatalogue = catalogueFactory.catalogue(KpaCatalogue.class);
     var patientDataMapper =
@@ -319,7 +328,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    * @param caseId The case id
    * @return The loaded Mtb file
    */
-  public Mtb getByCaseId(String caseId) {
+  @NullMarked
+  public Mtb getByCaseId(@Nullable String caseId) {
+    if (null == caseId || caseId.isBlank()) {
+      throw new IllegalArgumentException("The Case ID must not be null or empty");
+    }
+
     return this.getById(
         this.catalogueFactory.catalogue(KpaCatalogue.class).getProcedureIdByCaseId(caseId));
   }
@@ -331,7 +345,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
    * @param tumorId The tumor identification
    * @return The loaded Mtb file
    */
-  public Mtb getLatestByPatientIdAndTumorId(String patientId, int tumorId) {
+  @NullMarked
+  public Mtb getLatestByPatientIdAndTumorId(@Nullable String patientId, int tumorId) {
+    if (null == patientId || patientId.isBlank()) {
+      throw new IllegalArgumentException("The Patient ID must not be null or empty");
+    }
+
     return this.getById(
         this.catalogueFactory
             .catalogue(KpaCatalogue.class)
