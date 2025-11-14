@@ -108,14 +108,13 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
     var molgenIdsFromTherapyPlan = this.catalogue.getIdsByKpaId(kpaId);
 
     // Merge both lists, remove duplicates
-    var allMolgenIds =
-        Stream.concat(
-                molgenIdsFromTherapyPlan.stream(),
-                molgenIdsFromHisto != null ? molgenIdsFromHisto.stream() : Stream.empty())
-            .distinct()
-            .collect(Collectors.toList());
-
-    return allMolgenIds.stream().distinct().map(this::getById).collect(Collectors.toList());
+    return Stream.concat(
+            molgenIdsFromTherapyPlan.stream(),
+            molgenIdsFromHisto != null ? molgenIdsFromHisto.stream() : Stream.empty())
+        .distinct()
+        .map(this::getById)
+        .distinct()
+        .collect(Collectors.toList());
   }
 
   private NgsReportResults getNgsReportResults(ResultSet resultSet) {

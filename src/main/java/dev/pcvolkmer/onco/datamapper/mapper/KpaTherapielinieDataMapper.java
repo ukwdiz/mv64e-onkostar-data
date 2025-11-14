@@ -28,6 +28,7 @@ import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.TherapielinieCatalogue;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,11 +60,12 @@ public class KpaTherapielinieDataMapper
     return this.map(data);
   }
 
+  @Nullable
   @Override
   protected MtbSystemicTherapy map(final ResultSet resultSet) {
     var diseases = catalogue.getDiseases(resultSet.getId());
 
-    if (diseases == null || diseases.size() != 1) {
+    if (diseases.size() != 1) {
       throw new IllegalStateException(
           String.format("No unique disease for procedure %s", resultSet.getId()));
     }
@@ -78,8 +80,7 @@ public class KpaTherapielinieDataMapper
       // mapping.
       if (resultSet.getDate("beginn") == null && resultSet.getDate("erfassungsdatum") == null) {
         logger.warn(
-            String.format(
-                "Cannot map therapyline period date as 'beginn' date and erfassungsdatum are missing"));
+            "Cannot map therapyline period date as 'beginn' date and erfassungsdatum are missing");
         return null;
       }
 
@@ -95,26 +96,24 @@ public class KpaTherapielinieDataMapper
           .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")));
 
       // --- Codings with null checks ---
-      if (resultSet.getInteger("intention_propcat_version") != null) {
+      var intentionPropcatVersion = resultSet.getInteger("intention_propcat_version");
+      if (null != intentionPropcatVersion) {
         builder.intent(
-            getMtbTherapyIntentCoding(
-                resultSet.getString("intention"),
-                resultSet.getInteger("intention_propcat_version")));
+            getMtbTherapyIntentCoding(resultSet.getString("intention"), intentionPropcatVersion));
       }
 
-      if (resultSet.getInteger("status_propcat_version") != null) {
-        builder.status(
-            getTherapyStatusCoding(
-                resultSet.getString("status"), resultSet.getInteger("status_propcat_version")));
+      var statusPropcatVersion = resultSet.getInteger("status_propcat_version");
+      if (null != statusPropcatVersion) {
+        builder.status(getTherapyStatusCoding(resultSet.getString("status"), statusPropcatVersion));
       }
 
-      if (resultSet.getInteger("statusgrund_propcat_version") != null) {
-
+      var statusgrundPropcatVersion = resultSet.getInteger("statusgrund_propcat_version");
+      if (null != statusgrundPropcatVersion) {
         builder.statusReason(
             getMtbTherapyStatusReasonCoding(
-                resultSet.getString("statusgrund"),
-                resultSet.getInteger("statusgrund_propcat_version")));
+                resultSet.getString("statusgrund"), statusgrundPropcatVersion));
       }
+
       // --- Period Date with null checks ---
       var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
       if (resultSet.getDate("ende") != null) pdb.end(resultSet.getDate("ende"));
@@ -128,33 +127,37 @@ public class KpaTherapielinieDataMapper
         builder.basedOn(
             Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
       }
-      if (resultSet.getInteger("stellung_propcat_version") != null) {
+
+      var stellungPropcatVersion = resultSet.getInteger("stellung_propcat_version");
+      if (null != stellungPropcatVersion) {
         builder.category(
             getMtbSystemicTherapyCategoryCoding(
-                resultSet.getString("stellung"), resultSet.getInteger("stellung_propcat_version")));
+                resultSet.getString("stellung"), stellungPropcatVersion));
       }
 
-      if (resultSet.getInteger("dosisdichte_propcat_version") != null) {
+      var dosisdichtePropcatVersion = resultSet.getInteger("dosisdichte_propcat_version");
+      if (null != dosisdichtePropcatVersion) {
         builder.dosage(
             getMtbSystemicTherapyDosageDensityCoding(
-                resultSet.getString("dosisdichte"),
-                resultSet.getInteger("dosisdichte_propcat_version")));
+                resultSet.getString("dosisdichte"), dosisdichtePropcatVersion));
       }
 
-      if (resultSet.getInteger("umsetzung_propcat_version") != null) {
+      var umsetzungPropcatVersion = resultSet.getInteger("umsetzung_propcat_version");
+      if (null != umsetzungPropcatVersion) {
         builder.recommendationFulfillmentStatus(
             getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(
-                resultSet.getString("umsetzung"),
-                resultSet.getInteger("umsetzung_propcat_version")));
+                resultSet.getString("umsetzung"), umsetzungPropcatVersion));
       }
 
-      if (resultSet.getString("anmerkungen") != null) {
-        builder.notes(List.of(resultSet.getString("anmerkungen")));
+      var anmerkung = resultSet.getString("anmerkung");
+      if (null != anmerkung) {
+        builder.notes(List.of(anmerkung));
       }
 
       return builder.build();
-    } catch (Throwable e) {
-      throw new DataAccessException(String.format("Cannot map MtbSystemicTherapy!" + e));
+    } catch (Exception e) {
+      throw new DataAccessException(
+          String.format("Cannot map MtbSystemicTherapy! %s", e.getMessage()));
     }
   }
 }

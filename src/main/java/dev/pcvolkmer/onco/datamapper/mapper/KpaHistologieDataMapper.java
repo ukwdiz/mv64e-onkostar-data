@@ -25,11 +25,11 @@ import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.HistologieCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenetikCatalogue;
-import dev.pcvolkmer.onco.datamapper.genes.GeneUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class KpaHistologieDataMapper extends AbstractSubformDataMapper<HistologyReport> {
 
-  private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
+  private static final Logger logger = LoggerFactory.getLogger(KpaHistologieDataMapper.class);
   private final MolekulargenetikCatalogue molekulargenetikCatalogue;
   private final PropertyCatalogue propertyCatalogue;
 
@@ -76,86 +76,94 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
         .collect(Collectors.toList());
   }
 
+  @NullMarked
   public List<Integer> getMolGenIdsFromHistoOfTypeSequence(final int parentId) {
     var seqHistos =
         catalogue.getAllByParentId(parentId).stream()
-            .filter(Objects::nonNull)
             .filter(this::isOfTypeSeqencing)
             .collect(Collectors.toList());
     logger.info("Found {} histologies of type sequence", seqHistos.size());
 
-    var molGenIds =
-        seqHistos.stream()
-            .map(histo -> histo.getInteger("histologie"))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-
-    return molGenIds;
+    return seqHistos.stream()
+        .map(histo -> histo.getInteger("histologie"))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   private boolean isOfTypeSeqencing(final ResultSet resultSet) {
-
-    var osMolGen = molekulargenetikCatalogue.getById(resultSet.getInteger("histologie"));
-    if (osMolGen == null) return false;
+    var histoId = resultSet.getInteger("histologie");
+    if (null == histoId) {
+      return false;
+    }
+    var osMolGen = molekulargenetikCatalogue.getById(histoId);
 
     var analyseMethodenMerkmalliste = osMolGen.getMerkmalList("AnalyseMethoden");
     return analyseMethodenMerkmalliste != null && analyseMethodenMerkmalliste.contains("S");
   }
 
+  @Nullable
   @Override
   protected HistologyReport map(final ResultSet resultSet) {
-    var builder = HistologyReport.builder();
-
-    var osMolGen = molekulargenetikCatalogue.getById(resultSet.getInteger("histologie"));
-
-    if (null != osMolGen) {
-      builder
-          .id(resultSet.getId().toString())
-          .patient(resultSet.getPatientReference())
-          .issuedOn(resultSet.getDate("erstellungsdatum"))
-          .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
-          .results(
-              HistologyReportResults.builder()
-                  .tumorCellContent(
-                      TumorCellContent.builder()
-                          .id(resultSet.getId().toString())
-                          .patient(resultSet.getPatientReference())
-                          .specimen(
-                              Reference.builder()
-                                  .id(osMolGen.getId().toString())
-                                  .type("Specimen")
-                                  .build())
-                          .value(resultSet.getLong("tumorzellgehalt") / 100.0)
-                          // TODO: Nicht in OS.Molekulargenetik
-                          .method(
-                              TumorCellContentMethodCoding.builder()
-                                  .code(TumorCellContentMethodCodingCode.HISTOLOGIC)
-                                  .build())
-                          .build())
-                  .tumorMorphology(
-                      TumorMorphology.builder()
-                          .id(resultSet.getId().toString())
-                          .patient(resultSet.getPatientReference())
-                          .specimen(
-                              Reference.builder()
-                                  .id(osMolGen.getId().toString())
-                                  .type("Specimen")
-                                  .build())
-                          .value(getTumorMorphologyCoding(resultSet))
-                          .build())
-                  .build());
-
-      return builder.build();
+    var histoId = resultSet.getInteger("histologie");
+    if (null == histoId) {
+      return null;
     }
 
-    return null;
+    var builder = HistologyReport.builder();
+    var osMolGen = molekulargenetikCatalogue.getById(histoId);
+    var tumorzellgehaltValue = resultSet.getLong("tumorzellgehalt");
+
+    builder
+        .id(resultSet.getId().toString())
+        .patient(resultSet.getPatientReference())
+        .issuedOn(resultSet.getDate("erstellungsdatum"))
+        .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
+        .results(
+            HistologyReportResults.builder()
+                .tumorCellContent(
+                    TumorCellContent.builder()
+                        .id(resultSet.getId().toString())
+                        .patient(resultSet.getPatientReference())
+                        .specimen(
+                            Reference.builder()
+                                .id(osMolGen.getId().toString())
+                                .type("Specimen")
+                                .build())
+                        .value(
+                            (null == tumorzellgehaltValue) ? null : (tumorzellgehaltValue / 100.0))
+                        // TODO: Nicht in OS.Molekulargenetik
+                        .method(
+                            TumorCellContentMethodCoding.builder()
+                                .code(TumorCellContentMethodCodingCode.HISTOLOGIC)
+                                .build())
+                        .build())
+                .tumorMorphology(
+                    TumorMorphology.builder()
+                        .id(resultSet.getId().toString())
+                        .patient(resultSet.getPatientReference())
+                        .specimen(
+                            Reference.builder()
+                                .id(osMolGen.getId().toString())
+                                .type("Specimen")
+                                .build())
+                        .value(getTumorMorphologyCoding(resultSet))
+                        .build())
+                .build());
+
+    return builder.build();
   }
 
+  @Nullable
   private Coding getTumorMorphologyCoding(ResultSet resultSet) {
+    var morphologiePropcatVersion = resultSet.getInteger("morphologie_propcat_version");
+
+    if (null == morphologiePropcatVersion) {
+      return null;
+    }
+
     var propertyCatalogueEntry =
         propertyCatalogue.getByCodeAndVersion(
-            resultSet.getString("morphologie"),
-            resultSet.getInteger("morphologie_propcat_version"));
+            resultSet.getString("morphologie"), morphologiePropcatVersion);
 
     return Coding.builder()
         .code(propertyCatalogueEntry.getCode())
