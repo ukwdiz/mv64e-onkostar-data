@@ -23,6 +23,8 @@ package dev.pcvolkmer.onco.datamapper.datacatalogues;
 import dev.pcvolkmer.onco.datamapper.exceptions.DataCatalogueCreationException;
 import java.util.HashMap;
 import java.util.Map;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -31,6 +33,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
+@NullMarked
 public class DataCatalogueFactory {
 
   private final JdbcTemplate jdbcTemplate;
@@ -40,7 +43,7 @@ public class DataCatalogueFactory {
     this.jdbcTemplate = jdbcTemplate;
   }
 
-  private static DataCatalogueFactory obj;
+  @Nullable private static DataCatalogueFactory obj;
 
   public static synchronized DataCatalogueFactory initialize(final JdbcTemplate jdbcTemplate) {
     if (null == obj) {

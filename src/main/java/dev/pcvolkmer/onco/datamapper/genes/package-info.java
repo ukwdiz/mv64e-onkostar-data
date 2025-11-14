@@ -18,30 +18,7 @@
  *
  */
 
-package dev.pcvolkmer.onco.datamapper.datacatalogues;
+@NullMarked
+package dev.pcvolkmer.onco.datamapper.genes;
 
 import org.jspecify.annotations.NullMarked;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-/**
- * Load raw result sets from database table 'dk_molekluargenmsi'
- *
- * @author Paul-Christian Volkmer
- * @since 0.1
- */
-public class MolekulargenMsiCatalogue extends AbstractSubformDataCatalogue {
-
-  private MolekulargenMsiCatalogue(JdbcTemplate jdbcTemplate) {
-    super(jdbcTemplate);
-  }
-
-  @Override
-  protected String getTableName() {
-    return "dk_molekluargenmsi";
-  }
-
-  @NullMarked
-  public static MolekulargenMsiCatalogue create(JdbcTemplate jdbcTemplate) {
-    return new MolekulargenMsiCatalogue(jdbcTemplate);
-  }
-}

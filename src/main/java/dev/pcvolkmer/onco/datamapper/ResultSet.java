@@ -27,6 +27,9 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Result set type to wrap <code>Map<String, Object></code>
@@ -34,6 +37,7 @@ import java.util.Map;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
+@NullUnmarked
 public class ResultSet {
 
   private final Map<String, Object> rawData;
@@ -85,6 +89,7 @@ public class ResultSet {
    * @param columnName The name of the column
    * @return The column value as String
    */
+  @Nullable
   public String getString(String columnName) {
     var raw = this.rawData.get(columnName);
 
@@ -105,6 +110,7 @@ public class ResultSet {
    * @param columnName The name of the column
    * @return The column value as Integer
    */
+  @Nullable
   public Integer getInteger(String columnName) {
     var raw = this.rawData.get(columnName);
 
@@ -123,6 +129,7 @@ public class ResultSet {
    * @param columnName The name of the column
    * @return The column value as Integer
    */
+  @Nullable
   public Long getLong(String columnName) {
     var raw = this.rawData.get(columnName);
 
@@ -145,6 +152,7 @@ public class ResultSet {
    * @param columnName The name of the column
    * @return The column value as Integer
    */
+  @Nullable
   public Double getDouble(String columnName) {
     var raw = this.rawData.get(columnName);
 
@@ -167,6 +175,7 @@ public class ResultSet {
    * @param columnName The name of the column
    * @return The column value as Date
    */
+  @Nullable
   public Date getDate(String columnName) {
     var raw = this.rawData.get(columnName);
 
@@ -215,6 +224,52 @@ public class ResultSet {
    */
   public boolean isNull(String columnName) {
     return null == this.rawData.get(columnName);
+  }
+
+  /**
+   * Runs given function if value is not null
+   *
+   * @param columnName The name of the column
+   * @param clazz The expected column type
+   * @param f The function to be used if a value is present
+   * @param <T> The type of the given column value
+   */
+  @SuppressWarnings("unchecked")
+  public <T> void ifValueNotNull(String columnName, Class<T> clazz, Consumer<T> f) {
+    if (this.isNull(columnName)) {
+      return;
+    }
+
+    if (String.class == clazz) {
+      f.accept((T) this.getString(columnName));
+    } else if (Integer.class == clazz) {
+      f.accept((T) this.getInteger(columnName));
+    } else if (Long.class == clazz) {
+      f.accept((T) this.getLong(columnName));
+    } else if (Double.class == clazz) {
+      f.accept((T) this.getDouble(columnName));
+    } else if (Date.class == clazz) {
+      f.accept((T) this.getDate(columnName));
+    } else if (Boolean.class == clazz) {
+      f.accept((T) (Boolean) this.isTrue(columnName));
+    }
+  }
+
+  /**
+   * Runs given function if value is not null or throws exception
+   *
+   * @param columnName The name of the column
+   * @param clazz The expected column type
+   * @param f The function to be used if a value is present
+   * @param e The exception to be thrown if value is null
+   * @param <T> The type of the given column value
+   */
+  public <T> void ifValueNotNull(
+      String columnName, Class<T> clazz, Consumer<T> f, DataAccessException e) {
+    if (this.isNull(columnName)) {
+      throw e;
+    }
+    ifValueNotNull(columnName, clazz, f);
   }
 
   /**

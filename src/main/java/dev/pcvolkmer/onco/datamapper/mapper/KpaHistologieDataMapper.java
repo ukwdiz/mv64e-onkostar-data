@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_vorbefunde'
@@ -65,6 +66,7 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
     return this.map(data);
   }
 
+  @NullMarked
   @Override
   public List<HistologyReport> getByParentId(final int parentId) {
     return catalogue.getAllByParentId(parentId).stream()
