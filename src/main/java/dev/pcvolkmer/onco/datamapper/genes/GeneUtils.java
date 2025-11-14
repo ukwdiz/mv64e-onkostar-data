@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.csv.CSVFormat;
 import org.slf4j.Logger;
@@ -64,24 +65,16 @@ public class GeneUtils {
     var result = new ArrayList<Gene>();
 
     try {
-      var inputStream = GeneUtils.class.getClassLoader().getResourceAsStream("genes.csv");
-      CSVFormat format;
-
-      // Fallback for local build dependencie issues: check csv package version.
-      String csvVersion = CSVFormat.class.getPackage().getImplementationVersion();
-      if (csvVersion == null || csvVersion.startsWith("1.10.")) {
-        format = CSVFormat.RFC4180.withHeader().withSkipHeaderRecord().withDelimiter('\t');
-      } else {
-        format =
-            CSVFormat.RFC4180
-                .builder()
-                .setHeader()
-                .setSkipHeaderRecord(true)
-                .setDelimiter('\t')
-                .get();
-      }
-      var parser = format.parse(new InputStreamReader(inputStream));
-
+      var inputStream =
+          Objects.requireNonNull(GeneUtils.class.getClassLoader().getResourceAsStream("genes.csv"));
+      var parser =
+          CSVFormat.RFC4180
+              .builder()
+              .setHeader()
+              .setSkipHeaderRecord(true)
+              .setDelimiter('\t')
+              .build()
+              .parse(new InputStreamReader(inputStream));
       for (var row : parser) {
         result.add(
             new Gene(
