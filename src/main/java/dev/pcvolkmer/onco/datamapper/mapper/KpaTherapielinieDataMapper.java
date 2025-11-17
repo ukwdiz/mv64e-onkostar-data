@@ -32,7 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Mapper class to load and map prozedur data from database table 'dk_dnpm_therapielinie'
+ * Mapper class to load and map prozedur data from database table
+ * 'dk_dnpm_therapielinie'
  *
  * @author Paul-Christian Volkmer
  * @since 0.1
@@ -73,7 +74,8 @@ public class KpaTherapielinieDataMapper
       // Determine if the therapy line is empty.
       // A therapy line is considered empty if both 'beginn' (start date) and
       // 'erfassungsdatum' (recorded date) are missing.
-      // If so, log a warning and skip mapping for this record withouth breaking the whole data
+      // If so, log a warning and skip mapping for this record withouth breaking the
+      // whole data
       // mapping.
       if (resultSet.getDate("beginn") == null && resultSet.getDate("erfassungsdatum") == null) {
         logger.warn(
@@ -85,20 +87,13 @@ public class KpaTherapielinieDataMapper
       builder
           .id(resultSet.getString("id"))
           .patient(resultSet.getPatientReference())
-          .basedOn(Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build())
           .reason(
               Reference.builder()
                   .id(resultSet.getString("hauptprozedur_id"))
                   .type("MTBDiagnosis")
                   .build())
-          .therapyLine(resultSet.getLong("nummer"))
           .recordedOn(resultSet.getDate("erfassungsdatum"))
           .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffcodes")));
-
-      // --- Period Date with null checks ---
-      var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
-      if (resultSet.getDate("ende") != null) pdb.end(resultSet.getDate("ende"));
-      builder.period(pdb.build());
 
       // --- Codings with null checks ---
       if (resultSet.getInteger("intention_propcat_version") != null) {
@@ -121,7 +116,20 @@ public class KpaTherapielinieDataMapper
                 resultSet.getString("statusgrund"),
                 resultSet.getInteger("statusgrund_propcat_version")));
       }
+      // --- Period Date with null checks ---
+      var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
+      if (resultSet.getDate("ende") != null)
+        pdb.end(resultSet.getDate("ende"));
+      builder.period(pdb.build());
 
+      if (!resultSet.isNull("nummer")) {
+        builder.therapyLine(resultSet.getLong("nummer"));
+      }
+
+      if (!resultSet.isNull("ref_einzelempfehlung")) {
+        builder.basedOn(
+            Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
+      }
       if (resultSet.getInteger("stellung_propcat_version") != null) {
         builder.category(
             getMtbSystemicTherapyCategoryCoding(

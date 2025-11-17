@@ -97,10 +97,6 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
     if (osMolGen == null) return false;
 
     var analyseMethodenMerkmalliste = osMolGen.getMerkmalList("AnalyseMethoden");
-    logger.info(
-        "Found merkmalliste AnalyseMethoden for histo: "
-            + (analyseMethodenMerkmalliste != null ? analyseMethodenMerkmalliste : "null"));
-
     return analyseMethodenMerkmalliste != null && analyseMethodenMerkmalliste.contains("S");
   }
 

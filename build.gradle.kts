@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("java-library")
     id("com.diffplug.spotless") version "7.2.1"
+    id("maven-publish")
 }
 
 group = "dev.pcvolkmer.onco"
@@ -9,7 +10,7 @@ version = "0.1.0-SNAPSHOT"
 
 var versions = mapOf(
     "mtb-dto" to "0.1.0-SNAPSHOT",
-    "commons-csv" to "1.14.0",
+    "commons-csv" to "1.10.0",
     "slf4j" to "2.0.17",
     "junit" to "5.13.1",
     "assertj" to "3.27.3",
@@ -62,6 +63,7 @@ dependencies {
 }
 
 tasks.test {
+    useJUnitPlatform()
     dependsOn(tasks.spotlessCheck)
 }
 
@@ -70,5 +72,36 @@ spotless {
         importOrder()
         removeUnusedImports()
         googleJavaFormat()
+    }
+}
+
+publishing {
+    repositories {
+        mavenLocal()
+        maven {
+            name = "GitDnpmDev"
+
+            val releasesRepoUrl = uri("https://git.dnpm.dev/api/packages/public/maven")
+            val snapshotsRepoUrl = uri("https://git.dnpm.dev/api/packages/public-snapshots/maven")
+            url = if (version.toString().endsWith("SNAPSHOT"))
+                snapshotsRepoUrl
+            else
+                releasesRepoUrl
+
+            credentials(HttpHeaderCredentials::class) {
+                name = "Authorization"
+                value = "token ${properties["dnpm_dev_token"] ?: ""}"
+            }
+
+            authentication {
+                create<HttpHeaderAuthentication>("header")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
     }
 }

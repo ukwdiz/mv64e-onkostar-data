@@ -41,14 +41,14 @@ import org.slf4j.LoggerFactory;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaMolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsReport> {
+public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsReport> {
 
   private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
   private final MolekulargenetikCatalogue catalogue;
   private final MolekulargenuntersuchungCatalogue untersuchungCatalogue;
   private final TumorCellContentMethodCodingCode tumorCellContentMethod;
 
-  public KpaMolekulargenetikNgsDataMapper(
+  public MolekulargenetikNgsDataMapper(
       final MolekulargenetikCatalogue catalogue,
       final MolekulargenuntersuchungCatalogue untersuchungCatalogue,
       final PropertyCatalogue propertyCatalogue,

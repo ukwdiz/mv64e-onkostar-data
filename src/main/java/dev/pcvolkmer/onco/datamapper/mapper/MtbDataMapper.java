@@ -48,7 +48,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
   private boolean filterIncomplete;
   private TumorCellContentMethodCodingCode tumorCellContentMethod;
 
-  //  In Würzburg immer histologisch!
+  // In Würzburg immer histologisch!
   MtbDataMapper(final JdbcTemplate jdbcTemplate) {
     this(jdbcTemplate, false, TumorCellContentMethodCodingCode.HISTOLOGIC);
   }
@@ -188,14 +188,14 @@ public class MtbDataMapper implements DataMapper<Mtb> {
             catalogueFactory.catalogue(VorbefundeCatalogue.class),
             catalogueFactory.catalogue(HistologieCatalogue.class));
 
-    var kpaMolekulargenetikNgsDataMapper =
-        new KpaMolekulargenetikNgsDataMapper(
+    var molekulargenetikNgsDataMapper =
+        new MolekulargenetikNgsDataMapper(
             molekulargenetikCatalogue,
             catalogueFactory.catalogue(MolekulargenuntersuchungCatalogue.class),
             propertyCatalogue,
             tumorCellContentMethod);
-    var kpaMolekulargenetikMsiDataMapper =
-        new KpaMolekulargenetikMsiDataMapper(
+    var molekulargenetikMsiDataMapper =
+        new MolekulargenetikMsiDataMapper(
             catalogueFactory.catalogue(MolekulargenMsiCatalogue.class));
 
     var kpaVorbefundeDataMapper =
@@ -233,18 +233,17 @@ public class MtbDataMapper implements DataMapper<Mtb> {
           therapieplanCatalogue.getByKpaId(kpaId).stream().map(therapieplanDataMapper::getById);
 
       var msiFindings =
-          kpaMolekulargenetikNgsDataMapper
+          molekulargenetikNgsDataMapper
               .getAllByKpaIdWithHisto(
                   kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId))
               .stream()
               .map(ngs -> Integer.parseInt(ngs.getId()))
-              .flatMap(ngsId -> kpaMolekulargenetikMsiDataMapper.getByParentId(ngsId).stream())
+              .flatMap(ngsId -> molekulargenetikMsiDataMapper.getByParentId(ngsId).stream())
               .filter(Objects::nonNull)
-              .filter(
-                  msi ->
-                      msi.getInterpretation()
-                          != null); // always filter incomplete MSI as not needed for MVH and
-      // interpretation not implemented
+              .filter(msi -> msi.getInterpretation() != null); // always filter incomplete MSI
+      // as not needed for MVH and
+      // interpretation not
+      // implemented
 
       if (this.filterIncomplete) {
         carePlans =
@@ -290,7 +289,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
           .carePlans(carePlans.collect(Collectors.toList()))
           // NGS Berichte
           .ngsReports(
-              kpaMolekulargenetikNgsDataMapper.getAllByKpaIdWithHisto(
+              molekulargenetikNgsDataMapper.getAllByKpaIdWithHisto(
                   kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId)))
           // MSI Befunde
           .msiFindings(msiFindings.collect(Collectors.toList()));

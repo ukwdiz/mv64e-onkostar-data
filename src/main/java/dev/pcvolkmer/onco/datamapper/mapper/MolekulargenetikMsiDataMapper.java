@@ -34,9 +34,9 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenMsiCatalogue;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-public class KpaMolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<Msi> {
+public class MolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<Msi> {
 
-  public KpaMolekulargenetikMsiDataMapper(final MolekulargenMsiCatalogue molekulargenMsiCatalogue) {
+  public MolekulargenetikMsiDataMapper(final MolekulargenMsiCatalogue molekulargenMsiCatalogue) {
     super(molekulargenMsiCatalogue);
   }
 
@@ -77,8 +77,8 @@ public class KpaMolekulargenetikMsiDataMapper extends AbstractSubformDataMapper<
   }
 
   private MsiInterpretationCoding gInterpretationCoding(final ResultSet resultSet) {
-    // ToDo. Aktuell nicht dokumentierbar für bioinformatischen MSI-Bestimmung (hier nur Wert, aber
-    // keine Interpretation möglich)
+    // ToDo. Aktuell nicht dokumentierbar für bioinformatischen MSI-Bestimmung (hier
+    // nur Wert, aber keine Interpretation möglich)
     return null;
   }
 
