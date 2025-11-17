@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -34,6 +35,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
+@NullMarked
 public abstract class AbstractDataCatalogue implements DataCatalogue {
 
   protected final JdbcTemplate jdbcTemplate;
@@ -48,8 +50,9 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
    * Get procedure result set by procedure id
    *
    * @param id The procedure id
-   * @return The procedure id
+   * @return The procedure
    */
+  @NullMarked
   @Override
   public ResultSet getById(int id) {
     var result =
@@ -98,9 +101,7 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
     return this.jdbcTemplate
         .queryForList(
             String.format(
-                "SELECT * FROM erkrankung_prozedur JOIN erkrankung ON (erkrankung.id = erkrankung_prozedur.erkrankung_id) WHERE erkrankung_prozedur.prozedur_id = ?",
-                getTableName(),
-                getTableName()),
+                "SELECT * FROM erkrankung_prozedur JOIN erkrankung ON (erkrankung.id = erkrankung_prozedur.erkrankung_id) WHERE erkrankung_prozedur.prozedur_id = ?"),
             procedureId)
         .stream()
         .map(ResultSet::from)
@@ -125,9 +126,21 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
       return resultSet.stream()
           .collect(
               Collectors.groupingBy(
-                  m -> m.get("feldname").toString(),
+                  m -> {
+                    var feldname = m.get("feldname");
+                    if (feldname == null) {
+                      return "?";
+                    }
+                    return feldname.toString();
+                  },
                   Collectors.mapping(
-                      stringObjectMap -> stringObjectMap.get("feldwert").toString(),
+                      stringObjectMap -> {
+                        var feldwert = stringObjectMap.get("feldwert");
+                        if (feldwert == null) {
+                          return "?";
+                        }
+                        return feldwert.toString();
+                      },
                       Collectors.toList())));
     } catch (org.springframework.dao.DataAccessException e) {
       return Map.of();

@@ -20,13 +20,19 @@
 
 package dev.pcvolkmer.onco.datamapper.mapper;
 
-import dev.pcvolkmer.mv64e.mtb.*;
+import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCoding;
+import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCodingCode;
+import dev.pcvolkmer.mv64e.mtb.ProcedureRecommendation;
+import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.EinzelempfehlungCatalogue;
+import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Mapper class to load and map diagnosis data from database table 'dk_dnpm_einzelempfehlung'
@@ -43,14 +49,26 @@ public class EinzelempfehlungProzedurDataMapper
 
   @Override
   protected ProcedureRecommendation map(ResultSet resultSet) {
+    // Fetch date from care plan due to https://github.com/pcvolkmer/onkostar-plugin-dnpm/issues/213
+    var carePlan = this.catalogue.getParentById(resultSet.getId());
+    var date = carePlan.getDate("datum");
+    if (null == date) {
+      throw new DataAccessException("Cannot map datum for ProcedureRecommendation");
+    }
+
+    var kpaId = carePlan.getString("ref_dnpm_klinikanamnese");
+    if (null == kpaId) {
+      throw new DataAccessException("Cannot map KPA as Diagnosis");
+    }
+
     var resultBuilder =
         ProcedureRecommendation.builder()
             .id(resultSet.getString("id"))
             .patient(resultSet.getPatientReference())
             .priority(getRecommendationPriorityCoding(resultSet.getInteger("prio")))
             // TODO Fix id?
-            .reason(Reference.builder().id(resultSet.getString("id")).build())
-            .issuedOn(resultSet.getDate("datum"))
+            .reason(Reference.builder().id(kpaId).build())
+            .issuedOn(date)
             .levelOfEvidence(getLevelOfEvidence(resultSet));
 
     if (null != resultSet.getString("evidenzlevel")) {
@@ -82,12 +100,15 @@ public class EinzelempfehlungProzedurDataMapper
     return this.map(this.catalogue.getById(id));
   }
 
+  @NullMarked
   @Override
   public List<ProcedureRecommendation> getByParentId(final int parentId) {
     return catalogue.getAllByParentId(parentId).stream()
         // Filter Prozedurempfehlung (Weitere Empfehlungen)
         .filter(it -> "sonstige".equals(it.getString("empfehlungskategorie")))
         .map(this::map)
+        .filter(Objects::nonNull)
+        .distinct()
         .collect(Collectors.toList());
   }
 

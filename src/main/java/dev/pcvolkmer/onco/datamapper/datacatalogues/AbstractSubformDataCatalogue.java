@@ -21,8 +21,10 @@
 package dev.pcvolkmer.onco.datamapper.datacatalogues;
 
 import dev.pcvolkmer.onco.datamapper.ResultSet;
+import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -31,6 +33,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
+@NullMarked
 public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
     implements DataCatalogue {
 
@@ -38,6 +41,7 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
     super(jdbcTemplate);
   }
 
+  @Override
   protected abstract String getTableName();
 
   /**
@@ -65,5 +69,27 @@ public abstract class AbstractSubformDataCatalogue extends AbstractDataCatalogue
               merkmale.forEach((key, value) -> resultSet.getRawData().put(key, value));
             })
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Get parent procedure by procedure id
+   *
+   * @param id The procedure id
+   * @return The procedure
+   */
+  @NullMarked
+  public ResultSet getParentById(int id) {
+    try {
+      var result =
+          this.jdbcTemplate.queryForObject(
+              "SELECT prozedur.hauptprozedur_id FROM prozedur WHERE geloescht = 0 AND prozedur.id = ?",
+              new Integer[] {id},
+              Integer.class);
+
+      return getById(result);
+    } catch (Exception e) {
+      // Nothing
+    }
+    throw new DataAccessException("No parent found for id: " + id);
   }
 }
