@@ -64,18 +64,18 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
     }
 
     var builder = OncoProcedure.builder();
-   
+
     try {
-    builder
-        .id(resultSet.getString("id"))
-        .patient(resultSet.getPatientReference())
-        .reason(
-            Reference.builder()
-                .id(resultSet.getString("hauptprozedur_id"))
-                .type("MTBDiagnosis")
-                .build())
-        .recordedOn(resultSet.getDate("erfassungsdatum"));      
-	// --- Period Date with null checks ---
+      builder
+          .id(resultSet.getString("id"))
+          .patient(resultSet.getPatientReference())
+          .reason(
+              Reference.builder()
+                  .id(resultSet.getString("hauptprozedur_id"))
+                  .type("MTBDiagnosis")
+                  .build())
+          .recordedOn(resultSet.getDate("erfassungsdatum"));
+      // --- Period Date with null checks ---
       if (resultSet.getDate("beginn") == null)
         throw new DataAccessException(
             "Cannot map OncoProcedure period date as 'beginn' date is missing");
@@ -113,13 +113,14 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
                 resultSet.getString("typ"), resultSet.getInteger("typ_propcat_version")));
       }
 
-    if (!resultSet.isNull("therapielinie")) {
-      builder.therapyLine(resultSet.getLong("therapielinie"));
-    }
+      if (!resultSet.isNull("therapielinie")) {
+        builder.therapyLine(resultSet.getLong("therapielinie"));
+      }
 
-    if (resultSet.getString("ref_einzelempfehlung") != null) {
-      builder.basedOn(Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
-    }
+      if (resultSet.getString("ref_einzelempfehlung") != null) {
+        builder.basedOn(
+            Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
+      }
 
       // Anmerkung with null check
       if (resultSet.getString("anmerkungen") != null) {

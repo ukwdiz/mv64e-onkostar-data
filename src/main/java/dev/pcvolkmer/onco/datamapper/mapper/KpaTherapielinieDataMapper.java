@@ -32,8 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Mapper class to load and map prozedur data from database table
- * 'dk_dnpm_therapielinie'
+ * Mapper class to load and map prozedur data from database table 'dk_dnpm_therapielinie'
  *
  * @author Paul-Christian Volkmer
  * @since 0.1
@@ -118,8 +117,7 @@ public class KpaTherapielinieDataMapper
       }
       // --- Period Date with null checks ---
       var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
-      if (resultSet.getDate("ende") != null)
-        pdb.end(resultSet.getDate("ende"));
+      if (resultSet.getDate("ende") != null) pdb.end(resultSet.getDate("ende"));
       builder.period(pdb.build());
 
       if (!resultSet.isNull("nummer")) {
