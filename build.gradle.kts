@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("java-library")
+    id("com.diffplug.spotless") version "7.2.1"
 }
 
 group = "dev.pcvolkmer.onco"
@@ -61,5 +62,13 @@ dependencies {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    dependsOn(tasks.spotlessCheck)
+}
+
+spotless {
+    java {
+        importOrder()
+        removeUnusedImports()
+        googleJavaFormat()
+    }
 }
