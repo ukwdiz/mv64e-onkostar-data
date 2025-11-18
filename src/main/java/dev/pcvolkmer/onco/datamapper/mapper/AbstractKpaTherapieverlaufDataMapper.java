@@ -43,8 +43,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
     this.propertyCatalogue = propertyCatalogue;
   }
 
-  protected MtbTherapyIntentCoding getMtbTherapyIntentCoding(String value, int version) {
+  protected MtbTherapyIntentCoding getMtbTherapyIntentCoding(String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(MtbTherapyIntentCodingCode.values())
             .map(MtbTherapyIntentCodingCode::toValue)
             .collect(Collectors.toSet())
@@ -75,8 +76,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
     return resultBuilder.build();
   }
 
-  protected TherapyStatusCoding getTherapyStatusCoding(String value, int version) {
+  protected TherapyStatusCoding getTherapyStatusCoding(String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(TherapyStatusCodingCode.values())
             .map(TherapyStatusCodingCode::toValue)
             .collect(Collectors.toSet())
@@ -108,8 +110,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
   }
 
   protected MtbTherapyStatusReasonCoding getMtbTherapyStatusReasonCoding(
-      String value, int version) {
+      String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(MtbTherapyStatusReasonCodingCode.values())
             .map(MtbTherapyStatusReasonCodingCode::toValue)
             .collect(Collectors.toSet())
@@ -132,8 +135,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
   }
 
   protected MtbSystemicTherapyRecommendationFulfillmentStatusCoding
-      getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(String value, int version) {
+      getMtbSystemicTherapyRecommendationFulfillmentStatusCoding(String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(MtbSystemicTherapyRecommendationFulfillmentStatusCodingCode.values())
             .map(MtbSystemicTherapyRecommendationFulfillmentStatusCodingCode::toValue)
             .collect(Collectors.toSet())
@@ -156,8 +160,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
   }
 
   protected MtbSystemicTherapyCategoryCoding getMtbSystemicTherapyCategoryCoding(
-      String value, int version) {
+      String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(MtbSystemicTherapyCategoryCodingCode.values())
             .map(MtbSystemicTherapyCategoryCodingCode::toValue)
             .collect(Collectors.toSet())
@@ -179,8 +184,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
   }
 
   protected MtbSystemicTherapyDosageDensityCoding getMtbSystemicTherapyDosageDensityCoding(
-      String value, int version) {
+      String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(MtbSystemicTherapyDosageDensityCodingCode.values())
             .map(MtbSystemicTherapyDosageDensityCodingCode::toValue)
             .collect(Collectors.toSet())
@@ -201,8 +207,9 @@ public abstract class AbstractKpaTherapieverlaufDataMapper<T> extends AbstractSu
     return resultBuilder.build();
   }
 
-  protected OncoProcedureCoding getOncoProcedureCoding(String value, int version) {
+  protected OncoProcedureCoding getOncoProcedureCoding(String value, Integer version) {
     if (value == null
+        || version == null
         || !Arrays.stream(OncoProcedureCodingCode.values())
             .map(OncoProcedureCodingCode::toValue)
             .collect(Collectors.toSet())
