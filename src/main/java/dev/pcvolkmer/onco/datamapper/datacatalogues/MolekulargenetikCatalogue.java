@@ -64,7 +64,8 @@ public class MolekulargenetikCatalogue extends AbstractDataCatalogue {
                 + "FROM dk_molekulargenetik mg "
                 + "JOIN prozedur molprozedur ON molprozedur.id = mg.id "
                 + "JOIN patient pat ON pat.id = molprozedur.patient_id "
-                + "WHERE  pat.id = ?",
+                + "WHERE pat.id = ? "
+                + "AND molprozedur.geloescht = 0",
             patientId)
         .stream()
         .map(ResultSet::from)
