@@ -26,8 +26,11 @@ import dev.pcvolkmer.mv64e.mtb.Reference;
 import dev.pcvolkmer.onco.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.onco.datamapper.ResultSet;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.ProzedurCatalogue;
-import dev.pcvolkmer.onco.datamapper.exceptions.DataAccessException;
 import java.util.List;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_uf_prozedur'
@@ -36,6 +39,8 @@ import java.util.List;
  * @since 0.1
  */
 public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<OncoProcedure> {
+
+  private final Logger logger = LoggerFactory.getLogger(KpaProzedurDataMapper.class);
 
   public KpaProzedurDataMapper(
       final ProzedurCatalogue catalogue, final PropertyCatalogue propertyCatalogue) {
@@ -54,84 +59,69 @@ public class KpaProzedurDataMapper extends AbstractKpaTherapieverlaufDataMapper<
     return this.map(data);
   }
 
+  /**
+   * Maps result set into OncoProcedure
+   *
+   * @param resultSet The result set to start from
+   * @return the OncoProcedure or null if not mappable
+   */
+  @Nullable
   @Override
-  protected OncoProcedure map(final ResultSet resultSet) {
+  protected OncoProcedure map(@NonNull final ResultSet resultSet) {
     var diseases = catalogue.getDiseases(resultSet.getId());
 
-    if (diseases == null || diseases.size() != 1) {
+    if (diseases.size() != 1) {
       throw new IllegalStateException(
           String.format("No unique disease for procedure %s", resultSet.getId()));
     }
 
+    var start = resultSet.getDate("beginn");
+    var erfassungsdatum = resultSet.getDate("erfassungsdatum");
+    // Do not map procedures without start and end set
+    if (null == start || null == erfassungsdatum) {
+      logger.warn(
+          "Cannot map procedure period date as 'beginn' date and erfassungsdatum are missing");
+      return null;
+    }
+
     var builder = OncoProcedure.builder();
-
-    try {
-      builder
-          .id(resultSet.getString("id"))
-          .patient(resultSet.getPatientReference())
-          .reason(
-              Reference.builder()
-                  .id(resultSet.getString("hauptprozedur_id"))
-                  .type("MTBDiagnosis")
-                  .build())
-          .recordedOn(resultSet.getDate("erfassungsdatum"));
-      // --- Period Date with null checks ---
-      if (resultSet.getDate("beginn") == null)
-        throw new DataAccessException(
-            "Cannot map OncoProcedure period date as 'beginn' date is missing");
-      var pdb = PeriodDate.builder().start(resultSet.getDate("beginn"));
-
-      if (resultSet.getDate("ende") != null) pdb.end(resultSet.getDate("ende"));
-
-      builder.period(pdb.build());
-
-      // --- Codings with null checks ---
-      if (resultSet.getInteger("intention_propcat_version") != null) {
-        builder.intent(
+    builder
+        .id(resultSet.getString("id"))
+        .patient(resultSet.getPatientReference())
+        .reason(
+            Reference.builder()
+                .id(resultSet.getString("hauptprozedur_id"))
+                .type("MTBDiagnosis")
+                .build())
+        .recordedOn(erfassungsdatum)
+        .intent(
             getMtbTherapyIntentCoding(
                 resultSet.getString("intention"),
-                resultSet.getInteger("intention_propcat_version")));
-      }
-
-      if (resultSet.getInteger("status_propcat_version") != null) {
-        builder.status(
+                resultSet.getInteger("intention_propcat_version")))
+        .status(
             getTherapyStatusCoding(
-                resultSet.getString("status"), resultSet.getInteger("status_propcat_version")));
-      }
-
-      if (resultSet.getInteger("statusgrund_propcat_version") != null) {
-
-        builder.statusReason(
+                resultSet.getString("status"), resultSet.getInteger("status_propcat_version")))
+        .statusReason(
             getMtbTherapyStatusReasonCoding(
                 resultSet.getString("statusgrund"),
-                resultSet.getInteger("statusgrund_propcat_version")));
-      }
-
-      if (resultSet.getInteger("typ_propcat_version") != null) {
-        builder.code(
+                resultSet.getInteger("statusgrund_propcat_version")))
+        .period(PeriodDate.builder().start(start).end(resultSet.getDate("ende")).build())
+        .code(
             getOncoProcedureCoding(
                 resultSet.getString("typ"), resultSet.getInteger("typ_propcat_version")));
-      }
 
-      if (!resultSet.isNull("therapielinie")) {
-        builder.therapyLine(resultSet.getLong("therapielinie"));
-      }
-
-      if (resultSet.getString("ref_einzelempfehlung") != null) {
-        builder.basedOn(
-            Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
-      }
-
-      // Anmerkung with null check
-      if (resultSet.getString("anmerkungen") != null) {
-        builder.notes(List.of(resultSet.getString("anmerkungen")));
-      }
-
-      return builder.build();
-
-    } catch (Throwable e) {
-      throw new DataAccessException(
-          String.format("Cannot map OncoProcedure! Somthing is wrong up the line!!" + e));
+    if (!resultSet.isNull("therapielinie")) {
+      builder.therapyLine(resultSet.getLong("therapielinie"));
     }
+
+    if (resultSet.getString("ref_einzelempfehlung") != null) {
+      builder.basedOn(Reference.builder().id(resultSet.getString("ref_einzelempfehlung")).build());
+    }
+
+    if (resultSet.getString("anmerkungen") != null) {
+      builder.notes(List.of(resultSet.getString("anmerkungen")));
+    }
+
+    return builder.build();
   }
 }
