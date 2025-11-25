@@ -50,7 +50,16 @@ public class GeneUtils {
   }
 
   public static Optional<Gene> findBySymbol(String symbol) {
-    return genes().stream().filter(gene -> gene.getSymbol().equalsIgnoreCase(symbol)).findFirst();
+    final var result =
+        genes().stream().filter(gene -> gene.getSymbol().equalsIgnoreCase(symbol)).findFirst();
+    if (result.isPresent()) {
+      return result;
+    }
+    final var cleanedSymbol = symbol.trim().replaceAll("\\s", "");
+    if (cleanedSymbol.equals(symbol)) {
+      return Optional.empty();
+    }
+    return findBySymbol(cleanedSymbol);
   }
 
   public static Coding toCoding(Gene gene) {
