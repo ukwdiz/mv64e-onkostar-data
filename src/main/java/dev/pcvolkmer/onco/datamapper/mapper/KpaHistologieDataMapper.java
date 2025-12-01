@@ -27,6 +27,7 @@ import dev.pcvolkmer.onco.datamapper.datacatalogues.HistologieCatalogue;
 import dev.pcvolkmer.onco.datamapper.datacatalogues.MolekulargenetikCatalogue;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -111,46 +112,50 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
 
     var builder = HistologyReport.builder();
     var osMolGen = molekulargenetikCatalogue.getById(histoId);
-    var tumorzellgehaltValue = resultSet.getLong("tumorzellgehalt");
+
+    var histologieReportResultBuilder =
+        HistologyReportResults.builder()
+            .tumorMorphology(
+                TumorMorphology.builder()
+                    .id(resultSet.getId().toString())
+                    .patient(resultSet.getPatientReference())
+                    .specimen(
+                        Reference.builder()
+                            .id(osMolGen.getId().toString())
+                            .type("Specimen")
+                            .build())
+                    .value(getTumorMorphologyCoding(resultSet))
+                    .build());
+
+    getTumorCellContent(resultSet, osMolGen)
+        .ifPresent(histologieReportResultBuilder::tumorCellContent);
 
     builder
         .id(resultSet.getId().toString())
         .patient(resultSet.getPatientReference())
         .issuedOn(resultSet.getDate("erstellungsdatum"))
         .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
-        .results(
-            HistologyReportResults.builder()
-                .tumorCellContent(
-                    TumorCellContent.builder()
-                        .id(resultSet.getId().toString())
-                        .patient(resultSet.getPatientReference())
-                        .specimen(
-                            Reference.builder()
-                                .id(osMolGen.getId().toString())
-                                .type("Specimen")
-                                .build())
-                        .value(
-                            (null == tumorzellgehaltValue) ? null : (tumorzellgehaltValue / 100.0))
-                        // TODO: Nicht in OS.Molekulargenetik
-                        .method(
-                            TumorCellContentMethodCoding.builder()
-                                .code(TumorCellContentMethodCodingCode.HISTOLOGIC)
-                                .build())
-                        .build())
-                .tumorMorphology(
-                    TumorMorphology.builder()
-                        .id(resultSet.getId().toString())
-                        .patient(resultSet.getPatientReference())
-                        .specimen(
-                            Reference.builder()
-                                .id(osMolGen.getId().toString())
-                                .type("Specimen")
-                                .build())
-                        .value(getTumorMorphologyCoding(resultSet))
-                        .build())
-                .build());
+        .results(histologieReportResultBuilder.build());
 
     return builder.build();
+  }
+
+  private Optional<TumorCellContent> getTumorCellContent(ResultSet resultSet, ResultSet osMolGen) {
+    var builder =
+        TumorCellContent.builder()
+            .id(resultSet.getId().toString())
+            .patient(resultSet.getPatientReference())
+            .specimen(Reference.builder().id(osMolGen.getId().toString()).type("Specimen").build())
+            .method(
+                TumorCellContentMethodCoding.builder()
+                    .code(TumorCellContentMethodCodingCode.HISTOLOGIC)
+                    .build());
+
+    var tumorzellgehaltValue = resultSet.getLong("tumorzellgehalt");
+    if (null == tumorzellgehaltValue) {
+      return Optional.empty();
+    }
+    return Optional.of(builder.value(tumorzellgehaltValue / 100.0).build());
   }
 
   @Nullable
