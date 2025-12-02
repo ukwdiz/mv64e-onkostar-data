@@ -8,8 +8,8 @@ plugins {
     id("maven-publish")
 }
 
-group = "dev.pcvolkmer.onco"
-version = "0.1.1" // x-release-please-version
+group = "dev.pcvolkmer.mv64e"
+version = "0.2.0" // x-release-please-version
 
 var versions = mapOf(
     "mtb-dto" to "0.1.1",
@@ -24,6 +24,8 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
     }
+    withJavadocJar()
+    withSourcesJar()
 }
 
 repositories {
