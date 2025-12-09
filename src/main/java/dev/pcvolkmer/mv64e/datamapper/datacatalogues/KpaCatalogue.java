@@ -62,8 +62,7 @@ public class KpaCatalogue extends AbstractDataCatalogue {
     if (result.isEmpty()) {
       throw new DataAccessException("No record found for case: " + caseId);
     } else if (result.size() > 1) {
-      throw new DataAccessException(
-          "Multiple records found for case: " + caseId + " in getProcedureIdByCaseId");
+      throw new DataAccessException("Multiple procedure IDs found for case: " + caseId);
     }
 
     return result.get(0);
@@ -119,8 +118,7 @@ public class KpaCatalogue extends AbstractDataCatalogue {
     if (result.isEmpty()) {
       throw new DataAccessException("No record found for case: " + caseId);
     } else if (result.size() > 1) {
-      throw new DataAccessException(
-          "Multiple records found for case: " + caseId + " in getPatientIdByCaseId");
+      throw new DataAccessException("Multiple patient IDs found for case: " + caseId);
     }
 
     return result.get(0);

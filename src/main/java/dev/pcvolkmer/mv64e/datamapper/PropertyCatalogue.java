@@ -21,11 +21,9 @@
 package dev.pcvolkmer.mv64e.datamapper;
 
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
-import dev.pcvolkmer.mv64e.datamapper.genes.GeneUtils;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -34,10 +32,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * @author Paul-Christian Volkmer
  * @since 0.1
  */
-@NullUnmarked
+@NullMarked
 public class PropertyCatalogue {
 
-  private static final Logger logger = LoggerFactory.getLogger(GeneUtils.class);
   private final JdbcTemplate jdbcTemplate;
 
   private PropertyCatalogue(JdbcTemplate jdbcTemplate) {
@@ -67,13 +64,7 @@ public class PropertyCatalogue {
    * @param version The entries version
    * @return The sub procedures
    */
-  public Entry getByCodeAndVersion(String code, Integer version) {
-    if (code == null || version == null) {
-      logger.error(
-          String.format(
-              "Cannot request property catalogue entry for '%s' version '%d'", code, version));
-      return null;
-    }
+  public Entry getByCodeAndVersion(String code, int version) {
     try {
       return this.jdbcTemplate.queryForObject(
           "SELECT code, shortdesc, e.description, v.oid AS version_oid, v.description AS version_description FROM property_catalogue_version_entry e"
@@ -100,8 +91,8 @@ public class PropertyCatalogue {
     private final String code;
     private final String shortdesc;
     private final String description;
-    private final String versionOid;
-    private final String versionDescription;
+    @Nullable private final String versionOid;
+    @Nullable private final String versionDescription;
 
     public Entry(String code, String shortdesc, String description) {
       this(code, shortdesc, description, null, null);
@@ -133,10 +124,12 @@ public class PropertyCatalogue {
       return shortdesc;
     }
 
+    @Nullable
     public String getVersionOid() {
       return versionOid;
     }
 
+    @Nullable
     public String getVersionDescription() {
       return versionDescription;
     }
