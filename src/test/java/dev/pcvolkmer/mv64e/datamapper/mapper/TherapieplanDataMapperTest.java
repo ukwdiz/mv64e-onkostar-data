@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 
 import dev.pcvolkmer.mv64e.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.ResultSet;
@@ -106,7 +107,8 @@ class TherapieplanDataMapperTest {
         .when(resultSet)
         .getString(anyString());
 
-    doAnswer(
+    lenient()
+        .doAnswer(
             invocationOnMock -> {
               var columnName = invocationOnMock.getArgument(0, String.class);
               return testData.get(columnName);
