@@ -47,10 +47,8 @@ public abstract class AbstractEinzelempfehlungDataMapper<T> extends AbstractSubf
     this.therapieplanCatalogue = therapieplanCatalogue;
   }
 
-  protected RecommendationPriorityCoding getRecommendationPriorityCoding(
-      String code, Integer version) {
+  protected RecommendationPriorityCoding getRecommendationPriorityCoding(String code, int version) {
     if (code == null
-        || version == null
         || !Arrays.stream(RecommendationPriorityCodingCode.values())
             .map(RecommendationPriorityCodingCode::toValue)
             .collect(Collectors.toSet())
@@ -79,7 +77,11 @@ public abstract class AbstractEinzelempfehlungDataMapper<T> extends AbstractSubf
     var resultBuilder = LevelOfEvidence.builder();
 
     var evidenzlevel = resultSet.getString("evidenzlevel");
-    if (evidenzlevel == null) return null;
+
+    if (null == evidenzlevel) {
+      return null;
+    }
+
     switch (evidenzlevel) {
       case "1":
         resultBuilder.grading(
