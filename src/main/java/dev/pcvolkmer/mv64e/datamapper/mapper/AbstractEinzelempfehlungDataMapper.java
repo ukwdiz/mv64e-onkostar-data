@@ -69,6 +69,11 @@ public abstract class AbstractEinzelempfehlungDataMapper<T> extends AbstractSubf
 
   @Nullable
   protected RecommendationPriorityCoding getRecommendationPriority(ResultSet resultSet) {
+    var prio = resultSet.getInteger("prio");
+    if (null == prio) {
+      log.warn("No priority found for recommendation {}", resultSet.getId());
+      return null;
+    }
     return getRecommendationPriorityCoding(resultSet.getInteger("prio"));
   }
 
