@@ -134,7 +134,7 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
 
   @Nullable
   private MtbDiagnosisGuidelineTreatmentStatusCoding getMtbDiagnosisGuidelineTreatmentStatusCoding(
-      @NonNull final String code, final int version) {
+      @NonNull final String code, @NonNull final Integer version) {
     if (!Arrays.stream(MtbDiagnosisGuidelineTreatmentStatusCodingCode.values())
         .map(MtbDiagnosisGuidelineTreatmentStatusCodingCode::toValue)
         .collect(Collectors.toSet())
