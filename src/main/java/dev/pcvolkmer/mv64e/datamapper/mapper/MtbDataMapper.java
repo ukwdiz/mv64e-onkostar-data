@@ -20,6 +20,8 @@
 
 package dev.pcvolkmer.mv64e.datamapper.mapper;
 
+import static dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog.tryAndLogWithResult;
+
 import dev.pcvolkmer.mv64e.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.*;
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
@@ -233,11 +235,26 @@ public class MtbDataMapper implements DataMapper<Mtb> {
       kpaPatient.setId(patient.getId());
       kpaPatient.setAddress(patient.getAddress());
 
-      var diagnosis = diagnosisDataMapper.getById(kpaId);
-
       var specimens =
-          molekulargenetikToSpecimenDataMapper.getAllByKpaId(
-              kpaId, Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build());
+          tryAndLogWithResult(() -> diagnosisDataMapper.getById(kpaId))
+              .andTryWithResult(
+                  diagnosis -> {
+                    // DNPM Klinik/Anamnese
+                    resultBuilder.diagnoses(List.of(diagnosis));
+                    return diagnosis;
+                  })
+              .andTryWithResult(
+                  diagnosis ->
+                      molekulargenetikToSpecimenDataMapper.getAllByKpaId(
+                          kpaId,
+                          Reference.builder().id(diagnosis.getId()).type("MTBDiagnosis").build()))
+              .andTryWithResult(
+                  specimenList -> {
+                    // Tumorproben
+                    resultBuilder.specimens(specimenList);
+                    return specimenList;
+                  })
+              .okOrNull();
 
       var carePlans =
           therapieplanCatalogue.getByKpaId(kpaId).stream().map(therapieplanDataMapper::getById);
@@ -255,7 +272,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
       // interpretation not
       // implemented
 
-      if (this.filterIncomplete) {
+      if (this.filterIncomplete && specimens != null) {
         carePlans =
             carePlans.peek(
                 therapieplan ->
@@ -283,18 +300,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
       resultBuilder
           .patient(kpaPatient)
           .episodesOfCare(List.of(mtbEpisodeDataMapper.getById(kpaId)))
-          // DNPM Klinik/Anamnese
-          .diagnoses(List.of(diagnosis))
-          .guidelineProcedures(prozedurMapper.getByParentId(kpaId))
-          .guidelineTherapies(therapielinieMapper.getByParentId(kpaId))
           .performanceStatus(ecogMapper.getByParentId(kpaId))
           .familyMemberHistories(verwandteDataMapper.getByParentId(kpaId))
           // Vorbefunde
           .priorDiagnosticReports(kpaVorbefundeDataMapper.getByParentId(kpaId))
           // Histologie-Berichte
           .histologyReports(kpaHistologieDataMapper.getByParentId(kpaId))
-          // Tumorproben
-          .specimens(specimens)
           // DNPM Therapieplan
           .carePlans(carePlans.collect(Collectors.toList()))
           // NGS Berichte
@@ -304,14 +315,20 @@ public class MtbDataMapper implements DataMapper<Mtb> {
           // MSI Befunde
           .msiFindings(msiFindings.collect(Collectors.toList()));
 
+      tryAndLogWithResult(() -> prozedurMapper.getByParentId(kpaId))
+          .ok()
+          .ifPresent(resultBuilder::guidelineProcedures);
+
+      tryAndLogWithResult(() -> therapielinieMapper.getByParentId(kpaId))
+          .ok()
+          .ifPresent(resultBuilder::guidelineTherapies);
+
       // Consent - as far as present
-      var consentId = kpaCatalogue.getById(kpaId).getString("consentmv64e");
+      var consentId = kpaCatalogue.getById(kpaId).getInteger("consentmv64e");
       if (null != consentId) {
         resultBuilder.metadata(
             MvhMetadata.builder()
-                .modelProjectConsent(
-                    consentMvDataMapper.getById(
-                        kpaCatalogue.getById(kpaId).getInteger("consentmv64e")))
+                .modelProjectConsent(consentMvDataMapper.getById(consentId))
                 .type(MvhSubmissionType.INITIAL)
                 .build());
       }
