@@ -9,15 +9,15 @@ plugins {
 }
 
 group = "dev.pcvolkmer.mv64e"
-version = "0.2.3" // x-release-please-version
+version = "0.2.4" // x-release-please-version
 
 var versions = mapOf(
-    "mtb-dto" to "0.1.1",
+    "mtb-dto" to "0.1.2",
     "commons-csv" to "1.10.0",
     "slf4j" to "2.0.17",
-    "junit" to "5.13.1",
-    "assertj" to "3.27.3",
-    "mockito" to "5.18.0"
+    "junit" to "5.14.1",
+    "assertj" to "3.27.6",
+    "mockito" to "5.21.0"
 )
 
 java {
@@ -57,6 +57,8 @@ dependencies {
     testImplementation("org.assertj:assertj-core:${versions["assertj"]}")
     testImplementation("org.mockito:mockito-core:${versions["mockito"]}")
     testImplementation("org.mockito:mockito-junit-jupiter:${versions["mockito"]}")
+    testImplementation("ch.qos.logback:logback-classic:1.5.21")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     errorprone("com.google.errorprone:error_prone_core:2.31.0")
