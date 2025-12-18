@@ -97,10 +97,8 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
     if (null == histoId) {
       return false;
     }
-    var osMolGen = molekulargenetikCatalogue.getById(histoId);
 
-    var analyseMethodenMerkmalliste = osMolGen.getMerkmalList("AnalyseMethoden");
-    return analyseMethodenMerkmalliste != null && analyseMethodenMerkmalliste.contains("S");
+    return molekulargenetikCatalogue.isOfTypeSeqencing(histoId);
   }
 
   @Nullable
@@ -168,14 +166,14 @@ public class KpaHistologieDataMapper extends AbstractSubformDataMapper<Histology
   @Nullable
   private Coding getTumorMorphologyCoding(ResultSet resultSet) {
     var morphologiePropcatVersion = resultSet.getInteger("morphologie_propcat_version");
+    var morphologie = resultSet.getString("morphologie");
 
-    if (null == morphologiePropcatVersion) {
+    if (null == morphologiePropcatVersion || null == morphologie) {
       return null;
     }
 
     var propertyCatalogueEntry =
-        propertyCatalogue.getByCodeAndVersion(
-            resultSet.getString("morphologie"), morphologiePropcatVersion);
+        propertyCatalogue.getByCodeAndVersion(morphologie, morphologiePropcatVersion);
     if (propertyCatalogueEntry == null) return null;
 
     return Coding.builder()
