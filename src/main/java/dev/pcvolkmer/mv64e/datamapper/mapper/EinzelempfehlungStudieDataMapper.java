@@ -24,6 +24,7 @@ import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapieplanCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
+import dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog;
 import dev.pcvolkmer.mv64e.mtb.MtbStudyEnrollmentRecommendation;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import java.util.List;
@@ -69,7 +70,8 @@ public class EinzelempfehlungStudieDataMapper
             .levelOfEvidence(getLevelOfEvidence(resultSet))
             .study(JsonToStudyMapper.map(resultSet.getString("studien_alle_json")));
 
-    MapperUtils.tryAndReturnOrLog(() -> getRecommendationPriority(resultSet), log)
+    TryAndLog.tryAndLogWithResult(() -> getRecommendationPriority(resultSet), log)
+        .ok()
         .ifPresent(resultBuilder::priority);
 
     // As of now: Simple variant and CSV only!

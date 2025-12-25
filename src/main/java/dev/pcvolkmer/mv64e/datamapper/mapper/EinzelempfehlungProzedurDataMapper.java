@@ -24,6 +24,7 @@ import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapieplanCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
+import dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog;
 import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCoding;
 import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCodingCode;
 import dev.pcvolkmer.mv64e.mtb.ProcedureRecommendation;
@@ -71,7 +72,8 @@ public class EinzelempfehlungProzedurDataMapper
             .issuedOn(this.getCarePlanDate(carePlan))
             .levelOfEvidence(getLevelOfEvidence(resultSet));
 
-    MapperUtils.tryAndReturnOrLog(() -> getRecommendationPriority(resultSet), log)
+    TryAndLog.tryAndLogWithResult(() -> getRecommendationPriority(resultSet), log)
+        .ok()
         .ifPresent(resultBuilder::priority);
 
     final var evidenzlevel = resultSet.getString("evidenzlevel");

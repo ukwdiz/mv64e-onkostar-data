@@ -24,7 +24,6 @@ import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -88,7 +87,7 @@ public abstract class AbstractDataCatalogue implements DataCatalogue {
    * @return List of result set
    */
   public List<ResultSet> getByIdList(List<Integer> ids) {
-    return ids.stream().map(this::getById).filter(Objects::nonNull).collect(Collectors.toList());
+    return ids.stream().map(this::getById).collect(Collectors.toList());
   }
 
   /**

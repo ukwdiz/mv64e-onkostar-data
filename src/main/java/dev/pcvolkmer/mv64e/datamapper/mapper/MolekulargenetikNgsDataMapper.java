@@ -72,9 +72,8 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
 
     if (!catalogue.isOfTypeSeqencing(id)) {
       logger.warn(
-          "Molekulargenetik record with id "
-              + id
-              + " is not of sequencing type. Aborting NGS mapping.");
+          "Molekulargenetik record with id '{}' is not of sequencing type. Aborting NGS mapping.",
+          id);
       return null;
     }
     var builder = SomaticNgsReport.builder();
