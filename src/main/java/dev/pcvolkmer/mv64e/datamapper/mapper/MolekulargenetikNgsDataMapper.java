@@ -349,6 +349,8 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
   private NgsReportMetadata getNgsReportMetadata(final String artdersequenzierung) {
     var resultBuilder = NgsReportMetadata.builder();
 
+    logger.warn("No values for NGS report metadata available");
+
     switch (artdersequenzierung) {
       // TODO: Replace with real data in properties file
       default:
@@ -357,7 +359,6 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             .kitManufacturer("")
             .pipeline("")
             .kitType("")
-            .kitManufacturer("")
             .referenceGenome("");
     }
 
