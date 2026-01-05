@@ -181,4 +181,4 @@ Werte kleiner als 1 werden ignoriert.
 **Vorsicht**: Die Anzahl der ausgeführten Tests kann sehr hoch sein und entsprechend lange dauern.
 
 Für $`n`$ = 8 Spalten (exklusive `id`) und `maxNullColumns = 4`  gilt bereits:
-$`\sum_{r=1}^{4} {n! \over r!(n-i)!} = 162`$ Tests.
+$`\sum_{r=1}^{4} {n! \over r!(n-r)!} = 162`$ Tests.
