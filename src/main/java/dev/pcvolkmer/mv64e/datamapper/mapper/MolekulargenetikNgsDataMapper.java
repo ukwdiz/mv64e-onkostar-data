@@ -66,10 +66,17 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
    * @param id The database id of the procedure data set
    * @return The loaded Procedure
    */
+  @Nullable
   @Override
   public SomaticNgsReport getById(final int id) {
     var data = catalogue.getById(id);
 
+    if (!catalogue.isOfTypeSeqencing(id)) {
+      logger.warn(
+          "Molekulargenetik record with id '{}' is not of sequencing type. Aborting NGS mapping.",
+          id);
+      return null;
+    }
     var builder = SomaticNgsReport.builder();
     builder
         .id(data.getString("id"))
@@ -97,6 +104,7 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
     return this.catalogue.getIdsByKpaId(kpaId).stream()
         .distinct()
         .map(this::getById)
+        .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
@@ -118,6 +126,7 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             molgenIdsFromHisto != null ? molgenIdsFromHisto.stream() : Stream.empty())
         .distinct()
         .map(this::getById)
+        .filter(Objects::nonNull)
         .distinct()
         .collect(Collectors.toList());
   }
@@ -341,6 +350,8 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
   private NgsReportMetadata getNgsReportMetadata(final String artdersequenzierung) {
     var resultBuilder = NgsReportMetadata.builder();
 
+    logger.warn("No values for NGS report metadata available");
+
     switch (artdersequenzierung) {
       // TODO: Replace with real data in properties file
       default:
@@ -349,7 +360,6 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             .kitManufacturer("")
             .pipeline("")
             .kitType("")
-            .kitManufacturer("")
             .referenceGenome("");
     }
 

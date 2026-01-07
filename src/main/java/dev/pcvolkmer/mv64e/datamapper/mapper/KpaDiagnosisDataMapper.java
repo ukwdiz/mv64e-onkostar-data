@@ -112,13 +112,12 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
         .germlineCodes(getGermlineCodes(id))
         .histology(getHistologyReferences(id));
 
-    final var leitlinienstatus = data.getString("leitlinienstatus");
-    final var leitlinienstatusPropcatVersion = data.getInteger("leitlinienstatus_propcat_version");
-    if (null != leitlinienstatus && null != leitlinienstatusPropcatVersion) {
-      builder.guidelineTreatmentStatus(
-          getMtbDiagnosisGuidelineTreatmentStatusCoding(
-              leitlinienstatus, leitlinienstatusPropcatVersion));
-    }
+    data.ifPropertyNotNull(
+        "leitlinienstatus",
+        String.class,
+        (value, version) ->
+            builder.guidelineTreatmentStatus(
+                getMtbDiagnosisGuidelineTreatmentStatusCoding(value, version)));
 
     return builder.build();
   }
@@ -183,7 +182,8 @@ public class KpaDiagnosisDataMapper implements DataMapper<MtbDiagnosis> {
                                 .system("https://www.basisdatensatz.de/feld/161/grading")
                                 // TODO Annahme: "v1" ist Version 2025
                                 .version(
-                                    propertyEntry.getVersionDescription().equals("v1")
+                                    null != propertyEntry.getVersionDescription()
+                                            && propertyEntry.getVersionDescription().equals("v1")
                                         ? "2025"
                                         : null)
                                 .display(propertyEntry.getShortdesc())

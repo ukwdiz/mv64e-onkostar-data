@@ -24,6 +24,7 @@ import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapieplanCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
+import dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog;
 import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCoding;
 import dev.pcvolkmer.mv64e.mtb.MtbProcedureRecommendationCategoryCodingCode;
 import dev.pcvolkmer.mv64e.mtb.ProcedureRecommendation;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -71,14 +73,9 @@ public class EinzelempfehlungProzedurDataMapper
             .issuedOn(this.getCarePlanDate(carePlan))
             .levelOfEvidence(getLevelOfEvidence(resultSet));
 
-    MapperUtils.tryAndReturnOrLog(() -> getRecommendationPriority(resultSet), log)
+    TryAndLog.tryAndLogWithResult(() -> getRecommendationPriority(resultSet), log)
+        .ok()
         .ifPresent(resultBuilder::priority);
-
-    final var evidenzlevel = resultSet.getString("evidenzlevel");
-    final var evidenzlevelPropcat = resultSet.getInteger("evidenzlevel_propcat_version");
-    if (null != evidenzlevel && null != evidenzlevelPropcat) {
-      resultBuilder.priority(getRecommendationPriorityCoding(evidenzlevel, evidenzlevelPropcat));
-    }
 
     // Nur der erste Eintrag!
     final var artDerTherapie = resultSet.getMerkmalList("art_der_therapie");
@@ -112,6 +109,7 @@ public class EinzelempfehlungProzedurDataMapper
         .collect(Collectors.toList());
   }
 
+  @Nullable
   private MtbProcedureRecommendationCategoryCoding getMtbProcedureRecommendationCategoryCoding(
       String code) {
     if (code == null

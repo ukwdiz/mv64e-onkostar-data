@@ -1,6 +1,7 @@
 package dev.pcvolkmer.mv64e.datamapper.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -8,18 +9,26 @@ import static org.mockito.Mockito.when;
 import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapieplanCatalogue;
+import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
+import dev.pcvolkmer.mv64e.datamapper.test.Column;
+import dev.pcvolkmer.mv64e.datamapper.test.DateColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.PropcatColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.TestResultSet;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullExtension;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullTest;
 import dev.pcvolkmer.mv64e.mtb.*;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, FuzzNullExtension.class})
 class EinzelempfehlungStudieDataMapperTest {
 
   EinzelempfehlungCatalogue catalogue;
@@ -35,22 +44,22 @@ class EinzelempfehlungStudieDataMapperTest {
     // Care Plan
     doAnswer(
             invocationOnMock ->
-                ResultSet.from(
-                    Map.of(
-                        "datum",
-                        new java.sql.Date(
-                            Date.from(Instant.parse("2025-07-11T12:00:00Z")).getTime()),
-                        "ref_dnpm_klinikanamnese",
-                        "4711")))
+                TestResultSet.withColumns(
+                    Column.name(Column.ID).value(100),
+                    DateColumn.name("datum").value("2025-07-11"),
+                    Column.name("ref_dnpm_klinikanamnese").value("4711")))
         .when(therapieplanCatalogue)
         .getById(anyInt());
   }
 
   @Test
   void shouldMapEinzelempfehlungEvenWithoutEvidenzlevel() {
-    Map<String, Object> testData =
-        Map.of("id", 1, "hauptprozedur_id", 100, "patienten_id", 42, "prio", 1);
-    var resultSet = ResultSet.from(testData);
+    var resultSet =
+        TestResultSet.withColumns(
+            Column.name(Column.ID).value(1),
+            Column.name(Column.HAUPTPROZEDUR_ID).value(100),
+            Column.name(Column.PATIENTEN_ID).value(42),
+            Column.name("prio").value(1));
 
     when(catalogue.getById(anyInt())).thenReturn(resultSet);
 
@@ -60,23 +69,14 @@ class EinzelempfehlungStudieDataMapperTest {
 
   @Test
   void shouldMapEvidenzlevel() {
-    Map<String, Object> testData =
-        Map.of(
-            "id",
-            1,
-            "hauptprozedur_id",
-            100,
-            "patienten_id",
-            42,
-            "prio",
-            1,
-            "evidenzlevel",
-            "3",
-            "evidenzlevel_publication",
-            "12345678\n12.2024/123",
-            "evidenzlevel_propcat_version",
-            42);
-    var resultSet = ResultSet.from(testData);
+    var resultSet =
+        TestResultSet.withColumns(
+            Column.name(Column.ID).value(1),
+            Column.name(Column.HAUPTPROZEDUR_ID).value(100),
+            Column.name(Column.PATIENTEN_ID).value(42),
+            Column.name("prio").value(1),
+            PropcatColumn.name("evidenzlevel").value("3"),
+            Column.name("evidenzlevel_publication").value("12345678\n12.2024/123"));
 
     when(catalogue.getById(anyInt())).thenReturn(resultSet);
 
@@ -121,21 +121,13 @@ class EinzelempfehlungStudieDataMapperTest {
 
   @Test
   void shouldMapEvidenzlevelWithoutPublications() {
-    Map<String, Object> testData =
-        Map.of(
-            "id",
-            1,
-            "hauptprozedur_id",
-            100,
-            "patienten_id",
-            42,
-            "prio",
-            1,
-            "evidenzlevel",
-            "3",
-            "evidenzlevel_propcat_version",
-            42);
-    var resultSet = ResultSet.from(testData);
+    var resultSet =
+        TestResultSet.withColumns(
+            Column.name(Column.ID).value(1),
+            Column.name(Column.HAUPTPROZEDUR_ID).value(100),
+            Column.name(Column.PATIENTEN_ID).value(42),
+            Column.name("prio").value(1),
+            PropcatColumn.name("evidenzlevel").value("3"));
 
     when(catalogue.getById(anyInt())).thenReturn(resultSet);
 
@@ -162,9 +154,12 @@ class EinzelempfehlungStudieDataMapperTest {
 
   @Test
   void shouldNotMapEmptyEvidenzlevel() {
-    Map<String, Object> testData =
-        Map.of("id", 1, "hauptprozedur_id", 100, "patienten_id", 42, "prio", 1);
-    var resultSet = ResultSet.from(testData);
+    var resultSet =
+        TestResultSet.withColumns(
+            Column.name(Column.ID).value(1),
+            Column.name(Column.HAUPTPROZEDUR_ID).value(100),
+            Column.name(Column.PATIENTEN_ID).value(42),
+            Column.name("prio").value(1));
 
     when(catalogue.getById(anyInt())).thenReturn(resultSet);
 
@@ -175,9 +170,12 @@ class EinzelempfehlungStudieDataMapperTest {
 
   @Test
   void shouldMapIssuedOn() {
-    Map<String, Object> testData =
-        Map.of("id", 1, "hauptprozedur_id", 100, "patienten_id", 42, "prio", 1);
-    var resultSet = ResultSet.from(testData);
+    var resultSet =
+        TestResultSet.withColumns(
+            Column.name(Column.ID).value(1),
+            Column.name(Column.HAUPTPROZEDUR_ID).value(100),
+            Column.name(Column.PATIENTEN_ID).value(42),
+            Column.name("prio").value(1));
 
     when(catalogue.getById(anyInt())).thenReturn(resultSet);
 
@@ -188,9 +186,12 @@ class EinzelempfehlungStudieDataMapperTest {
 
   @Test
   void shouldMapDefaultLowestPrio() {
-    Map<String, Object> testData =
-        Map.of("id", 1, "hauptprozedur_id", 100, "patienten_id", 42, "prio", 99);
-    var resultSet = ResultSet.from(testData);
+    var resultSet =
+        TestResultSet.withColumns(
+            Column.name(Column.ID).value(1),
+            Column.name(Column.HAUPTPROZEDUR_ID).value(100),
+            Column.name(Column.PATIENTEN_ID).value(42),
+            Column.name("prio").value(99));
 
     when(catalogue.getById(anyInt())).thenReturn(resultSet);
 
@@ -198,5 +199,36 @@ class EinzelempfehlungStudieDataMapperTest {
     assertThat(actual).isNotNull();
     assertThat(actual.getIssuedOn()).isEqualTo(Date.from(Instant.parse("2025-07-11T00:00:00Z")));
     assertThat(actual.getPriority().getCode()).isEqualTo(RecommendationPriorityCodingCode.CODE_4);
+  }
+
+  @FuzzNullTest(
+      initMethod = "fuzzInitData",
+      excludeColumns = {Column.PATIENTEN_ID, Column.HAUPTPROZEDUR_ID})
+  void fuzzTestNullColumns(final ResultSet resultSet) {
+    when(catalogue.getById(anyInt())).thenReturn(resultSet);
+
+    var actual = this.mapper.getById(1);
+    assertThat(actual).isNotNull();
+  }
+
+  @FuzzNullTest(
+      initMethod = "fuzzInitData",
+      includeColumns = {Column.PATIENTEN_ID, Column.HAUPTPROZEDUR_ID})
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  void fuzzTestNullColumnsThrowsDataAccessException(final ResultSet resultSet) {
+    when(catalogue.getById(anyInt())).thenReturn(resultSet);
+
+    var ex = assertThrows(DataAccessException.class, () -> this.mapper.getById(1));
+    assertThat(ex.getMessage()).isIn("No patient id found", "Cannot fetch 'Therapieplan'");
+  }
+
+  static ResultSet fuzzInitData() {
+    return TestResultSet.withColumns(
+        Column.name(Column.ID).value(1),
+        Column.name("hauptprozedur_id").value(100),
+        Column.name("patienten_id").value(42),
+        Column.name("prio").value(1),
+        PropcatColumn.name("evidenzlevel").value("1"),
+        Column.name("evidenzlevel_publication").value("12345678\n12.2024/123"));
   }
 }

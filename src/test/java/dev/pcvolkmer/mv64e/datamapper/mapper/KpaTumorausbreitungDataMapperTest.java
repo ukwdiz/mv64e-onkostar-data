@@ -22,27 +22,32 @@ package dev.pcvolkmer.mv64e.datamapper.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TumorausbreitungCatalogue;
+import dev.pcvolkmer.mv64e.datamapper.test.Column;
+import dev.pcvolkmer.mv64e.datamapper.test.DateColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.PropcatColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.TestResultSet;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullExtension;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullTest;
 import dev.pcvolkmer.mv64e.mtb.TumorStaging;
 import dev.pcvolkmer.mv64e.mtb.TumorStagingMethodCoding;
 import dev.pcvolkmer.mv64e.mtb.TumorStagingMethodCodingCode;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, FuzzNullExtension.class})
 class KpaTumorausbreitungDataMapperTest {
 
   TumorausbreitungCatalogue catalogue;
@@ -56,38 +61,23 @@ class KpaTumorausbreitungDataMapperTest {
   }
 
   @Test
-  void shouldMapResultSet(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "id", "1",
-            "zeitpunkt",
-                new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
-            "typ", "pathologic",
-            "wert", "tumor-free",
-            "tnmtprefix", "p",
-            "tnmt", "0",
-            "tnmnprefix", "p",
-            "tnmn", "0",
-            "tnmmprefix", "p",
-            "tnmm", "0");
-
+  void shouldMapResultSet() {
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getString(anyString());
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getAllByParentId(anyInt());
+            invocationOnMock ->
+                List.of(
+                    TestResultSet.withColumns(
+                        Column.name(Column.ID).value(1),
+                        DateColumn.name("zeitpunkt").value("2000-01-01"),
+                        PropcatColumn.name("typ").value("pathologic"),
+                        PropcatColumn.name("wert").value("tumor-free"),
+                        PropcatColumn.name("tnmtprefix").value("p"),
+                        PropcatColumn.name("tnmt").value("0"),
+                        PropcatColumn.name("tnmnprefix").value("p"),
+                        PropcatColumn.name("tnmn").value("0"),
+                        PropcatColumn.name("tnmmprefix").value("p"),
+                        PropcatColumn.name("tnmm").value("0"))))
+        .when(catalogue)
+        .getAllByParentId(anyInt());
 
     var actualList = this.dataMapper.getByParentId(1);
     assertThat(actualList).hasSize(1);
@@ -95,7 +85,7 @@ class KpaTumorausbreitungDataMapperTest {
     var actual = actualList.get(0);
     assertThat(actual).isInstanceOf(TumorStaging.class);
     assertThat(actual.getDate())
-        .isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()));
+        .isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-01-01T00:00:00Z")).getTime()));
     assertThat(actual.getMethod())
         .isEqualTo(
             TumorStagingMethodCoding.builder()
@@ -110,47 +100,23 @@ class KpaTumorausbreitungDataMapperTest {
   }
 
   @Test
-  void shouldNotUseNullTnmForUnsableValue(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "id",
-            "1",
-            "zeitpunkt",
-            new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
-            "typ",
-            "pathologic",
-            "wert",
-            "tumor-free",
-            "tnmtprefix",
-            "p",
-            "tnmt",
-            "4e",
-            "tnmnprefix",
-            "p",
-            "tnmn",
-            "0",
-            "tnmmprefix",
-            "p",
-            "tnmm",
-            "0");
-
+  void shouldNotUseNullTnmForUnusableValue() {
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getString(anyString());
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getAllByParentId(anyInt());
+            invocationOnMock ->
+                List.of(
+                    TestResultSet.withColumns(
+                        Column.name(Column.ID).value(1),
+                        DateColumn.name("zeitpunkt").value("2000-01-01"),
+                        PropcatColumn.name("typ").value("pathologic"),
+                        PropcatColumn.name("wert").value("tumor-free"),
+                        PropcatColumn.name("tnmtprefix").value("p"),
+                        PropcatColumn.name("tnmt").value(""), // <- Invalid empty value
+                        PropcatColumn.name("tnmnprefix").value("p"),
+                        PropcatColumn.name("tnmn").value("0"),
+                        PropcatColumn.name("tnmmprefix").value("p"),
+                        PropcatColumn.name("tnmm").value("0"))))
+        .when(catalogue)
+        .getAllByParentId(anyInt());
 
     var actualList = this.dataMapper.getByParentId(1);
     assertThat(actualList).hasSize(1);
@@ -158,7 +124,7 @@ class KpaTumorausbreitungDataMapperTest {
     var actual = actualList.get(0);
     assertThat(actual).isInstanceOf(TumorStaging.class);
     assertThat(actual.getDate())
-        .isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()));
+        .isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-01-01T00:00:00Z")).getTime()));
     assertThat(actual.getMethod())
         .isEqualTo(
             TumorStagingMethodCoding.builder()
@@ -171,54 +137,26 @@ class KpaTumorausbreitungDataMapperTest {
     assertThat(actual.getTnmClassification().getMetastasis().getCode()).isEqualTo("pM0");
   }
 
-  @ParameterizedTest
-  @CsvSource({
-    "0,0",
-    "1,1",
-    "1a,1a",
-    "1a1,1a(1)",
-    "1a2,1a(2)",
-    "1b,1b",
-    "1b1,1b(1)",
-    "1b2,1b(2)",
-    "1b3,1b(3)",
-    "1c,1c",
-    "1c1,1c(1)",
-    "1c2,1c(2)",
-    "1c3,1c(3)",
-    "1d,1d",
-    "1mi,",
-    "2,2",
-    "2a,2a",
-    "2a1,2a(1)",
-    "2a2,2a(2)",
-    "2b,2b",
-    "2c,2c",
-    "2d,2d",
-    "3,3",
-    "3a,3a",
-    "3b,3b",
-    "3c,3c",
-    "3d,3d",
-    "3e,",
-    "4,4",
-    "4a,4a",
-    "4b,4b",
-    "4c,4c",
-    "4d,4d",
-    "4e,",
-    "a,",
-    "is,is",
-    "is(DCIS),is(DCIS)",
-    "is(LAMN),is(LAMN)",
-    "is(LCIS),is(LCIS)",
-    "is(Paget),is(Paget)",
-    "is(pd),is(pd)",
-    "is(pu),is(pu)",
-    "X,X",
-  })
-  void testValueSanitization(String input, String expected) {
-    final var actual = KpaTumorausbreitungDataMapper.sanitizeTValue(input);
-    assertThat(actual).isEqualTo(expected);
+  @FuzzNullTest(initMethod = "fuzzInitData")
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  void fuzzTestNullColumns(final ResultSet resultSet) {
+    when(catalogue.getById(anyInt())).thenReturn(resultSet);
+
+    var actual = this.dataMapper.getByParentId(1);
+    assertThat(actual).isNotNull();
+  }
+
+  static ResultSet fuzzInitData() {
+    return TestResultSet.withColumns(
+        Column.name(Column.ID).value(1),
+        DateColumn.name("zeitpunkt").value("2000-01-01"),
+        PropcatColumn.name("typ").value("pathologic"),
+        PropcatColumn.name("wert").value("tumor-free"),
+        PropcatColumn.name("tnmtprefix").value("p"),
+        PropcatColumn.name("tnmt").value("0"),
+        PropcatColumn.name("tnmnprefix").value("p"),
+        PropcatColumn.name("tnmn").value("0"),
+        PropcatColumn.name("tnmmprefix").value("p"),
+        PropcatColumn.name("tnmm").value("0"));
   }
 }

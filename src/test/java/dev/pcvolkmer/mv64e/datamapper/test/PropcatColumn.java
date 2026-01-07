@@ -18,24 +18,41 @@
  *
  */
 
-package dev.pcvolkmer.mv64e.datamapper.mapper;
+package dev.pcvolkmer.mv64e.datamapper.test;
 
-import org.jspecify.annotations.Nullable;
+import java.util.Arrays;
 
 /**
- * General interface for all data mappers
+ * Represents a propcat column in a test result set, having a value and a propcat version.
  *
- * @param <T> The destination type
  * @author Paul-Christian Volkmer
- * @since 0.1
+ * @since 0.3.2
  */
-public interface DataMapper<T> {
+public class PropcatColumn extends Column {
+
+  public PropcatColumn(String name) {
+    super(name);
+  }
 
   /**
-   * Loads a data set from database and maps it into destination data type
+   * Creates a new column with the given name.
    *
-   * @param id The database id of the root procedure data set
-   * @return The data set to be loaded
+   * @param name The name of the column.
+   * @return A new column instance.
    */
-  @Nullable T getById(int id);
+  public static PropcatColumn name(String name) {
+    return new PropcatColumn(name);
+  }
+
+  /**
+   * Sets multiple propcat values for the column. This reflects values in '..._merkmale' tables in
+   * the database.
+   *
+   * @param values The values to set.
+   * @return The column instance.
+   */
+  public Column values(String... values) {
+    this.value = Arrays.asList(values);
+    return this;
+  }
 }

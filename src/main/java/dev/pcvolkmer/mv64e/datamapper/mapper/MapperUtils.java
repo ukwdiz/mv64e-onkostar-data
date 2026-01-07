@@ -20,8 +20,7 @@
 
 package dev.pcvolkmer.mv64e.datamapper.mapper;
 
-import static dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog.tryAndLogWithResult;
-
+import dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.jspecify.annotations.NonNull;
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author Paul-Christian Volkmer
  * @since 0.2
  */
+@Deprecated(since = "0.3.1")
 public class MapperUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(MapperUtils.class);
@@ -46,25 +46,33 @@ public class MapperUtils {
    * Executes supplier and returns Optional.empty() if an IgnorableMappingException occurs. The
    * exceptions message will be logged as error.
    *
+   * @deprecated Use {@link
+   *     dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog#tryAndLogWithResult(Supplier)}
+   *     instead.
    * @param supplier The supplier to be executed
    * @return An optional containing the supplied value or empty option.
    * @param <T> The type of the supplied value
    */
+  @Deprecated(since = "0.3.1")
   public static <T> Optional<T> tryAndReturnOrLog(@NonNull final Supplier<T> supplier) {
-    return tryAndLogWithResult(supplier, logger).ok();
+    return TryAndLog.tryAndLogWithResult(supplier, logger).ok();
   }
 
   /**
    * Executes supplier and returns Optional.empty() if an IgnorableMappingException occurs. The
    * exceptions message will be logged as error.
    *
+   * @deprecated Use {@link
+   *     dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog#tryAndLogWithResult(Supplier)}
+   *     instead.
    * @param supplier The supplier to be executed
    * @param logger The logger to be used for logging the exception message
    * @return An optional containing the supplied value or empty option.
    * @param <T> The type of the supplied value
    */
+  @Deprecated(since = "0.3.1")
   public static <T> Optional<T> tryAndReturnOrLog(
       @NonNull final Supplier<T> supplier, @NonNull final Logger logger) {
-    return tryAndLogWithResult(supplier, logger).ok();
+    return TryAndLog.tryAndLogWithResult(supplier, logger).ok();
   }
 }

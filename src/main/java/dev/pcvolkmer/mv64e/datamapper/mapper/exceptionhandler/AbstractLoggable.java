@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 
 public abstract class AbstractLoggable {
 
-  protected Logger logger;
+  protected final Logger logger;
 
   protected AbstractLoggable(Logger logger) {
     this.logger = logger;

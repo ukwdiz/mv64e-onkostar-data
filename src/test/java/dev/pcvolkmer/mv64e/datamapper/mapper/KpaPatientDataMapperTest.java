@@ -24,22 +24,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import dev.pcvolkmer.mv64e.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.KpaCatalogue;
+import dev.pcvolkmer.mv64e.datamapper.test.Column;
+import dev.pcvolkmer.mv64e.datamapper.test.DateColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.PropcatColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.TestResultSet;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullExtension;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullTest;
 import dev.pcvolkmer.mv64e.mtb.*;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, FuzzNullExtension.class})
 class KpaPatientDataMapperTest {
 
   KpaCatalogue kpaCatalogue;
@@ -60,35 +68,18 @@ class KpaPatientDataMapperTest {
   }
 
   @Test
-  void shouldCreatePatientAlive(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "patient_id", "1",
-            "geschlecht", "m",
-            "geburtsdatum",
-                new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
-            "todesdatum",
-                new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "krankenkasse", "12345678",
-            "artderkrankenkasse", "GKV");
-
+  void shouldCreatePatientDead() {
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getString(anyString());
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    doAnswer(invocationOnMock -> resultSet).when(kpaCatalogue).getById(anyInt());
+            invocationOnMock ->
+                TestResultSet.withColumns(
+                    Column.name("patient_id").value(1),
+                    Column.name("geschlecht").value("m"),
+                    DateColumn.name("geburtsdatum").value("2000-01-01"),
+                    DateColumn.name("todesdatum").value("2024-06-19"),
+                    Column.name("krankenkasse").value("12345678"),
+                    PropcatColumn.name("artderkrankenkasse").value("GKV")))
+        .when(kpaCatalogue)
+        .getById(anyInt());
 
     doAnswer(
             invocationOnMock ->
@@ -101,8 +92,8 @@ class KpaPatientDataMapperTest {
     assertThat(actual).isInstanceOf(Patient.class);
     assertThat(actual.getId()).isEqualTo("1");
     assertThat(actual.getGender().getCode()).isEqualTo(GenderCodingCode.MALE);
-    assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
-    assertThat(actual.getDateOfDeath()).isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
+    assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T00:00:00Z")));
+    assertThat(actual.getDateOfDeath()).isEqualTo(Date.from(Instant.parse("2024-06-19T00:00:00Z")));
     assertThat(actual.getHealthInsurance())
         .isEqualTo(
             HealthInsurance.builder()
@@ -122,33 +113,17 @@ class KpaPatientDataMapperTest {
   }
 
   @Test
-  void shouldCreatePatientDead(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "patient_id", "1",
-            "geschlecht", "w",
-            "geburtsdatum",
-                new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
-            "krankenkasse", "12345678",
-            "artderkrankenkasse", "PKV");
-
+  void shouldCreatePatientAlive() {
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getString(anyString());
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    doAnswer(invocationOnMock -> resultSet).when(kpaCatalogue).getById(anyInt());
+            invocationOnMock ->
+                TestResultSet.withColumns(
+                    Column.name("patient_id").value(1),
+                    Column.name("geschlecht").value("w"),
+                    DateColumn.name("geburtsdatum").value("2000-01-01"),
+                    Column.name("krankenkasse").value("12345678"),
+                    PropcatColumn.name("artderkrankenkasse").value("PKV")))
+        .when(kpaCatalogue)
+        .getById(anyInt());
 
     doAnswer(
             invocationOnMock ->
@@ -161,7 +136,7 @@ class KpaPatientDataMapperTest {
     assertThat(actual).isInstanceOf(Patient.class);
     assertThat(actual.getId()).isEqualTo("1");
     assertThat(actual.getGender().getCode()).isEqualTo(GenderCodingCode.FEMALE);
-    assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T12:00:00Z")));
+    assertThat(actual.getBirthDate()).isEqualTo(Date.from(Instant.parse("2000-01-01T00:00:00Z")));
     assertThat(actual.getDateOfDeath()).isNull();
     assertThat(actual.getHealthInsurance())
         .isEqualTo(
@@ -179,5 +154,34 @@ class KpaPatientDataMapperTest {
                         .system("http://fhir.de/CodeSystem/versicherungsart-de-basis")
                         .build())
                 .build());
+  }
+
+  @FuzzNullTest(
+      initMethod = "fuzzInitData",
+      excludeColumns = {"patienten_id"},
+      maxNullColumns = 2)
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  void fuzzTestNullColumns(final ResultSet resultSet) {
+    when(kpaCatalogue.getById(anyInt())).thenReturn(resultSet);
+
+    doAnswer(
+            invocationOnMock ->
+                new PropertyCatalogue.Entry(
+                    "GKV", "Gesetzliche Krankenversicherung", "Gesetzliche Krankenversicherung"))
+        .when(propertyCatalogue)
+        .getByCodeAndVersion(anyString(), anyInt());
+
+    var actual = this.dataMapper.getById(1);
+    assertThat(actual).isNotNull();
+  }
+
+  static ResultSet fuzzInitData() {
+    return TestResultSet.withColumns(
+        Column.name(Column.PATIENTEN_ID).value(1),
+        Column.name("geschlecht").value("m"),
+        DateColumn.name("geburtsdatum").value("2000-01-01"),
+        DateColumn.name("todesdatum").value("2024-06-19"),
+        Column.name("krankenkasse").value("12345678"),
+        PropcatColumn.name("artderkrankenkasse").value("GKV"));
   }
 }

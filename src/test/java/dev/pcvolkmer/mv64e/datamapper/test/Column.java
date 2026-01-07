@@ -18,24 +18,45 @@
  *
  */
 
-package dev.pcvolkmer.mv64e.datamapper.mapper;
-
-import org.jspecify.annotations.Nullable;
+package dev.pcvolkmer.mv64e.datamapper.test;
 
 /**
- * General interface for all data mappers
+ * Represents a column in a test result set.
  *
- * @param <T> The destination type
  * @author Paul-Christian Volkmer
- * @since 0.1
+ * @since 0.3.2
  */
-public interface DataMapper<T> {
+public class Column {
+
+  public static final String ID = "id";
+  public static final String HAUPTPROZEDUR_ID = "hauptprozedur_id";
+  public static final String PATIENTEN_ID = "patienten_id";
+
+  String name;
+  Object value;
+
+  public Column(String name) {
+    this.name = name;
+  }
 
   /**
-   * Loads a data set from database and maps it into destination data type
+   * Creates a new column with the given name.
    *
-   * @param id The database id of the root procedure data set
-   * @return The data set to be loaded
+   * @param name The name of the column.
+   * @return A new column instance.
    */
-  @Nullable T getById(int id);
+  public static Column name(String name) {
+    return new Column(name);
+  }
+
+  /**
+   * Sets the value of the column.
+   *
+   * @param value The value to set.
+   * @return The column instance.
+   */
+  public Column value(Object value) {
+    this.value = value;
+    return this;
+  }
 }

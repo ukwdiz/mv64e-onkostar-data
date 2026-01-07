@@ -25,6 +25,7 @@ import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapieplanCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
+import dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.TryAndLog;
 import dev.pcvolkmer.mv64e.mtb.*;
 import java.io.IOException;
 import java.util.Arrays;
@@ -76,7 +77,8 @@ public class EinzelempfehlungWirkstoffDataMapper
             .medication(JsonToMedicationMapper.map(resultSet.getString("wirkstoffe_json")))
             .levelOfEvidence(getLevelOfEvidence(resultSet));
 
-    MapperUtils.tryAndReturnOrLog(() -> getRecommendationPriority(resultSet), log)
+    TryAndLog.tryAndLogWithResult(() -> getRecommendationPriority(resultSet), log)
+        .ok()
         .ifPresent(resultBuilder::priority);
 
     final var artDerTherapie = resultSet.getMerkmalList("art_der_therapie");

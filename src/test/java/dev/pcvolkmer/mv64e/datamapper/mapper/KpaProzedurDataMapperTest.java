@@ -29,6 +29,12 @@ import static org.mockito.Mockito.when;
 import dev.pcvolkmer.mv64e.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.ProzedurCatalogue;
+import dev.pcvolkmer.mv64e.datamapper.test.Column;
+import dev.pcvolkmer.mv64e.datamapper.test.DateColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.PropcatColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.TestResultSet;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullExtension;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullTest;
 import dev.pcvolkmer.mv64e.mtb.*;
 import java.time.Instant;
 import java.util.Date;
@@ -39,8 +45,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, FuzzNullExtension.class})
 class KpaProzedurDataMapperTest {
 
   ProzedurCatalogue catalogue;
@@ -56,88 +64,31 @@ class KpaProzedurDataMapperTest {
   }
 
   @Test
-  void shouldGetProceduresWithoutReason(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "id",
-            "1",
-            "beginn",
-            new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
-            "ende",
-            new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "erfassungsdatum",
-            new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "intention",
-            "S",
-            "status",
-            "stopped",
-            "statusgrund",
-            "patient-death",
-            "therapielinie",
-            1L,
-            "typ",
-            "surgery",
-            "patienten_id",
-            "42");
-
+  void shouldGetProceduresWithoutReason() {
     doAnswer(
             invocationOnMock ->
-                Reference.builder()
-                    .id(testData.get("patienten_id").toString())
-                    .type("Patient")
-                    .build())
-        .when(resultSet)
-        .getPatientReference();
+                List.of(
+                    TestResultSet.withColumns(
+                        Column.name(Column.ID).value(1),
+                        Column.name(Column.PATIENTEN_ID).value(42),
+                        DateColumn.name("beginn").value("2000-01-01"),
+                        DateColumn.name("ende").value("2024-06-19"),
+                        DateColumn.name("erfassungsdatum").value("2024-06-19"),
+                        PropcatColumn.name("intention").value("S"),
+                        PropcatColumn.name("status").value("stopped"),
+                        PropcatColumn.name("statusgrund").value("patient-death"),
+                        PropcatColumn.name("typ").value("surgery"),
+                        Column.name("therapielinie").value(1L))))
+        .when(catalogue)
+        .getAllByParentId(anyInt());
 
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getString(anyString());
+            invocationOnMock -> List.of(TestResultSet.withColumns(Column.name(Column.ID).value(1))))
+        .when(catalogue)
+        .getDiseases(anyInt());
 
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getLong(anyString());
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    when(resultSet.getInteger(anyString())).thenReturn(1);
-    when(resultSet.getId()).thenReturn(1);
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getAllByParentId(anyInt());
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getDiseases(anyInt());
-
-    doAnswer(
-            invocationOnMock -> {
-              var testPropertyData =
-                  Map.of(
-                      "S",
-                      new PropertyCatalogue.Entry("S", "Sonstiges", "Sonstiges"),
-                      "stopped",
-                      new PropertyCatalogue.Entry("stopped", "Abgebrochen", "Abgebrochen"),
-                      "patient-death",
-                      new PropertyCatalogue.Entry("patient-death", "Tod", "Tod"),
-                      "surgery",
-                      new PropertyCatalogue.Entry("surgery", "OP", "OP"));
-
-              var code = invocationOnMock.getArgument(0, String.class);
-              return testPropertyData.get(code);
-            })
-        .when(propertyCatalogue)
-        .getByCodeAndVersion(anyString(), anyInt());
+    when(this.propertyCatalogue.getByCodeAndVersion(anyString(), anyInt()))
+        .thenReturn(new PropertyCatalogue.Entry("1", "Version 1", "Version 1"));
 
     var actual = dataMapper.getByParentId(1);
 
@@ -145,142 +96,87 @@ class KpaProzedurDataMapperTest {
   }
 
   @Test
-  void shouldNotGetProceduresWithoutStart(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "id",
-            "1",
-            "ende",
-            new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "erfassungsdatum",
-            new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "intention",
-            "S",
-            "status",
-            "stopped",
-            "statusgrund",
-            "patient-death",
-            "therapielinie",
-            1L,
-            "typ",
-            "surgery",
-            "patienten_id",
-            "42");
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    when(resultSet.getId()).thenReturn(1);
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getAllByParentId(anyInt());
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getDiseases(anyInt());
-
-    var actual = dataMapper.getByParentId(1);
-
-    assertThat(actual).isEmpty();
-  }
-
-  @Test
-  void shouldNotGetProceduresWithoutErfassungsdatum(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "id",
-            "1",
-            "ende",
-            new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "beginn",
-            new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
-            "intention",
-            "S",
-            "status",
-            "stopped",
-            "statusgrund",
-            "patient-death",
-            "therapielinie",
-            1L,
-            "typ",
-            "surgery",
-            "patienten_id",
-            "42");
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    when(resultSet.getId()).thenReturn(1);
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getAllByParentId(anyInt());
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getDiseases(anyInt());
-
-    var actual = dataMapper.getByParentId(1);
-
-    assertThat(actual).isEmpty();
-  }
-
-  @Test
-  void shouldMapResultSet(@Mock ResultSet resultSet) {
-    var testData =
-        Map.of(
-            "id", "1",
-            "beginn", new java.sql.Date(Date.from(Instant.parse("2000-01-01T12:00:00Z")).getTime()),
-            "ende", new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "erfassungsdatum",
-                new java.sql.Date(Date.from(Instant.parse("2024-06-19T12:00:00Z")).getTime()),
-            "intention", "S",
-            "status", "stopped",
-            "statusgrund", "patient-death",
-            "therapielinie", 1L,
-            "typ", "surgery",
-            "patienten_id", "42");
-
+  void shouldNotGetProceduresWithoutStart() {
     doAnswer(
             invocationOnMock ->
-                Reference.builder()
-                    .id(testData.get("patienten_id").toString())
-                    .type("Patient")
-                    .build())
-        .when(resultSet)
-        .getPatientReference();
+                List.of(
+                    TestResultSet.withColumns(
+                        Column.name(Column.ID).value(1),
+                        Column.name(Column.PATIENTEN_ID).value(42),
+                        // No "beginn" column
+                        DateColumn.name("ende").value("2024-06-19"),
+                        DateColumn.name("erfassungsdatum").value("2024-06-19"),
+                        PropcatColumn.name("intention").value("S"),
+                        PropcatColumn.name("status").value("stopped"),
+                        PropcatColumn.name("statusgrund").value("patient-death"),
+                        PropcatColumn.name("typ").value("surgery"),
+                        Column.name("therapielinie").value(1L))))
+        .when(catalogue)
+        .getAllByParentId(anyInt());
 
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getString(anyString());
+            invocationOnMock -> List.of(TestResultSet.withColumns(Column.name(Column.ID).value(1))))
+        .when(catalogue)
+        .getDiseases(anyInt());
+
+    var actual = dataMapper.getByParentId(1);
+
+    assertThat(actual).isEmpty();
+  }
+
+  @Test
+  void shouldNotGetProceduresWithoutErfassungsdatum() {
+    doAnswer(
+            invocationOnMock ->
+                List.of(
+                    TestResultSet.withColumns(
+                        Column.name(Column.ID).value(1),
+                        Column.name(Column.PATIENTEN_ID).value(42),
+                        DateColumn.name("beginn").value("2000-01-01"),
+                        DateColumn.name("ende").value("2024-06-19"),
+                        // No column "erfassungsdatum"
+                        PropcatColumn.name("intention").value("S"),
+                        PropcatColumn.name("status").value("stopped"),
+                        PropcatColumn.name("statusgrund").value("patient-death"),
+                        PropcatColumn.name("typ").value("surgery"),
+                        Column.name("therapielinie").value(1L))))
+        .when(catalogue)
+        .getAllByParentId(anyInt());
 
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getLong(anyString());
+            invocationOnMock -> List.of(TestResultSet.withColumns(Column.name(Column.ID).value(1))))
+        .when(catalogue)
+        .getDiseases(anyInt());
+
+    var actual = dataMapper.getByParentId(1);
+
+    assertThat(actual).isEmpty();
+  }
+
+  @Test
+  void shouldMapResultSet() {
+    doAnswer(
+            invocationOnMock ->
+                List.of(
+                    TestResultSet.withColumns(
+                        Column.name(Column.ID).value(1),
+                        Column.name(Column.PATIENTEN_ID).value(42),
+                        Column.name("ref_einzelempfehlung").value(999),
+                        DateColumn.name("beginn").value("2000-01-01"),
+                        DateColumn.name("ende").value("2024-06-19"),
+                        DateColumn.name("erfassungsdatum").value("2024-06-19"),
+                        PropcatColumn.name("intention").value("S"),
+                        PropcatColumn.name("status").value("stopped"),
+                        PropcatColumn.name("statusgrund").value("patient-death"),
+                        PropcatColumn.name("typ").value("surgery"),
+                        Column.name("therapielinie").value(1L))))
+        .when(catalogue)
+        .getAllByParentId(anyInt());
 
     doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    when(resultSet.getInteger(anyString())).thenReturn(1);
-    when(resultSet.getId()).thenReturn(1);
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getAllByParentId(anyInt());
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getDiseases(anyInt());
+            invocationOnMock -> List.of(TestResultSet.withColumns(Column.name(Column.ID).value(1))))
+        .when(catalogue)
+        .getDiseases(anyInt());
 
     doAnswer(
             invocationOnMock -> {
@@ -308,10 +204,10 @@ class KpaProzedurDataMapperTest {
     assertThat(actual.getPeriod())
         .isEqualTo(
             PeriodDate.builder()
-                .start(Date.from(Instant.parse("2000-01-01T12:00:00Z")))
-                .end(Date.from(Instant.parse("2024-06-19T12:00:00Z")))
+                .start(Date.from(Instant.parse("2000-01-01T00:00:00Z")))
+                .end(Date.from(Instant.parse("2024-06-19T00:00:00Z")))
                 .build());
-    assertThat(actual.getRecordedOn()).isEqualTo(Date.from(Instant.parse("2024-06-19T12:00:00Z")));
+    assertThat(actual.getRecordedOn()).isEqualTo(Date.from(Instant.parse("2024-06-19T00:00:00Z")));
     assertThat(actual.getIntent())
         .isEqualTo(
             MtbTherapyIntentCoding.builder()
@@ -341,5 +237,55 @@ class KpaProzedurDataMapperTest {
                 .display("OP")
                 .system("dnpm-dip/therapy/type")
                 .build());
+    assertThat(actual.getBasedOn()).isEqualTo(Reference.builder().id("999").build());
+  }
+
+  @FuzzNullTest(
+      initMethod = "fuzzInitData",
+      excludeColumns = {Column.PATIENTEN_ID, Column.HAUPTPROZEDUR_ID},
+      maxNullColumns = 2)
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  void fuzzTestNullColumns(final ResultSet resultSet) {
+    when(catalogue.getAllByParentId(anyInt())).thenReturn(List.of(resultSet));
+
+    when(catalogue.getDiseases(anyInt()))
+        .thenReturn(List.of(TestResultSet.withColumns(Column.name(Column.ID).value(1))));
+
+    doAnswer(
+            invocationOnMock -> {
+              var testPropertyData =
+                  Map.of(
+                      "S",
+                      new PropertyCatalogue.Entry("S", "Sonstiges", "Sonstiges"),
+                      "stopped",
+                      new PropertyCatalogue.Entry("stopped", "Abgebrochen", "Abgebrochen"),
+                      "patient-death",
+                      new PropertyCatalogue.Entry("patient-death", "Tod", "Tod"),
+                      "surgery",
+                      new PropertyCatalogue.Entry("surgery", "OP", "OP"));
+
+              var code = invocationOnMock.getArgument(0, String.class);
+              return testPropertyData.get(code);
+            })
+        .when(propertyCatalogue)
+        .getByCodeAndVersion(anyString(), anyInt());
+
+    var actual = this.dataMapper.getByParentId(1);
+    assertThat(actual).isNotNull();
+  }
+
+  static ResultSet fuzzInitData() {
+    return TestResultSet.withColumns(
+        Column.name(Column.ID).value(1),
+        Column.name(Column.PATIENTEN_ID).value(42),
+        Column.name("ref_einzelempfehlung").value(999),
+        DateColumn.name("beginn").value("2000-01-01"),
+        DateColumn.name("ende").value("2024-06-19"),
+        DateColumn.name("erfassungsdatum").value("2024-06-19"),
+        PropcatColumn.name("intention").value("S"),
+        PropcatColumn.name("status").value("stopped"),
+        PropcatColumn.name("statusgrund").value("patient-death"),
+        PropcatColumn.name("typ").value("surgery"),
+        Column.name("therapielinie").value(1L));
   }
 }

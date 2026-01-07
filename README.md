@@ -121,3 +121,64 @@ var additional2 = customMetadataMapper.getLatestByPatientIdAndTumorId("200012345
 ```
 
 Aktuell wird hier die Fallnummer und Krankenversicherungsnummer abgerufen.
+
+## Fuzz Tests
+
+In Tests sind einige Methoden mit `@FuzzNullTest` annotiert.
+Die Implementierung dieser JUnit5-Erweiterung befindet sich in
+[`FuzzNullExtension.java`](src/test/java/dev/pcvolkmer/mv64e/datamapper/test/fuzz/FuzzNullExtension.java).
+
+Entsprechende Test-Methoden simulieren den Fall, dass einzelne Spalten in einem ResultSet auf `null` gesetzt sind.
+Einzige Ausnahme ist die Spalte `id` mit dem Primary Key des Datensatzes; diese bleibt erhalten.
+
+Dadurch können `NullPointerExceptions` bei der Verarbeitung von `null`-Werten in den Mappings besser erkannt werden.
+
+```java
+
+@ExtendWith(FuzzyNullExtension.class)
+class DemoTest {
+   // ...
+
+   @FuzzNullTest(initMethod = "testData")
+   void shouldNotSetIdToNull(final ResultSet resultSet) {
+      assertThat(resultSet.getId()).isEqualTo(1);
+   }
+
+   @FuzzNullTest(initMethod = "testData")
+   void exampleShouldThrowIgnorableMappingExceptionOnNullColumns(final ResultSet resultSet) {
+      // Expect an IgnorableMappingException not NullPointerException!
+      var exception = assertThrows(
+              IgnorableMappingException.class,
+              () -> this.dataMapper.getById(1)
+      );
+      assertThat(exception.getMessage()).isEqualTo("...");
+   }
+
+   static ResultSet testData() {
+      return TestResultSet.withColumns(
+              Column.name(Column.ID).value(1),
+              DateColumn.name("date").value("2025-07-11"),
+              Column.name("value").value("Test")
+      );
+   }
+}
+
+```
+
+Durch `@FuzzNullTest(/*...*/, includeColumns = {"date"})` können einzelne Spalten explizit im Null-Fuzzing eingeschlossen 
+und andere Spalten dadurch implizit ausgeschlossen werden.
+
+Mit `@FuzzNullTest(/*...*/, excludeColumns = {"value"})` können Spalten explizit ausgeschlossen werden.
+Der Einschluss einer Spalte hat Vorrang vor einem Ausschluss.
+
+### Anzahl der Null-Fuzz-Tests
+
+Die Anzahl der Spalten je Test, die maximal auf `null` gesetzt werden, kann durch
+`@FuzzNullTest(/*...*/, maxNullColumns = ...)` festgelegt werden.
+Der Standardwert ist 1 und sollte nicht kleiner als 1 oder größer als die Anzahl der Spalten im ResultSet sein.
+Werte kleiner als 1 werden ignoriert.
+
+**Vorsicht**: Die Anzahl der ausgeführten Tests kann sehr hoch sein und entsprechend lange dauern.
+
+Für $`n`$ = 8 Spalten (exklusive `id`) und `maxNullColumns = 4`  gilt bereits:
+$`\sum_{r=1}^{4} {n! \over r!(n-r)!} = 162`$ Tests.

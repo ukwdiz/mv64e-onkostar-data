@@ -31,6 +31,12 @@ import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.MolekulargenetikCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.VorbefundeCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
+import dev.pcvolkmer.mv64e.datamapper.test.Column;
+import dev.pcvolkmer.mv64e.datamapper.test.DateColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.PropcatColumn;
+import dev.pcvolkmer.mv64e.datamapper.test.TestResultSet;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullExtension;
+import dev.pcvolkmer.mv64e.datamapper.test.fuzz.FuzzNullTest;
 import dev.pcvolkmer.mv64e.mtb.MolecularDiagnosticReportCoding;
 import dev.pcvolkmer.mv64e.mtb.MolecularDiagnosticReportCodingCode;
 import dev.pcvolkmer.mv64e.mtb.PriorDiagnosticReport;
@@ -44,8 +50,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, FuzzNullExtension.class})
 class KpaVorbefundeDataMapperTest {
 
   VorbefundeCatalogue catalogue;
@@ -67,46 +75,19 @@ class KpaVorbefundeDataMapperTest {
   }
 
   @Test
-  void shouldMapResultSet(@Mock ResultSet resultSet) {
-    Map<String, Object> testData =
-        Map.of(
-            "id", "1",
-            "patienten_id", "42",
-            "erstellungsdatum",
-                new java.sql.Date(Date.from(Instant.parse("2000-07-06T12:00:00Z")).getTime()),
-            "befundnummer", "X/2025/1234",
-            "ergebnisse", "Befundtext",
-            "artderdiagnostik", "panel",
-            "artderdiagnostik_propcat_version", "1234");
-
+  void shouldMapResultSet() {
     doAnswer(
             invocationOnMock ->
-                Reference.builder()
-                    .id(testData.get("patienten_id").toString())
-                    .type("Patient")
-                    .build())
-        .when(resultSet)
-        .getPatientReference();
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getDate(anyString());
-
-    doAnswer(
-            invocationOnMock -> {
-              var columnName = invocationOnMock.getArgument(0, String.class);
-              return testData.get(columnName);
-            })
-        .when(resultSet)
-        .getString(anyString());
-
-    when(resultSet.getId()).thenReturn(1);
-
-    doAnswer(invocationOnMock -> List.of(resultSet)).when(catalogue).getAllByParentId(anyInt());
+                List.of(
+                    TestResultSet.withColumns(
+                        Column.name(Column.ID).value(1),
+                        Column.name(Column.PATIENTEN_ID).value(42),
+                        DateColumn.name("erstellungsdatum").value("2000-07-06"),
+                        Column.name("befundnummer").value("X/2025/1234"),
+                        Column.name("ergebnisse").value("Befundtext"),
+                        PropcatColumn.name("artderdiagnostik").value("panel"))))
+        .when(catalogue)
+        .getAllByParentId(anyInt());
 
     doAnswer(invocationOnMock -> ResultSet.from(Map.of("id", 1, "einsendenummer", "X/2025/1234")))
         .when(molekulargenetikCatalogue)
@@ -116,7 +97,6 @@ class KpaVorbefundeDataMapperTest {
             invocationOnMock -> {
               var testPropertyData =
                   Map.of("panel", new PropertyCatalogue.Entry("panel", "Panel", "Panel"));
-
               var code = invocationOnMock.getArgument(0, String.class);
               return testPropertyData.get(code);
             })
@@ -131,7 +111,7 @@ class KpaVorbefundeDataMapperTest {
     assertThat(actual.getId()).isEqualTo("1");
     assertThat(actual.getPatient()).isEqualTo(Reference.builder().id("42").type("Patient").build());
     assertThat(actual.getIssuedOn())
-        .isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-07-06T12:00:00Z")).getTime()));
+        .isEqualTo(new java.sql.Date(Date.from(Instant.parse("2000-07-06T00:00:00Z")).getTime()));
     assertThat(actual.getSpecimen())
         .isEqualTo(Reference.builder().id("1").type("Specimen").build());
     assertThat(actual.getType())
@@ -140,6 +120,7 @@ class KpaVorbefundeDataMapperTest {
                 .code(MolecularDiagnosticReportCodingCode.PANEL)
                 .display("Panel")
                 .build());
+    assertThat(actual.getResults()).containsExactly("Befundtext");
   }
 
   @Test
@@ -148,5 +129,35 @@ class KpaVorbefundeDataMapperTest {
 
     var actualList = this.dataMapper.getByParentId(1);
     assertThat(actualList).isEmpty();
+  }
+
+  @FuzzNullTest(
+      initMethod = "fuzzInitData",
+      excludeColumns = {Column.PATIENTEN_ID, Column.HAUPTPROZEDUR_ID})
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  void fuzzTestNullColumns(final ResultSet resultSet) {
+    when(catalogue.getAllByParentId(anyInt())).thenReturn(List.of(resultSet));
+
+    when(molekulargenetikCatalogue.getByEinsendenummer(anyString()))
+        .thenReturn(
+            TestResultSet.withColumns(
+                Column.name(Column.ID).value(1),
+                Column.name("eindendenummer").value("X/2025/1234")));
+
+    when(propertyCatalogue.getByCodeAndVersion(anyString(), anyInt()))
+        .thenReturn(new PropertyCatalogue.Entry("panel", "Panel", "Panel"));
+
+    var actual = this.dataMapper.getByParentId(1);
+    assertThat(actual).isNotNull();
+  }
+
+  static ResultSet fuzzInitData() {
+    return TestResultSet.withColumns(
+        Column.name(Column.ID).value(1),
+        Column.name(Column.PATIENTEN_ID).value(42),
+        DateColumn.name("erstellungsdatum").value("2000-07-06"),
+        Column.name("befundnummer").value("X/2025/1234"),
+        Column.name("ergebnisse").value("Befundtext"),
+        PropcatColumn.name("artderdiagnostik").value("panel"));
   }
 }
