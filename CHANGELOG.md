@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.4.0...v0.4.1) (2026-01-09)
+
+
+### Features
+
+* RecommendationsMissing and NoSequencingPerformedReason ([3b76eca](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/3b76ecaf3cc347ed11ad736744ddc015a96040a6))
+* RecommendationsMissing and NoSequencingPerformedReason ([#104](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/104)) ([3b76eca](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/3b76ecaf3cc347ed11ad736744ddc015a96040a6))
+
 ## [0.4.0](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.3.2...v0.4.0) (2026-01-02)
 
 
