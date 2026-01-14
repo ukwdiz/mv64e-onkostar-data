@@ -164,9 +164,13 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             .map(
                 subform -> {
                   final var untersucht = subform.getString("untersucht");
-                  if (null == untersucht) return null;
+                  if (null == untersucht) {
+                    logger.warn("No gene symbol found for simple variant {}", subform);
+                    return null;
+                  }
                   final var geneOptional = GeneUtils.findBySymbol(untersucht);
                   if (geneOptional.isEmpty()) {
+                    logger.warn("Gene symbol {} not found in gene catalogue", untersucht);
                     return null;
                   }
 
@@ -228,7 +232,7 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
 
                   var posStart = subform.getDouble("EVStart");
                   var posEnd = subform.getDouble("EVEnde");
-                  if (null != posStart && null != posEnd) {
+                  if (null != posStart) {
                     snvBuilder.position(Position.builder().start(posStart).end(posEnd).build());
                   }
 
@@ -251,10 +255,13 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
             .map(
                 subform -> {
                   final var untersucht = subform.getString("untersucht");
-                  if (null == untersucht) return null;
-
+                  if (null == untersucht) {
+                    logger.warn("No gene symbol found for CNV {}", subform);
+                    return null;
+                  }
                   final var geneOptional = GeneUtils.findBySymbol(untersucht);
                   if (geneOptional.isEmpty()) {
+                    logger.warn("Gene symbol {} not found in gene catalogue", untersucht);
                     return null;
                   }
 
