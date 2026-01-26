@@ -1,4 +1,5 @@
 import net.ltgt.gradle.errorprone.errorprone
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id("java")
@@ -66,6 +67,9 @@ dependencies {
 }
 
 tasks.test {
+    testLogging {
+        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+    }
     useJUnitPlatform()
     dependsOn(tasks.spotlessCheck)
 }
