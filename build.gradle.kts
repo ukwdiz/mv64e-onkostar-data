@@ -1,4 +1,5 @@
 import net.ltgt.gradle.errorprone.errorprone
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id("java")
@@ -9,7 +10,7 @@ plugins {
 }
 
 group = "dev.pcvolkmer.mv64e"
-version = "0.4.1" // x-release-please-version
+version = "0.4.4" // x-release-please-version
 
 var versions = mapOf(
     "mtb-dto" to "0.2.0",
@@ -66,6 +67,9 @@ dependencies {
 }
 
 tasks.test {
+    testLogging {
+        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+    }
     useJUnitPlatform()
     dependsOn(tasks.spotlessCheck)
 }

@@ -24,15 +24,19 @@ import dev.pcvolkmer.mv64e.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.ResultSet;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.*;
 import dev.pcvolkmer.mv64e.datamapper.genes.GeneUtils;
+import dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.tuples.Tuple;
+import dev.pcvolkmer.mv64e.datamapper.mapper.exceptionhandler.tuples.Tuple2;
 import dev.pcvolkmer.mv64e.mtb.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,37 +174,53 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
                     logger.warn("No gene symbol found for simple variant {}", subform);
                     return null;
                   }
-                  final var geneOptional = GeneUtils.findBySymbol(untersucht);
-                  if (geneOptional.isEmpty()) {
-                    logger.warn("Gene symbol {} not found in gene catalogue", untersucht);
-                    return null;
-                  }
-
-                  var gene = geneOptional.get();
 
                   final var snvBuilder =
                       Snv.builder()
                           .id(subform.getString("id"))
                           .patient(subform.getPatientReference());
 
-                  // Check conversion
-                  var coding = GeneUtils.toCoding(gene);
-                  if (coding != null) snvBuilder.gene(coding);
-
-                  // Add transcriptId from gene list if no EnsemblID is available
+                  var chromosome = subform.getString("evchromosom");
+                  var hgncId = subform.getString("evhgncid");
                   var ensemblId = subform.getString("evensemblid");
-                  if (ensemblId != null) {
+
+                  if (null != chromosome && null != hgncId && null != ensemblId) {
+                    try {
+                      snvBuilder.chromosome(Chromosome.forValue(chromosome));
+                    } catch (Exception e) {
+                      logger.warn("No chromosome found for '{}'", chromosome);
+                    }
+                    snvBuilder.gene(
+                        Coding.builder()
+                            .code(hgncId)
+                            .display(untersucht)
+                            .system("https://www.genenames.org/")
+                            .build());
                     snvBuilder.transcriptId(
                         TranscriptId.builder()
                             .value(ensemblId)
                             .system(TranscriptIdSystem.ENSEMBL_ORG)
                             .build());
                   } else {
-                    snvBuilder.transcriptId(
-                        TranscriptId.builder()
-                            .value(gene.getEnsemblId())
-                            .system(TranscriptIdSystem.ENSEMBL_ORG)
-                            .build());
+                    final var geneOptional = GeneUtils.findBySymbol(untersucht);
+                    if (geneOptional.isEmpty()) {
+                      logger.warn("Gene symbol '{}' not found in gene catalogue", untersucht);
+                      return null;
+                    }
+                    geneOptional.ifPresent(
+                        gene -> {
+                          // Add hgncId and symbol from gene list if no HGNC ID is available
+                          snvBuilder.gene(GeneUtils.toCoding(gene));
+                          // Add transcriptId from gene list if no EnsemblID is available
+                          snvBuilder.transcriptId(
+                              TranscriptId.builder()
+                                  .value(gene.getEnsemblId())
+                                  .system(TranscriptIdSystem.ENSEMBL_ORG)
+                                  .build());
+                          // Add chromosome
+                          gene.getSingleChromosomeInPropertyForm()
+                              .ifPresent(snvBuilder::chromosome);
+                        });
                   }
 
                   final var exon = subform.getString("exon");
@@ -213,7 +233,7 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
                   }
                   final var proteinebenenomenklatur = subform.getString("proteinebenenomenklatur");
                   if (null != proteinebenenomenklatur) {
-                    snvBuilder.proteinChange(proteinebenenomenklatur);
+                    snvBuilder.proteinChange(mapProteinChangeToLongFormat(proteinebenenomenklatur));
                   }
                   final var allelfrequenz = subform.getLong("allelfrequenz");
                   if (null != allelfrequenz) {
@@ -238,17 +258,9 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
                     snvBuilder.position(Position.builder().start(posStart).end(posEnd).build());
                   }
 
-                  gene.getSingleChromosomeInPropertyForm().ifPresent(snvBuilder::chromosome);
-
                   return snvBuilder.build();
                 })
             .filter(Objects::nonNull)
-            // TODO: Filter missing position, altAllele, refAllele
-            .filter(
-                snv ->
-                    snv.getPosition() != null
-                        && snv.getAltAllele() != null
-                        && snv.getRefAllele() != null)
             .collect(Collectors.toList()));
 
     resultBuilder.copyNumberVariants(
@@ -356,29 +368,106 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
     }
   }
 
+  @NullMarked
   private NgsReportMetadata getNgsReportMetadata(final ResultSet osMolResultSet) {
 
-    return NgsReportMetadata.builder()
-        .sequencer(
-            propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
-                osMolResultSet.getString("sequenziergeraet"),
-                osMolResultSet.getInteger("sequenziergeraet_propcat_version")))
-        .kitType(
-            propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
-                osMolResultSet.getString("SeqKitTyp"),
-                osMolResultSet.getInteger("seqkittyp_propcat_version")))
-        .kitManufacturer(
-            propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
-                osMolResultSet.getString("SeqKitHersteller"),
-                osMolResultSet.getInteger("seqkithersteller_propcat_version")))
-        .pipeline(
-            propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
-                osMolResultSet.getString("SeqPipeline"),
-                osMolResultSet.getInteger("seqpipeline_propcat_version")))
-        .referenceGenome(
-            propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
-                osMolResultSet.getString("referenzgenom"),
-                osMolResultSet.getInteger("referenzgenom_propcat_version")))
-        .build();
+    var builder = NgsReportMetadata.builder();
+
+    var sequenziergeraet = osMolResultSet.getString("sequenziergeraet");
+    var sequenziergeraetPv = osMolResultSet.getInteger("sequenziergeraet_propcat_version");
+    if (null != sequenziergeraet && null != sequenziergeraetPv) {
+      builder.sequencer(
+          propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
+              sequenziergeraet, sequenziergeraetPv));
+    }
+
+    var seqKitType = osMolResultSet.getString("SeqKitTyp");
+    var seqKitTypePv = osMolResultSet.getInteger("seqkittyp_propcat_version");
+    if (null != seqKitType && null != seqKitTypePv) {
+      builder.kitType(
+          propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(seqKitType, seqKitTypePv));
+    }
+
+    var seqKitManufacturer = osMolResultSet.getString("SeqKitHersteller");
+    var seqKitManufacturerPv = osMolResultSet.getInteger("seqkithersteller_propcat_version");
+    if (null != seqKitManufacturer && null != seqKitManufacturerPv) {
+      builder.kitManufacturer(
+          propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
+              seqKitManufacturer, seqKitManufacturerPv));
+    }
+
+    var seqPipeline = osMolResultSet.getString("SeqPipeline");
+    var seqPipelinePv = osMolResultSet.getInteger("seqpipeline_propcat_version");
+    if (null != seqPipeline && null != seqPipelinePv) {
+      builder.pipeline(
+          propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(seqPipeline, seqPipelinePv));
+    }
+
+    var referenceGenome = osMolResultSet.getString("referenzgenom");
+    var referenceGenomePv = osMolResultSet.getInteger("referenzgenom_propcat_version");
+    if (null != referenceGenome && null != referenceGenomePv) {
+      builder.referenceGenome(
+          propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
+              referenceGenome, referenceGenomePv));
+    }
+
+    return builder.build();
+  }
+
+  private static String mapProteinChangeToLongFormat(final String input) {
+    final var mappingTable =
+        List.of(
+            Tuple.from("*", "*"),
+            Tuple.from("F", "Phe"),
+            Tuple.from("L", "Leu"),
+            Tuple.from("S", "Ser"),
+            Tuple.from("Y", "Tyr"),
+            Tuple.from("C", "Cys"),
+            Tuple.from("W", "Trp"),
+            Tuple.from("P", "Pro"),
+            Tuple.from("H", "His"),
+            Tuple.from("Q", "Gln"),
+            Tuple.from("R", "Arg"),
+            Tuple.from("I", "Ile"),
+            Tuple.from("M", "Met"),
+            Tuple.from("T", "Thr"),
+            Tuple.from("N", "Asn"),
+            Tuple.from("K", "Lys"),
+            Tuple.from("V", "Val"),
+            Tuple.from("A", "Ala"),
+            Tuple.from("D", "Asp"),
+            Tuple.from("E", "Glu"),
+            Tuple.from("G", "Gly"));
+
+    final var pattern =
+        Pattern.compile(
+            "p\\.(?<ref>[*FLSYCWPHQRIMTNKVADEG])(?<pos>\\d+|del)(?<alt>[*FLSYCWPHQRIMTNKVADEG])");
+
+    final var matcher = pattern.matcher(input);
+
+    if (matcher.matches()) {
+      var ref = matcher.group("ref");
+      var pos = matcher.group("pos");
+      var alt = matcher.group("alt");
+
+      var longRef =
+          mappingTable.stream()
+              .filter(value -> value.get1().equals(ref))
+              .map(Tuple2::get2)
+              .findFirst();
+      var longAlt =
+          mappingTable.stream()
+              .filter(value -> value.get1().equals(alt))
+              .map(Tuple2::get2)
+              .findFirst();
+
+      if (longRef.isEmpty() || longAlt.isEmpty()) {
+        return input;
+      }
+
+      return String.format("p.%s%s%s", longRef.get(), pos, longAlt.get());
+    }
+
+    return input;
   }
 }

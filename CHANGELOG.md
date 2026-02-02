@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.4.4](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.4.3...v0.4.4) (2026-01-28)
+
+
+### Features
+
+* Add ICD-o3 system, display and version to kpa diagnosis ([#116](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/116)) ([9390200](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/93902006c9c799495897899337d43d80c1db140c))
+
+## [0.4.3](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.4.2...v0.4.3) (2026-01-27)
+
+
+### Features
+
+* do not filter incomplete data ([#115](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/115)) ([85709a1](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/85709a1b0d3ca6cbb96088666522be46c6bb78f3))
+* do not filter missing position, altAllele and refAllele ([#111](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/111)) ([5806c22](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/5806c22addc0e641e9da896b0aabe64186e0f969))
+* get simple variant data from form as default ([#114](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/114)) ([422172d](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/422172da6d28a68fd812bb694d5baa6e4843eb13))
+
+## [0.4.2](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.4.1...v0.4.2) (2026-01-22)
+
+
+### Features
+
+* extract sequencing metadata from the corresponding property catalog as it can be documented in MolGen ([#110](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/110)) ([994478f](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/994478f0e58d1e53260fce698b807dff3d261773))
+* map short protein change to required long form ([#109](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/109)) ([454e907](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/454e907d70beebb6c270c277e2c6d3067e70eb8f))
+* map simple variants without (optional) end position ([#107](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/107)) ([180da19](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/180da199ac74643d651040c1e03ac8b7471f4ac2))
+
 ## [0.4.1](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.4.0...v0.4.1) (2026-01-09)
 
 
