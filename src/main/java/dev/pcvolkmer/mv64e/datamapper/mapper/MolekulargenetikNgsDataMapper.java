@@ -287,10 +287,10 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
                   reportedAffectedGenes.add(untersucht);
 
                   // Weitere betroffene Gene aus Freitextfeld?
-                  if (null != subform.getString("cnvbetroffenegene")) {
+                  final var cnvbetroffenegene = subform.getString("cnvbetroffenegene");
+                  if (null != cnvbetroffenegene) {
                     reportedAffectedGenes.addAll(
-                        Arrays.stream(subform.getString("cnvbetroffenegene").split("\\s"))
-                            .collect(Collectors.toList()));
+                        Arrays.stream(cnvbetroffenegene.split("\\s")).collect(Collectors.toList()));
                   }
 
                   final var cnvBuilder =
@@ -383,28 +383,36 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
       builder.sequencer(
           propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
               sequenziergeraet, sequenziergeraetPv));
+    } else {
+      builder.sequencer("Sequencer not specified.");
     }
 
-    var seqKitType = osMolResultSet.getString("SeqKitTyp");
+    var seqKitType = osMolResultSet.getString("seqkittyp");
     var seqKitTypePv = osMolResultSet.getInteger("seqkittyp_propcat_version");
     if (null != seqKitType && null != seqKitTypePv) {
       builder.kitType(
           propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(seqKitType, seqKitTypePv));
+    } else {
+      builder.kitType("SeqKitType not specified.");
     }
 
-    var seqKitManufacturer = osMolResultSet.getString("SeqKitHersteller");
+    var seqKitManufacturer = osMolResultSet.getString("seqkithersteller");
     var seqKitManufacturerPv = osMolResultSet.getInteger("seqkithersteller_propcat_version");
     if (null != seqKitManufacturer && null != seqKitManufacturerPv) {
       builder.kitManufacturer(
           propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(
               seqKitManufacturer, seqKitManufacturerPv));
+    } else {
+      builder.kitManufacturer("SeqKitHersteller not specified.");
     }
 
-    var seqPipeline = osMolResultSet.getString("SeqPipeline");
+    var seqPipeline = osMolResultSet.getString("seqpipeline");
     var seqPipelinePv = osMolResultSet.getInteger("seqpipeline_propcat_version");
     if (null != seqPipeline && null != seqPipelinePv) {
       builder.pipeline(
           propertyCatalogue.getShortdescOrEmptyByCodeAndVersion(seqPipeline, seqPipelinePv));
+    } else {
+      builder.pipeline("SeqPipeline not specified.");
     }
 
     var referenceGenome = osMolResultSet.getString("referenzgenom");
@@ -422,6 +430,8 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
     final var mappingTable =
         List.of(
             Tuple.from("*", "*"),
+            Tuple.from("=", "="),
+            Tuple.from("fs", "fs"),
             Tuple.from("F", "Phe"),
             Tuple.from("L", "Leu"),
             Tuple.from("S", "Ser"),
@@ -445,31 +455,57 @@ public class MolekulargenetikNgsDataMapper implements DataMapper<SomaticNgsRepor
 
     final var pattern =
         Pattern.compile(
-            "p\\.(?<ref>[*FLSYCWPHQRIMTNKVADEG])(?<pos>\\d+|del)(?<alt>[*FLSYCWPHQRIMTNKVADEG])");
+            "^p\\.(?<refA>[*FLSYCWPHQRIMTNKVADEG])?(?<posA>\\d+)?(?<sep>_)?(?<refB>[*FLSYCWPHQRIMTNKVADEG])(?<posB>\\d+)(?<type>del|ins|delins|dup)?(?<alt>[*=FLSYCWPHQRIMTNKVADEG]+|fs)?$");
 
     final var matcher = pattern.matcher(input);
 
     if (matcher.matches()) {
-      var ref = matcher.group("ref");
-      var pos = matcher.group("pos");
+      var refA = matcher.group("refA");
+      var posA = matcher.group("posA");
+      var sep = matcher.group("sep");
+      var refB = matcher.group("refB");
+      var posB = matcher.group("posB");
+      var type = matcher.group("type");
       var alt = matcher.group("alt");
 
-      var longRef =
+      var longRefA =
           mappingTable.stream()
-              .filter(value -> value.get1().equals(ref))
+              .filter(value -> value.get1().equals(refA))
               .map(Tuple2::get2)
-              .findFirst();
-      var longAlt =
+              .findFirst()
+              .orElse("");
+      var longRefB =
           mappingTable.stream()
-              .filter(value -> value.get1().equals(alt))
+              .filter(value -> value.get1().equals(refB))
               .map(Tuple2::get2)
-              .findFirst();
-
-      if (longRef.isEmpty() || longAlt.isEmpty()) {
-        return input;
+              .findFirst()
+              .orElse("");
+      var longAlt = "";
+      if ("fs".equals(alt)) {
+        longAlt = "fs";
+      } else if (null != alt) {
+        longAlt =
+            alt.chars()
+                .mapToObj(Character::toString)
+                .map(
+                    c ->
+                        mappingTable.stream()
+                            .filter(value -> value.get1().equals(c))
+                            .map(Tuple2::get2)
+                            .findFirst()
+                            .orElse(""))
+                .collect(Collectors.joining());
       }
 
-      return String.format("p.%s%s%s", longRef.get(), pos, longAlt.get());
+      return String.format(
+          "p.%s%s%s%s%s%s%s",
+          longRefA,
+          null == posA ? "" : posA,
+          null == sep ? "" : sep,
+          longRefB,
+          null == posB ? "" : posB,
+          null == type ? "" : type,
+          longAlt);
     }
 
     return input;

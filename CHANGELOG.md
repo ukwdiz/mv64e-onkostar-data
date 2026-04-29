@@ -1,5 +1,59 @@
 # Changelog
 
+## [0.6.0](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.5.5...v0.6.0) (2026-04-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* add follow ups related to KPA form ([#144](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/144))
+* add data catalogue for follow ups ([#143](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/143))
+
+### Features
+
+* add data catalogue for follow ups ([#143](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/143)) ([b4fd571](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/b4fd57118ed7d013688a05bb9fe38cd38daf5832))
+* add follow ups related to KPA form ([#144](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/144)) ([8a67c94](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/8a67c9440f3f8e0255b993b002813ae4aea37192))
+* use ik and kvnr in CustomMetadataDataMapper ([1be2acf](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/1be2acfbfcf14af283229d126838f1221bfda539))
+
+
+### Bug Fixes
+
+* field name in example CustomMetadataDataMapper ([#141](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/141)) ([acfe3a4](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/acfe3a49e4994bd7cdf6372b323773c4f56c3532))
+* use term "ik" instead of "kvnr" ([2b5c833](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/2b5c833be15d7b8969476e07578141167a3495ae))
+
+## [0.5.5](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.5.4...v0.5.5) (2026-02-17)
+
+
+### Bug Fixes
+
+* add delins, ins, del, dup mapping ([#139](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/139)) ([e4d5782](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/e4d5782abf39410b8da68fbb4be7e440b7715d93))
+* add frameshift and silent protein change mapping ([#137](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/137)) ([32993e8](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/32993e8d1edef1328138607711a5cba6ff0a3f3c))
+
+## [0.5.4](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.5.3...v0.5.4) (2026-02-10)
+
+
+### Bug Fixes
+
+* add default values for sequencer and kit ([#135](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/135)) ([f722dc4](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/f722dc4ca9c85418392cf2df11196f074cda27da))
+
+## [0.5.3](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.5.2...v0.5.3) (2026-02-09)
+
+
+### Features
+
+* ignore empty research consent reason ([#131](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/131)) ([705aba6](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/705aba682d8658f57f0da0d9e563a4e24d566303))
+
+
+### Bug Fixes
+
+* use correct case in table columns ([#133](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/133)) ([b4b4e76](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/b4b4e7652fd7f516c40c051528f78c638f3001f2))
+
+## [0.5.2](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.5.1...v0.5.2) (2026-02-09)
+
+
+### Features
+
+* add empty transfer TAN to metadata ([#129](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/129)) ([758bf61](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/758bf61cdfcfa41af38a36314daf976a69468132))
+
 ## [0.5.1](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.5.0...v0.5.1) (2026-02-04)
 
 

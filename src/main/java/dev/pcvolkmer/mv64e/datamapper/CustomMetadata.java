@@ -30,10 +30,12 @@ public class CustomMetadata {
 
   private final String fallnummer;
   private final String kvnr;
+  private final String ik;
 
-  public CustomMetadata(String fallnummer, String kvnr) {
+  public CustomMetadata(String fallnummer, String kvnr, String ik) {
     this.fallnummer = fallnummer;
     this.kvnr = kvnr;
+    this.ik = ik;
   }
 
   public String getFallnummer() {
@@ -42,5 +44,9 @@ public class CustomMetadata {
 
   public String getKvnr() {
     return kvnr;
+  }
+
+  public String getIk() {
+    return ik;
   }
 }

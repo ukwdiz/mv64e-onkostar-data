@@ -158,7 +158,7 @@ public class MtbDataMapper implements DataMapper<Mtb> {
             catalogueFactory.catalogue(TumorgradingCatalogue.class),
             catalogueFactory.catalogue(KeimbahndiagnoseCatalogue.class),
             propertyCatalogue);
-    var mtbEpisodeDataMapper = new MtbEpisodeDataMapper(kpaCatalogue, propertyCatalogue);
+    var mtbEpisodeDataMapper = new MtbEpisodeDataMapper(kpaCatalogue);
     var prozedurMapper =
         new KpaProzedurDataMapper(
             catalogueFactory.catalogue(ProzedurCatalogue.class), propertyCatalogue);
@@ -219,6 +219,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
             catalogueFactory.catalogue(ConsentMvCatalogue.class),
             catalogueFactory.catalogue(ConsentMvVerlaufCatalogue.class));
 
+    var followUpDataMapper =
+        new FollowUpDataMapper(catalogueFactory.catalogue(FollowUpCatalogue.class));
+
     var resultBuilder = Mtb.builder();
 
     try {
@@ -243,6 +246,12 @@ public class MtbDataMapper implements DataMapper<Mtb> {
 
       var carePlans =
           therapieplanCatalogue.getByKpaId(kpaId).stream().map(therapieplanDataMapper::getById);
+
+      var followUps =
+          catalogueFactory.catalogue(FollowUpCatalogue.class).getByKpaId(kpaId).stream()
+              .distinct()
+              .map(followUpDataMapper::getById)
+              .collect(Collectors.toList());
 
       var msiFindings =
           molekulargenetikNgsDataMapper
@@ -273,7 +282,9 @@ public class MtbDataMapper implements DataMapper<Mtb> {
               molekulargenetikNgsDataMapper.getAllByKpaIdWithHisto(
                   kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId)))
           // MSI Befunde
-          .msiFindings(msiFindings.collect(Collectors.toList()));
+          .msiFindings(msiFindings.collect(Collectors.toList()))
+          // FollowUps
+          .followUps(followUps);
 
       tryAndLogWithResult(() -> prozedurMapper.getByParentId(kpaId))
           .ok()
@@ -283,17 +294,18 @@ public class MtbDataMapper implements DataMapper<Mtb> {
           .ok()
           .ifPresent(resultBuilder::guidelineTherapies);
 
-      var metadataBuilder = MvhMetadata.builder().type(MvhSubmissionType.INITIAL);
+      var metadataBuilder = MvhMetadata.builder().type(MvhSubmissionType.INITIAL).transferTan("");
+
+      var consentId = kpaCatalogue.getById(kpaId).getInteger("consentmv64e");
+      var reasonMissingResearchConsent =
+          kpaCatalogue.getById(kpaId).getString("grundkeinbroadconsent");
 
       // Consent - as far as present
-      var consentId = kpaCatalogue.getById(kpaId).getInteger("consentmv64e");
       if (null != consentId) {
         metadataBuilder.modelProjectConsent(consentMvDataMapper.getById(consentId));
       }
 
       // Reason for missing research consent
-      var reasonMissingResearchConsent =
-          kpaCatalogue.getById(kpaId).getString("grundkeinbroadconsent");
       if (null != reasonMissingResearchConsent) {
         try {
           metadataBuilder.reasonResearchConsentMissing(
@@ -305,7 +317,10 @@ public class MtbDataMapper implements DataMapper<Mtb> {
         }
       }
 
-      resultBuilder.metadata(metadataBuilder.build());
+      if (null != consentId
+          || (null != reasonMissingResearchConsent && !reasonMissingResearchConsent.isBlank())) {
+        resultBuilder.metadata(metadataBuilder.build());
+      }
     } catch (DataAccessException e) {
       logger.error("Error while getting Mtb.", e);
       throw e;
