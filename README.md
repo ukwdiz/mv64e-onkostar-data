@@ -63,27 +63,27 @@ aufweisen.
 Um Mithilfe wird gebeten.
 
 | DNPM-Datenmodell 2.1 - Bereich   | Status | Anmerkung                                                                                    |
-|----------------------------------|-------|----------------------------------------------------------------------------------------------|
-| MV Metadaten                     | ⛅     | MV Consent inkl. Grund für Fehlen des Broad-Consent anhand DNPM-Formular. Kein Broad Consent |                    
-| Patient                          | ✅     | Verwendet Patienten-ID, nicht Datenbank-ID. Keine Managing Site                              |
-| Episoden                         | ✅     |                                                                                              |
-| Diagnosen                        | ✅     | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode                               |
-| Verwandten-Diagnosen             | ✅     |                                                                                              |
-| Systemische Leitlinien-Therapien | ✅     | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                                   |
-| Leitlinien-Prozeduren            | ✅     | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                                   |
-| ECOG-Verlauf                     | ✅     |                                                                                              |
-| Tumor-Proben                     | ⛅     | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (1)               |
-| vorherige Molekular-Diagnostik   | ✅     |                                                                                              |
-| Histologie-Berichte              | ✅     |                                                                                              |
-| IHC-Berichte                     | -     | Aktuell nicht vorgesehen                                                                     |
-| MSI-Befunde                      | ⛅     | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2)               |
-| NGS-Berichte                     | ⛅     | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2)               |
-| MTB-Beschlüsse                   | ✅     | Stützende molekulare Alteration(en) für einfache Variante und CNV (3)                        |
-| Follow-Up Verlauf                | ✅      |                                                                                             |
-| Antrag Kostenübernahme           | -     | Späterer Zeitpunkt                                                                           |
-| Antwort Kostenübernahme          | -     | Späterer Zeitpunkt                                                                           |
-| Therapien                        | -     | Späterer Zeitpunkt                                                                           |
-| Response Befunde                 | -     | Späterer Zeitpunkt                                                                           |
+|----------------------------------|--------|----------------------------------------------------------------------------------------------|
+| MV Metadaten                     | ⛅      | MV Consent inkl. Grund für Fehlen des Broad-Consent anhand DNPM-Formular. Kein Broad Consent |                    
+| Patient                          | ✅      | Verwendet Patienten-ID, nicht Datenbank-ID. Keine Managing Site                              |
+| Episoden                         | ✅      |                                                                                              |
+| Diagnosen                        | ✅      | Entsprechend Formularaufbau nur Diagnose der aktuellen Episode                               |
+| Verwandten-Diagnosen             | ✅      |                                                                                              |
+| Systemische Leitlinien-Therapien | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                                   |
+| Leitlinien-Prozeduren            | ✅      | Siehe auch: https://github.com/dnpm-dip/mtb-model/issues/9                                   |
+| ECOG-Verlauf                     | ✅      |                                                                                              |
+| Tumor-Proben                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (1)               |
+| vorherige Molekular-Diagnostik   | ✅      |                                                                                              |
+| Histologie-Berichte              | ✅      |                                                                                              |
+| IHC-Berichte                     | -      | Aktuell nicht vorgesehen                                                                     |
+| MSI-Befunde                      | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2)               |
+| NGS-Berichte                     | ⛅      | Best effort: Formular OS.Molekulargenetik erfüllt nicht alle Anforderungen (2) (3)           |
+| MTB-Beschlüsse                   | ✅      | Stützende molekulare Alteration(en) für einfache Variante, CNV und Fusionen (4)              |
+| Follow-Up Verlauf                | ✅      |                                                                                              |
+| Antrag Kostenübernahme           | ✅      | Die optionale Angabe der beantragten Wirkstoffe ist nicht enthalten (5) (6)                  |
+| Antwort Kostenübernahme          | ✅      | (5)                                                                                          |
+| Therapien                        | ⛅      | Initialer Support                                                                            |
+| Response Befunde                 | ✅      | (5)                                                                                          |
 
 ### Hinweise
 
@@ -93,7 +93,20 @@ Um Mithilfe wird gebeten.
    * Tumorzellgehalt-Methode problematisch, wenn auch im NGS-Bericht histologisch festgestellt.
    * Angabe zu MSI-Interpretation fehlt in Formular, ist aber Pflichtangabe - Wird gefiltert.
    * Datenbanktabelle für MSI lautet tatsächlich `dk_molekluargenmsi` [sic!]
-3. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
+   * Aktuell sind folgende Varianten implementiert: SV, CNV, RNA- und DNA-Fusion.
+3. NGS-Berichte werden basierend auf dem Formular `OS.Molekulargenetik` dann exportiert, wenn sie
+    * im Formular DNPM Therapieplan unter "Befund (keine Einzelempfehlung)" angegeben wurden,
+    * im Formular DNPM Therapieplan in einer Einzelempfehlung referenziert sind,
+    * im Forular DNPM Klinik/Anamnese unter "Histologien" referenziert sind.
+
+   Ein mehrfacher Export je Datensatz findet dabei nicht statt, jeder NGS-Bericht ist nur einmal vorhanden.
+4. Implementierung des Mappings von HGNC-Symbol (Gen-Name) zu HGNC-ID über enthaltene Gen-Liste.
+5. Der Export wird dann durchgeführt, wenn:
+   * Antrag Kostenübernahme: Das Datum angegeben ist
+   * Antwort Kostenübernahme: Das Datum angegeben ist
+   * Response Befunde: Die Beurteilungsmethode angegeben ist
+6. Da die Angabe (technisch) optional ist und im [DNPM-Datenmodell 2.1](https://ibmi-ut.atlassian.net/wiki/spaces/DAM/pages/698777783)
+   nicht genannt ist, wird diese Angabe nicht exportiert.
 
 ## Enthaltene Liste mit Genen
 

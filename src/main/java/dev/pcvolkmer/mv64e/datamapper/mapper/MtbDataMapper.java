@@ -222,6 +222,15 @@ public class MtbDataMapper implements DataMapper<Mtb> {
     var followUpDataMapper =
         new FollowUpDataMapper(catalogueFactory.catalogue(FollowUpCatalogue.class));
 
+    var followUpClaimMapper =
+        new FollowUpClaimMapper(catalogueFactory.catalogue(FollowUpCatalogue.class));
+
+    var followUpClaimResponseMapper =
+        new FollowUpClaimResponseMapper(catalogueFactory.catalogue(FollowUpCatalogue.class));
+
+    var followUpResponseBefundMapper =
+        new FollowUpResponseBefundMapper(catalogueFactory.catalogue(FollowUpCatalogue.class));
+
     var resultBuilder = Mtb.builder();
 
     try {
@@ -251,6 +260,44 @@ public class MtbDataMapper implements DataMapper<Mtb> {
           catalogueFactory.catalogue(FollowUpCatalogue.class).getByKpaId(kpaId).stream()
               .distinct()
               .map(followUpDataMapper::getById)
+              .collect(Collectors.toList());
+
+      var claims =
+          catalogueFactory.catalogue(FollowUpCatalogue.class).getByKpaId(kpaId).stream()
+              .distinct()
+              .map(id -> tryAndLogWithResult(() -> followUpClaimMapper.getById(id)).okOrNull())
+              .filter(Objects::nonNull)
+              .distinct()
+              .collect(Collectors.toList());
+
+      var claimResponses =
+          catalogueFactory.catalogue(FollowUpCatalogue.class).getByKpaId(kpaId).stream()
+              .distinct()
+              .map(
+                  id ->
+                      tryAndLogWithResult(() -> followUpClaimResponseMapper.getById(id)).okOrNull())
+              .filter(Objects::nonNull)
+              .distinct()
+              .collect(Collectors.toList());
+
+      var systemicTherapies =
+          new TherapiehistorieDataMapper(
+                  therapielinieMapper,
+                  therapieplanCatalogue,
+                  einzelempfehlungCatalogue,
+                  catalogueFactory.catalogue(FollowUpCatalogue.class),
+                  catalogueFactory.catalogue(TherapielinieCatalogue.class))
+              .getById(kpaId);
+
+      var responses =
+          catalogueFactory.catalogue(FollowUpCatalogue.class).getByKpaId(kpaId).stream()
+              .distinct()
+              .map(
+                  id ->
+                      tryAndLogWithResult(() -> followUpResponseBefundMapper.getById(id))
+                          .okOrNull())
+              .filter(Objects::nonNull)
+              .distinct()
               .collect(Collectors.toList());
 
       var msiFindings =
@@ -283,8 +330,14 @@ public class MtbDataMapper implements DataMapper<Mtb> {
                   kpaId, kpaHistologieDataMapper.getMolGenIdsFromHistoOfTypeSequence(kpaId)))
           // MSI Befunde
           .msiFindings(msiFindings.collect(Collectors.toList()))
-          // FollowUps
-          .followUps(followUps);
+          // FollowUps mit Claims und Claim Responses
+          .followUps(followUps)
+          .claims(claims)
+          .claimResponses(claimResponses)
+          // Therapie-Verlaufsdokumentation
+          .systemicTherapies(systemicTherapies)
+          // Response Befunde
+          .responses(responses);
 
       tryAndLogWithResult(() -> prozedurMapper.getByParentId(kpaId))
           .ok()

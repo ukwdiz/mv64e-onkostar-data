@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.8.0](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.7.2...v0.8.0) (2026-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* export findings without recommendations ([#159](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/159))
+
+### Features
+
+* export claim responses from follow-up form ([#165](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/165)) ([9b11cda](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/9b11cda0fab60d61dae8ac955a99f1bf681bea8e))
+* export claims from follow-up form ([#164](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/164)) ([3b0b106](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/3b0b106a66364e22f81b28d38525e4146534ec43))
+* export findings without recommendations ([#159](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/159)) ([f7408a3](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/f7408a38bc047e21447435a87d51f872e9805d70))
+* export responses from follow-up form ([#167](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/167)) ([680b064](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/680b064302f121bfeb03b2055730241ccfacc5e2))
+* filter follow-up-items to be exported ([#168](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/168)) ([4c2452c](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/4c2452c7e07eb6cb0d821c240c912e6553c641cd))
+* initial support for systemic therapies ([#163](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/163)) ([c1ff5fd](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/c1ff5fdc955e7a268782b1ba95ee270f799dfc11))
+* only add municipality code if available ([#166](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/166)) ([40bcde1](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/40bcde14b03d9b0d488fdc353e4d72204c407af3))
+
+## [0.7.2](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.7.1...v0.7.2) (2026-05-11)
+
+
+### Bug Fixes
+
+* return input on first three-letter code match ([b8dd479](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/b8dd479fabaeacdb4504622952ad4f12b3c09dfb))
+
+## [0.7.1](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.7.0...v0.7.1) (2026-05-11)
+
+
+### Features
+
+* simplified protein change mapper ([#160](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/160)) ([6e183f1](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/6e183f124b3117dd6b7fb3697a3447978273f500))
+
+
+### Bug Fixes
+
+* update dto library to v0.3.0 ([#157](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/157)) ([83119f6](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/83119f61f2d995a71c3feb148694d46e6a2f7225))
+
+## [0.7.0](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.6.0...v0.7.0) (2026-05-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* map plain text pipeline names to URIs ([#156](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/156))
+
+### Features
+
+* export DNA fusions ([#151](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/151)) ([8a2a657](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/8a2a657fd29303104332133cc39246543aed7db2))
+* export RNA fusions ([#155](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/155)) ([7ab3ed3](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/7ab3ed33e1d6cc397ffbb0305eb72cb6e3ab02b9))
+* map plain text pipeline names to URIs ([#156](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/156)) ([18269b5](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/18269b59dc11740d531985412495b4097b1470a8))
+
 ## [0.6.0](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.5.5...v0.6.0) (2026-04-20)
 
 
