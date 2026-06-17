@@ -26,11 +26,11 @@ import dev.pcvolkmer.mv64e.datamapper.datacatalogues.FollowUpCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapielinieCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapieplanCatalogue;
 import dev.pcvolkmer.mv64e.mtb.SystemicTherapy;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Mapper class to load and map therapy history data from database table 'dk_dnpm_therapieplan',
@@ -41,7 +41,7 @@ import org.jspecify.annotations.NullMarked;
  */
 public class TherapiehistorieDataMapper implements DataMapper<List<SystemicTherapy>> {
 
-  private final KpaTherapielinieDataMapper therapielinieMapper;
+  private final FollowUpTherapielinieDataMapper therapielinieMapper;
 
   private final TherapieplanCatalogue therapieplanCatalogue;
 
@@ -52,7 +52,7 @@ public class TherapiehistorieDataMapper implements DataMapper<List<SystemicThera
   private final TherapielinieCatalogue therapielinieCatalogue;
 
   public TherapiehistorieDataMapper(
-      KpaTherapielinieDataMapper therapielinieMapper,
+      FollowUpTherapielinieDataMapper therapielinieMapper,
       TherapieplanCatalogue therapieplanCatalogue,
       EinzelempfehlungCatalogue einzelempfehlungCatalogue,
       FollowUpCatalogue followUpCatalogue,
@@ -76,10 +76,11 @@ public class TherapiehistorieDataMapper implements DataMapper<List<SystemicThera
                     .distinct()
                     .filter(Objects::nonNull)
                     .map(this::mapSystemicTherapiesFromRecommendation))
+        .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
-  @NullMarked
+  @Nullable
   private SystemicTherapy mapSystemicTherapiesFromRecommendation(int recommendationId) {
     var systemicTherapies =
         this.followUpCatalogue.getByRecommendationId(recommendationId).stream()
@@ -87,14 +88,10 @@ public class TherapiehistorieDataMapper implements DataMapper<List<SystemicThera
             .flatMap(therapies -> therapies.stream().map(ResultSet::getId).filter(Objects::nonNull))
             .map(this.therapielinieMapper::getById)
             .filter(Objects::nonNull)
-            .filter(
-                mtbSystemicTherapy ->
-                    null != mtbSystemicTherapy.getPeriod()
-                        && null != mtbSystemicTherapy.getPeriod().getStart())
-            .sorted(
-                Comparator.comparing(
-                    mtbSystemicTherapy -> mtbSystemicTherapy.getPeriod().getStart()))
             .collect(Collectors.toList());
+    if (systemicTherapies.isEmpty()) {
+      return null;
+    }
     return SystemicTherapy.builder().history(systemicTherapies).build();
   }
 }

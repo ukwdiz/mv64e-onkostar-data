@@ -1,5 +1,77 @@
 # Changelog
 
+## [0.8.9](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.8...v0.8.9) (2026-06-10)
+
+
+### Features
+
+* do not sort follow up history ([#189](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/189)) ([afc7858](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/afc7858eddcb082d54b0ca658b802c9d2a265a0d))
+* export study from form fields ([#188](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/188)) ([9d929ec](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/9d929ecbff259ff75ba106ede86d7c6f252a12c5))
+* ignore empty study JSON in EinzelempfehlungStudieDataMapper ([#186](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/186)) ([4b21e7f](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/4b21e7f6f78b3983fc6dbefaf437527588169894))
+
+## [0.8.8](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.7...v0.8.8) (2026-06-05)
+
+
+### Features
+
+* add method to simply consume a successful try ([#185](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/185)) ([2b4ff66](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/2b4ff669f3d5660833b2cfedec28a4a7803b2959))
+* export ECOG status from FollowUp form ([#183](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/183)) ([cd53638](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/cd53638885104e5efc32c8f2b6d01ee996c1f52b))
+
+## [0.8.7](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.6...v0.8.7) (2026-05-27)
+
+
+### Features
+
+* use systemic therapies without filtering ([967d534](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/967d5341c8557cbd51fcb320fd810548ecf7fe52))
+
+## [0.8.6](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.5...v0.8.6) (2026-05-27)
+
+
+### Features
+
+* allow follow-up therapies without start date ([#178](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/178)) ([a138443](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/a13844379cba2326a3c8c8faae15ea831e77ce32))
+* allow onco procedures without start date ([#180](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/180)) ([c6416d4](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/c6416d46a4ef0bbf395d66a9b887747b9879356d))
+
+## [0.8.5](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.4...v0.8.5) (2026-05-27)
+
+
+### Bug Fixes
+
+* mapping of diagnosis within follow-up therapielinie ([#176](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/176)) ([ad5e60c](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/ad5e60cf21539e7aa320b0dfcefdeb80145db7f6))
+
+## [0.8.4](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.3...v0.8.4) (2026-05-26)
+
+
+### Features
+
+* ignore systemic therapies without history completely ([fa85c2d](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/fa85c2d3c58f93aef2f86ce20006f7117b4b0775))
+
+## [0.8.3](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.2...v0.8.3) (2026-05-26)
+
+
+### Features
+
+* hide all empty follow-up related lists in export ([ac33874](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/ac338743bc083cea2bcedf6ca480f6aac1de6792))
+
+
+### Bug Fixes
+
+* do not use empty history in systemic therapy ([79cad0d](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/79cad0da3335f4823c17ebf0427a0782cc23b3cd))
+
+## [0.8.2](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.1...v0.8.2) (2026-05-26)
+
+
+### Bug Fixes
+
+* do not use empty systemicTherapies - use null instead ([184d268](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/184d26844cd3ba488073c8bba36877d2cbcdad2d))
+
+## [0.8.1](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.8.0...v0.8.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* set Java compiler source encoding to UTF-8 ([#170](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/170)) ([5dbc118](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/5dbc118c823347e49db797e45ce987d02e267a9e))
+
 ## [0.8.0](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.7.2...v0.8.0) (2026-05-18)
 
 

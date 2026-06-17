@@ -74,6 +74,7 @@ class KpaTherapielinieDataMapperTest {
                         DateColumn.name("beginn").value("2000-01-01"),
                         DateColumn.name("ende").value("2024-06-19"),
                         DateColumn.name("erfassungsdatum").value("2024-06-19"),
+                        Column.name("hauptprozedur_id").value(60),
                         PropcatColumn.name("intention").value("S"),
                         PropcatColumn.name("status").value("stopped"),
                         PropcatColumn.name("statusgrund").value("patient-death"),
@@ -109,6 +110,9 @@ class KpaTherapielinieDataMapperTest {
     assertThat(actual).isInstanceOf(MtbSystemicTherapy.class);
     assertThat(actual.getId()).isEqualTo("1");
     assertThat(actual.getPatient()).isEqualTo(Reference.builder().id("42").type("Patient").build());
+    assertThat(actual.getReason())
+        // Referenced KPA form
+        .isEqualTo(Reference.builder().id("60").type("MTBDiagnosis").build());
     assertThat(actual.getTherapyLine()).isEqualTo(42);
     assertThat(actual.getPeriod())
         .isEqualTo(
@@ -148,8 +152,7 @@ class KpaTherapielinieDataMapperTest {
                     TestResultSet.withColumns(
                         Column.name(Column.ID).value(1),
                         Column.name(Column.PATIENTEN_ID).value(42),
-                        // No beginn,
-                        DateColumn.name("ende").value("2024-06-19"),
+                        // No beginn/end
                         DateColumn.name("erfassungsdatum").value("2024-06-19"),
                         PropcatColumn.name("intention").value("S"),
                         PropcatColumn.name("status").value("stopped"),

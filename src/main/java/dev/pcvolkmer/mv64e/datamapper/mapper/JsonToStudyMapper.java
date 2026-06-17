@@ -20,16 +20,16 @@
 
 package dev.pcvolkmer.mv64e.datamapper.mapper;
 
+import static dev.pcvolkmer.mv64e.datamapper.mapper.EinzelempfehlungStudieDataMapper.getStudySystem;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.pcvolkmer.mv64e.datamapper.exceptions.DataAccessException;
+import dev.pcvolkmer.mv64e.datamapper.exceptions.IgnorableMappingException;
 import dev.pcvolkmer.mv64e.mtb.StudyReference;
-import dev.pcvolkmer.mv64e.mtb.StudySystem;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Maps JSON strings used in form into DNPM study
@@ -44,7 +44,7 @@ public class JsonToStudyMapper {
   }
 
   public static List<StudyReference> map(String studyJson) {
-    if (studyJson == null) {
+    if (studyJson == null || studyJson.isBlank()) {
       return List.of();
     }
     try {
@@ -62,33 +62,7 @@ public class JsonToStudyMapper {
                           .build())
               .collect(Collectors.toList());
     } catch (Exception e) {
-      throw new DataAccessException(String.format("Cannot map medication for %s", studyJson));
-    }
-  }
-
-  @Nullable
-  private static StudySystem getStudySystem(@Nullable String code) {
-    if (code == null) return null;
-
-    // possible values from DNPM Datamodel
-    switch (code) {
-      case "NCT":
-        return StudySystem.NCT;
-      case "EudraCT": // Additional value from Onkostar Property Catalogue
-      case "Eudra-CT":
-        return StudySystem.EUDRA_CT;
-      case "DRKS":
-        return StudySystem.DRKS;
-      case "EUDAMED":
-        return StudySystem.EUDAMED;
-
-      // Or try to map from Enum values
-      default:
-        try {
-          return StudySystem.valueOf(code);
-        } catch (IllegalArgumentException e) {
-          return null;
-        }
+      throw new IgnorableMappingException(String.format("Cannot map study for %s", studyJson));
     }
   }
 

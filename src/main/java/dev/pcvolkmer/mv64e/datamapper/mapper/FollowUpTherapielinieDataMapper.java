@@ -1,7 +1,7 @@
 /*
  * This file is part of mv64e-onkostar-data
  *
- * Copyright (C) 2025  Paul-Christian Volkmer
+ * Copyright (C) 2026  Paul-Christian Volkmer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -22,8 +22,9 @@ package dev.pcvolkmer.mv64e.datamapper.mapper;
 
 import dev.pcvolkmer.mv64e.datamapper.PropertyCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.ResultSet;
+import dev.pcvolkmer.mv64e.datamapper.datacatalogues.EinzelempfehlungCatalogue;
 import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapielinieCatalogue;
-import dev.pcvolkmer.mv64e.datamapper.exceptions.IgnorableMappingException;
+import dev.pcvolkmer.mv64e.datamapper.datacatalogues.TherapieplanCatalogue;
 import dev.pcvolkmer.mv64e.mtb.PeriodDate;
 import dev.pcvolkmer.mv64e.mtb.Reference;
 import java.util.Optional;
@@ -33,21 +34,44 @@ import org.jspecify.annotations.NullMarked;
  * Mapper class to load and map prozedur data from database table 'dk_dnpm_therapielinie'
  *
  * @author Paul-Christian Volkmer
- * @since 0.1
+ * @since 0.8
  */
-public class KpaTherapielinieDataMapper extends AbstractTherapielinieDataMapper {
+public class FollowUpTherapielinieDataMapper extends AbstractTherapielinieDataMapper {
 
-  public KpaTherapielinieDataMapper(
-      final TherapielinieCatalogue catalogue, final PropertyCatalogue propertyCatalogue) {
+  private final EinzelempfehlungCatalogue einzelempfehlungCatalogue;
+  private final TherapieplanCatalogue therapieplanCatalogue;
+
+  public FollowUpTherapielinieDataMapper(
+      final TherapielinieCatalogue catalogue,
+      final EinzelempfehlungCatalogue einzelempfehlungCatalogue,
+      final TherapieplanCatalogue therapieplanCatalogue,
+      final PropertyCatalogue propertyCatalogue) {
     super(catalogue, propertyCatalogue);
+    this.einzelempfehlungCatalogue = einzelempfehlungCatalogue;
+    this.therapieplanCatalogue = therapieplanCatalogue;
   }
 
   @Override
   protected Reference getDiagnosisReference(ResultSet resultSet) {
-    return Reference.builder()
-        .id(resultSet.getString("hauptprozedur_id"))
-        .type("MTBDiagnosis")
-        .build();
+    final var einzelempfehlungId = resultSet.getInteger("ref_einzelempfehlung");
+    if (null == einzelempfehlungId) {
+      throw new IllegalStateException("No reference to einzelempfehlung found");
+    }
+
+    final var einzelempfehlung = einzelempfehlungCatalogue.getById(einzelempfehlungId);
+    final var therapieplanId = einzelempfehlung.getParentId();
+    if (null == therapieplanId) {
+      throw new IllegalStateException("No reference to therapieplan found");
+    }
+
+    final var therapieplan = therapieplanCatalogue.getById(therapieplanId);
+
+    final var kpaId = therapieplan.getString("ref_dnpm_klinikanamnese");
+    if (null == kpaId) {
+      throw new IllegalStateException("No reference to kpa found");
+    }
+
+    return Reference.builder().id(kpaId).type("MTBDiagnosis").build();
   }
 
   @Override
@@ -56,7 +80,7 @@ public class KpaTherapielinieDataMapper extends AbstractTherapielinieDataMapper 
     var pdb = PeriodDate.builder();
     final var beginn = resultSet.getDate("beginn");
     if (null == beginn) {
-      throw new IgnorableMappingException("Cannot map 'Therapielinie': 'Beginn' is missing");
+      return Optional.empty();
     }
     pdb.start(beginn);
     if (resultSet.getDate("ende") != null) pdb.end(resultSet.getDate("ende"));
