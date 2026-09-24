@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.10.0](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.9.3...v0.10.0) (2026-09-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* use dependency 'mtb-model' ([#182](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/182))
+
+### Miscellaneous Chores
+
+* use dependency 'mtb-model' ([#182](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/182)) ([476a943](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/476a9438260fb92909a7a7299670d7c631744f05))
+
+## [0.9.3](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.9.2...v0.9.3) (2026-08-19)
+
+
+### Features
+
+* add CNV mapping ([#204](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/204)) ([84c2e60](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/84c2e601771052a02b52a6a0f53271b888c59dbe))
+* **dnpm-to-fhir:** add onco TNM ([#219](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/219)) ([05437ad](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/05437adfcd8071643f737b12fb92453e71a35549))
+* **dnpm-to-fhir:** check for possible null values ([f0e2c62](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/f0e2c6203d1352e8f40e80cc1ee758db60dd655b))
+* example for simpla variants mapping ([#203](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/203)) ([382f4ec](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/382f4ec5095fe7dd08070c92f76620c6d8665fa5))
+* example mapping for DNPM to FHIR ([#201](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/201)) ([00fd106](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/00fd10659aaad4dfeb377826ed112942b87b5d07))
+
+
+### Bug Fixes
+
+* add RNA fusion transcript ID system ([#234](https://github.com/pcvolkmer/mv64e-onkostar-data/issues/234)) ([5301d16](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/5301d16087fdc9a9b31e17d3f17b5a9e0039b992))
+* use other system for HGVS coding ([8b67e51](https://github.com/pcvolkmer/mv64e-onkostar-data/commit/8b67e51a8cd0b6cf3a4d5405954039e47cffc3ba))
+
 ## [0.9.2](https://github.com/pcvolkmer/mv64e-onkostar-data/compare/v0.9.1...v0.9.2) (2026-06-23)
 
 

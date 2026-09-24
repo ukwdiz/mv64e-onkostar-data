@@ -24,6 +24,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
       - name: Execute tests
         run: ./gradlew test
+
   build:
     runs-on: ubuntu-latest
     permissions:
